@@ -20,6 +20,7 @@ module.exports = {
         watch: true, // Enable watcher mode
         // Optional: Environment variables for development
         NODE_ENV: "development",
+        PORT: 3001
       },
     },
   ],
