@@ -29,7 +29,8 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
-    "nodemailer": "^6.9.7"
+    "nodemailer": "^6.9.7",
+    "random-number-csprng": "^1.0.2"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1"
