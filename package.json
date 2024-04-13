@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "pm2 start ecosystem.config.js"
+    "start": "pm2 start ecosystem.config.js",
+    "dev": "pm2 start ecosystem.config.js --env development",
+    "cronjob": "node cronjobs/logDaemon.js"
   },
   "author": "Quickpayus Team",
   "license": "ISC",
@@ -18,7 +20,7 @@
     "ejs": "^3.1.9",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
-    "faker": "^6.6.6",
+    "faker": "^5.5.3",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "moment": "^2.30.1",
