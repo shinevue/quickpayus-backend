@@ -136,7 +136,7 @@ const main = async (page, pageSize) => {
 
 async function applyNormal() {
   console.time("TOTAL_TIME_TOOK");
-  await main(1, 5000);
+  await main(1, 1000);
   console.timeEnd("TOTAL_TIME_TOOK");
 }
 function applyCronJob() {
@@ -177,7 +177,7 @@ function applyCronJob() {
           earliestStartTime = startTime;
       }
   
-      await main(job.data.page, 100);
+      await main(job.data.page, 500);
   
       const endTime = Date.now();
       if (endTime > latestEndTime) {
@@ -228,5 +228,5 @@ function applyCronJob() {
   addJobs();  
 }
 
-// applyNormal();
-applyCronJob();
+applyNormal();
+// applyCronJob();
