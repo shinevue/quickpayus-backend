@@ -11,8 +11,8 @@ const {
   STATUS,
 } = require("../config/constants.js");
 
-const main = async () => {
-  console.time("TOTAL_TIME_TOOK");
+const main = async (page, pageSize) => {
+  // console.time("TOTAL_TIME_TOOK");
 
   try {
     await connectDB();
@@ -39,8 +39,8 @@ const main = async () => {
       },
     };
 
-    const page = 1;
-    const pageSize = 10;
+    // const page = 1;
+    // const pageSize = 5000;
     const skip = (page - 1) * pageSize;
     const total = await User.countDocuments(query);
 
@@ -132,8 +132,91 @@ const main = async () => {
     console.log(`Error running the cronjob - ${err}`);
   }
 
-  console.timeEnd("TOTAL_TIME_TOOK");
-  process.exit(0);
+  // console.timeEnd("TOTAL_TIME_TOOK");
+  // process.exit(0);
 };
 
-main();
+// main();
+
+const jobNames = [];
+const { Worker, Queue } = require('bullmq');
+
+const IORedis = require('ioredis');
+const connection = new IORedis({ maxRetriesPerRequest: null });
+
+const queue = new Queue('myQueue', { connection });
+
+let earliestStartTime = Infinity;
+let latestEndTime = 0;
+const completionCounter = { count: 0 };
+
+async function removePrevJobs() {
+  await queue.getRepeatableJobs().then(async (repeatableJobs) => {
+    for (const job of repeatableJobs) {
+      queue.removeRepeatableByKey(job.key).then(() => {
+        console.log(`previous job ${job.name} removed`);
+      }).catch((error) => {
+        console.log(error);
+      })
+    }
+  });
+}
+
+async function startWorkers() {
+  const worker = new Worker('myQueue', async job => {
+    if (jobNames.includes(job.name)) {
+
+    } else {
+      console.log(`Skipping ${job.name}`);
+    }
+
+    const startTime = Date.now();
+    if (startTime < earliestStartTime) {
+        earliestStartTime = startTime;
+    }
+
+    await main(job.data.page, 500);
+
+    const endTime = Date.now();
+    if (endTime > latestEndTime) {
+        latestEndTime = endTime;
+    }
+
+    completionCounter.count++;
+    if (completionCounter.count === 10) {
+        console.log(`Total processing time for ${10} workers is: ${latestEndTime - earliestStartTime} milliseconds`);
+    }
+  }, { connection });
+  worker.on('failed', (job, err) => {
+    console.error(`${job.name} failed with error:`, err);
+  });
+
+  worker.on('completed', (job) => {
+    console.log(`${job.name} with id ${job.id} has been completed`);
+  });
+}
+
+queue.on('waiting', (job) => {
+  console.error(`${job.name} added`);
+});
+
+queue.on('error', (error) => {
+  console.log(`Queue error: ${error}`);
+});
+
+async function addJobs() {
+  for (let i = 1; i <= 10; i ++) {
+    jobNames.push('Job' + i);
+    await queue.add('Job' + i, {page: i}, {
+      repeat: {
+        pattern: '* * * * Mon-Fri',
+        endDate: new Date(Date.now() + (5 * 24 * 60 * 60 * 1000)),
+        tz: 'America/New_York'
+      },
+    });
+  }
+}
+
+removePrevJobs();
+startWorkers();
+addJobs();
