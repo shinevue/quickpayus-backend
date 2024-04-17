@@ -1,23 +1,26 @@
-const faker = require('faker');
-const connectDB = require('../config/db');
-const User = require('../models/userModel');
-const ProfitConfig = require('../models/profitConfigModel');
-const HELPER = require("../helpers");
+const connectDB = require("../config/db.js");
+const User = require("../models/userModel.js");
+const HELPER = require('../helpers');
+const { fakerEN: faker } = require('@faker-js/faker');
+
+const ProfitConfig = require('../models/profitConfigModel.js')
 
 connectDB();
 
-function insertUsers(num) {
+async function insertUsers(num) {
     try {
         for (let i = 0; i < num; i++) {
             const newUser = new User({
                 uuid: HELPER.randomUUID(),
-                firstName: faker.name.firstName(),
-                lastName: faker.name.lastName(),
-                username: faker.internet.userName(),
-                email: faker.internet.email(),
+                firstName: faker.person.firstName(),
+                lastName: faker.person.lastName(),
+                username: faker.internet.userName() + i,
+                email: `${faker.internet.userName()}.${i}@mail.com`,
                 countryCode: '1',
                 phoneNumber: '12340000' + ('0000' + i).slice(-4),
                 referralId: null,
+                investmentLevel: 'A',
+                investmentSubLevel: 'A2',
                 password: '123456',
                 termsAndConditions: true,
 
@@ -26,14 +29,15 @@ function insertUsers(num) {
                 alertNotifications: true,
                 emailNotifications: true
             });
-            newUser.save();
+            await newUser.save();
         }
+        console.log('Done 5000 users!')
 
-        const profit = new ProfitConfig({profit: 1000});
-        profit.save();
-    } catch(e) {
+        // const profit = new ProfitConfig({ profit: [50, 100, 150, 200] });
+        // profit.save();
+    } catch (e) {
         console.error('----------Error inserting users:', e);
     }
 }
 
-insertUsers(1000);
+insertUsers(5000);
