@@ -351,7 +351,7 @@
                       class="text"
                       style="padding: 0 2.5em; text-align: center"
                     >
-                      <h2>Deposit Rejected</h2>
+                      <h2>Withdrawal Approved</h2>
                     </div>
                   </td>
                 </tr>
@@ -360,12 +360,20 @@
                     <div class="text1">
                       <p>Dear <%= username %>,</p>
                       <p>
-                        We regret to inform you that your deposit request has been rejected due to <%= reason %>.
+                        We're pleased to inform you that your withdrawal request has been successfully approved.
                       </p>
+                      <br>
+                      <p>
+                        <b> Amount: <%= amount %> </b>
+                      </p>
+                      <p>
+                        <b> Date: <%= date %> </b>
+                      </p>
+                      <br>
                     </div>
                     <div class="text2">
                       <p class="pt-3">
-                        Please review your transaction details, and contact support if you need further assistance.
+                        Expect the funds to reach your account shortly.
                       </p>
                     </div>
                     <div class="text3">
