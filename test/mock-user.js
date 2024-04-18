@@ -40,4 +40,19 @@ async function insertUsers(num) {
     }
 }
 
-insertUsers(5000);
+
+async function updateUserReferrals() {
+    try {
+        let firstUser = await User.find({}).limit(1);
+        let users = User.find({}).skip(1).limit(50);
+        (await users).forEach(user => {
+            user.referralId = firstUser[0]._id
+            user.save();
+        })
+    } catch (e) {
+        console.error('----------Error updating users:', e);
+    }
+}
+
+// insertUsers(5000);
+updateUserReferrals();
