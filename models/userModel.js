@@ -22,13 +22,13 @@ const kycSchema = new mongoose.Schema(
       type: String,
       enum: ["Male", "Female", "Other"],
     },
-    addressLine1: {
+    addressLine: {
       type: String,
       required: true,
     },
-    addressLine2: {
-      type: String,
-    },
+    // addressLine2: {
+    //   type: String,
+    // },
     city: {
       type: String,
       required: true,
