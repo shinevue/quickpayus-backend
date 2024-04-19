@@ -6,11 +6,12 @@ const sendEmail = async (options) => {
   try {
     // Create a nodemailer transporter
     const transporter = nodeMailer.createTransport({
-      host: process.env.SMPT_HOST,
-      port: process.env.SMPT_PORT,
+      host: "smtp.ethereal.email",
+      port: 587,
+      
       auth: {
-        user: process.env.SMPT_USER,
-        pass: process.env.SMPT_PASSWORD,
+        user: "janick.baumbach82@ethereal.email",
+        pass: "dB459PeQJfKGXzu2Pm",
       },
     });
 
@@ -19,7 +20,7 @@ const sendEmail = async (options) => {
     const html = ejs.render(template, options.templateData);
 
     const mailOptions = {
-      from: process.env.SMPT_MAIL,
+      from: "m.001108@outlook.com",
       to: options.email,
       subject: options.subject,
       html: html,
@@ -119,5 +120,5 @@ const emailTemplates = {
   }
 };
 
-module.exports = emailTemplates;
-module.exports = sendEmail;
+exports.emailTemplates = emailTemplates;
+exports.sendEmail = sendEmail;

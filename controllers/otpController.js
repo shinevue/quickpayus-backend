@@ -2,7 +2,7 @@ const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const OTP = require("../models/otpModel");
 const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
-const sendEmail = require("../utils/sendEmail");
+const { sendEmail, emailTemplates } = require("../utils/sendEmail");
 
 exports.create = catchAsyncErrors(async (req, res, next) => {
   const { email, id } = req.user || {};
@@ -13,11 +13,10 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
 
   const otp = otpModel?.code?.toString();
 
-  /* wait sendEmail({
+  await sendEmail({
     email: email,
-    subject: `OTP Code`,
-    message: otp,
-  }); */
+    ...emailTemplates.otpEmailConfirm
+  });
 
   res.json({ success: true, message: "OTP sent successfully on email" });
 });
