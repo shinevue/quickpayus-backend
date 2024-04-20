@@ -215,9 +215,8 @@ function applyCronJob() {
       jobNames.push('Job' + i);
       await queue.add('Job' + i, {page: i}, {
         repeat: {
-          pattern: '* * * * Mon-Fri',
+          pattern: '0 3-6 * * Mon-Fri',
           endDate: new Date(Date.now() + (5 * 24 * 60 * 60 * 1000)),
-          tz: 'America/New_York'
         },
       });
     }
