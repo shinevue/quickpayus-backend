@@ -8,15 +8,16 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
   const userID = req.user.id;
   let user = await User.findById(userID);
 
-  if (req.files && req.files.length > 0) {
-    if (user.kyc && user.kyc.identification) {
+  console.log('----', req.files);
+  if (req.files && req.files.length > 0) {   
+    if (user.kyc && user.kyc.images) {
       // Delete previous files
       await Promise.all(
-        user.kyc.identification.map(async (file) => {
+        user.kyc.images.map(async (file) => {
           const filePath = path.join(
             __dirname,
-            "../uploads/kyc",
-            file.documentName
+            `../uploads/kyc/${user.username}`,
+            file.name
           );
           try {
             await fs.unlink(filePath);
@@ -26,12 +27,37 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
         })
       );
     }
-    req.body.identification = req.body.identification || [];
+    if (user.kyc && user.kyc.documents) {
+      // Delete previous files
+      await Promise.all(
+        user.kyc.documents.map(async (file) => {
+          const filePath = path.join(
+            __dirname,
+            `../uploads/kyc/${user.username}`,
+            file.name
+          );
+          try {
+            await fs.unlink(filePath);
+          } catch (err) {
+            // console.error(`Error deleting file ${filePath}: ${err.message}`);
+          }
+        })
+      );
+    }
 
-    req.body.identification.push(
-      ...req.files.map((file) => ({
-        documentType: req.body.documentType,
-        documentName: file.filename,
+    req.body.images = req.body.images || [];
+
+    req.body.images.push(
+      ...imageFiles.map((file) => ({
+        name: file.filename,
+      }))
+    );
+
+    req.body.documents = req.body.documents || [];
+
+    req.body.documents.push(
+      ...documentFiles.map((file) => ({
+        name: file.filename,
       }))
     );
   }

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <title>Email template</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+    />
+    <!-- CSS Reset : BEGIN -->
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
+      html,
+      body {
+        margin: 0 auto !important;
+        padding: 0 !important;
+        height: 100% !important;
+        width: 100% !important;
+        background: #f1f1f1;
+      }
+
+      /* What it does: Stops email clients resizing small text. */
+      * {
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+      }
+
+      /* What it does: Centers email on Android 4.4 */
+      div[style*="margin: 16px 0"] {
+        margin: 0 !important;
+      }
+
+      /* What it does: Stops Outlook from adding extra spacing to tables. */
+      table,
+      td {
+        mso-table-lspace: 0pt !important;
+        mso-table-rspace: 0pt !important;
+      }
+
+      /* What it does: Fixes webkit padding issue. */
+      table {
+        border-spacing: 0 !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+        margin: 0 auto !important;
+      }
+
+      /* What it does: Uses a better rendering method when resizing images in IE. */
+      img {
+        -ms-interpolation-mode: bicubic;
+      }
+
+      /* What it does: Prevents Windows 10 Mail from underlining links despite inline CSS. Styles for underlined links should be inline. */
+      a {
+        text-decoration: none;
+      }
+
+      /* What it does: A work-around for email clients meddling in triggered links. */
+      *[x-apple-data-detectors],  /* iOS */
+          .unstyle-auto-detected-links *,
+          .aBn {
+        border-bottom: 0 !important;
+        cursor: default !important;
+        color: inherit !important;
+        text-decoration: none !important;
+        font-size: inherit !important;
+        font-family: inherit !important;
+        font-weight: inherit !important;
+        line-height: inherit !important;
+      }
+
+      /* What it does: Prevents Gmail from displaying a download button on large, non-linked images. */
+      .a6S {
+        display: none !important;
+        opacity: 0.01 !important;
+      }
+
+      /* What it does: Prevents Gmail from changing the text color in conversation threads. */
+      .im {
+        color: inherit !important;
+      }
+
+      /* If the above doesn't work, add a .g-img class to any image in question. */
+      img.g-img + div {
+        display: none !important;
+      }
+
+      /* What it does: Removes right gutter in Gmail iOS app: https://github.com/TedGoas/Cerberus/issues/89  */
+      /* Create one of these media queries for each additional viewport size you'd like to fix */
+
+      /* iPhone 4, 4S, 5, 5S, 5C, and 5SE */
+      @media only screen and (min-device-width: 320px) and (max-device-width: 374px) {
+        u ~ div .email-container {
+          min-width: 320px !important;
+        }
+      }
+      /* iPhone 6, 6S, 7, 8, and X */
+      @media only screen and (min-device-width: 375px) and (max-device-width: 413px) {
+        u ~ div .email-container {
+          min-width: 375px !important;
+        }
+      }
+      /* iPhone 6+, 7+, and 8+ */
+      @media only screen and (min-device-width: 414px) {
+        u ~ div .email-container {
+          min-width: 414px !important;
+        }
+      }
+
+      /* <!-- CSS Reset : END --> */
+
+      /* <!-- Progressive Enhancements : BEGIN --> */
+
+      .bg_white {
+        background: #ffffff;
+      }
+      .bg_light {
+        background: #fafafa;
+      }
+      .bg_black {
+        background: #000000;
+      }
+      .bg_dark {
+        background: rgba(0, 0, 0, 0.8);
+      }
+      .email-section {
+        padding: 2.5em;
+      }
+      .pt-3 {
+        padding-top: 10px;
+        display: block;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Poppins", sans-serif;
+        color: #000000;
+        margin-top: 0;
+        font-weight: 400;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        line-height: 1.8;
+        color: rgba(0, 0, 0, 0.4);
+      }
+      .email-container {
+        border-top: 4px solid #f00000;
+      }
+      .logo img {
+        width: 35%;
+        display: block;
+        margin: auto;
+      }
+      .email-container a {
+        color: #f00000;
+      }
+      /*HERO*/
+      .hero {
+        position: relative;
+        z-index: 0;
+        padding-bottom: 50px;
+      }
+      .hero .text {
+        color: #1e1e1e;
+        margin-bottom: 30px;
+      }
+      .hero .text h2 {
+        color: #000000;
+        font-size: 1.7rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+        line-height: 1.4;
+      }
+      .hero .text1,
+      .hero .text2,
+      .hero .text3 {
+        padding: 0 20px;
+        color: #1e1e1e;
+        font-size: 0.9rem;
+      }
+      .hero .text1 p,
+      .hero .text2 p,
+      .hero .text3 p {
+        margin: 0px !important;
+      }
+      .hero .otp-code {
+        padding: 15px 0;
+        text-align: center;
+      }
+      .text2 {
+        margin-bottom: 20px;
+      }
+      .hero .otp-code h3 {
+        font-size: 3rem;
+        font-weight: 700;
+        color: #f00000;
+        margin-bottom: 0px;
+      }
+      /*FOOTER*/
+
+      .footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        color: #1e1e1e;
+        padding-bottom: 30px;
+      }
+      .footer img {
+        width: 30% !important;
+      }
+      .footer .steps {
+        padding: 0 40px;
+        margin-top: -20px;
+      }
+      .footer .steps ul {
+        padding-left: 0 !important;
+      }
+      .footer .steps ul li {
+        display: block;
+        list-style: none !important;
+        padding-bottom: 10px;
+      }
+      .footer .steps ul li a {
+        color: #000000;
+      }
+      .footer .social {
+        padding: 0 40px;
+      }
+      .footer .social ul {
+        list-style: none;
+        display: flex;
+        padding-left: 0 !important;
+      }
+      .footer .social ul li {
+        margin-right: 10px;
+        background: #c3c3c3;
+        height: 2.2rem;
+        width: 2.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+      .footer .social ul li i {
+        color: #000;
+        font-size: 1.2rem;
+      }
+      .social .svg1,
+      .social .svg2 {
+        display: flex;
+        justify-content: center;
+      }
+      .social .svg1 img {
+        width: 90% !important;
+      }
+      .social .svg2 img {
+        width: 60% !important;
+      }
+      .footer .last {
+        padding: 0 40px;
+      }
+      .footer .last p {
+        font-size: 0.7rem;
+        color: #1e1e1e;
+      }
+      @media screen and (max-width: 415px) {
+        .footer .img {
+          margin-left: 1rem;
+        }
+        .logo img {
+          width: 50%;
+        }
+      }
+      @media screen and (max-width: 572px) and (min-width: 416px) {
+        .footer .img {
+          margin-left: 0.4rem;
+        }
+        .logo img {
+          width: 50%;
+        }
+      }
+    </style>
+  </head>
+  <body
+    width="100%"
+    style="
+      margin: 0;
+      padding: 0 !important;
+      mso-line-height-rule: exactly;
+      background-color: #f5f5f5;
+    "
+  >
+    <center style="width: 100%; background-color: #f5f5f5">
+      <div
+        style="
+          display: none;
+          font-size: 1px;
+          max-height: 0px;
+          max-width: 0px;
+          opacity: 0;
+          overflow: hidden;
+          mso-hide: all;
+          font-family: sans-serif;
+        "
+      >
+        &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;
+      </div>
+      <div style="max-width: 600px; margin: 0 auto" class="email-container">
+        <!-- BEGIN BODY -->
+        <table
+          align="center"
+          role="presentation"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          width="100%"
+          style="margin: auto"
+        >
+          <tr>
+            <td valign="top" class="bg_white navbar">
+              <table
+                role="presentation"
+                border="0"
+                cellpadding="0"
+                cellspacing="0"
+                width="100%"
+              >
+                <tr>
+                  <td class="logo">
+                    <img src="images/logo.svg" alt="" />
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td valign="middle" class="hero bg_white">
+              <table>
+                <tr>
+                  <td>
+                    <div
+                      class="text"
+                      style="padding: 0 2.5em; text-align: center"
+                    >
+                      <h2>Feedback</h2>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="text1">
+                      <p>Dear <%= username %>,</p>
+                      <p>
+                        We value your input! Please take a moment to share your feedback on your experience with
+                        QUICKPAYUS. Your insights help us improve our services for you and others.
+                      </p>
+                    </div>
+                    <div class="text2">
+                      <p class="pt-3">
+                        Thank you for being a valued member of our community.
+                      </p>
+                    </div>
+                    <div class="text3">
+                      <p>Regards,</p>
+                      <p>QUICKPAYUS Team</p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <!-- ... (footer section remains unchanged) ... -->
+        </table>
+        <table
+          align="center"
+          role="presentation"
+          cellspacing="0"
+          cellpadding="0"
+          border="0"
+          width="100%"
+          style="margin: auto"
+        >
+          <tr>
+            <td valign="middle" class="bg_light footer">
+              <img src="images/logo1.svg" class="img" />
+              <div class="steps">
+                <ul>
+                  <li><a href="#">Support</a></li>
+                  <li><a href="#">Manage Account</a></li>
+                  <li><a href="#">Forums</a></li>
+                </ul>
+              </div>
+              <div class="social">
+                <ul>
+                  <li>
+                    <a href="#"><i class="fa fa-telegram"></i></a>
+                  </li>
+                  <li>
+                    <a href="#"><i class="fa fa-facebook"></i></a>
+                  </li>
+                  <li>
+                    <a href="#"><i class="fa fa-instagram"></i></a>
+                  </li>
+                  <li>
+                    <a href="#" class="svg1"
+                      ><img src="images/x.svg" alt=""
+                    /></a>
+                  </li>
+                  <li>
+                    <a href="#" class="svg2"
+                      ><img src="images/threds.svg" alt=""
+                    /></a>
+                  </li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </center>
+  </body>
+</html>

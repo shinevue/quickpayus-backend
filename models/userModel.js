@@ -7,16 +7,16 @@ const HELPER = require("../helpers");
 
 const kycSchema = new mongoose.Schema(
   {
-    identification: [
-      {
-        documentType: {
-          type: String,
-          enum: Object.values(DOCUMENT_TYPES),
-          required: true,
-        },
-        documentName: { type: String, required: true },
-      },
-    ],
+    // identification: [
+    //   {
+    //     documentType: {
+    //       type: String,
+    //       enum: Object.values(DOCUMENT_TYPES),
+    //       required: true,
+    //     },
+    //     documentName: { type: String, required: true },
+    //   },
+    // ],
     dateOfBirth: { type: Date },
     gender: {
       type: String,
@@ -53,6 +53,21 @@ const kycSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    documentType: {
+      type: String,
+      enum: Object.values(DOCUMENT_TYPES),
+      required: true,
+    },
+    images: [
+      {
+        name: { type: String, required: true },
+      }
+    ],
+    documents: [
+      {
+        name: { type: String, required: true },
+      }
+    ]
   },
   { timestamps: true }
 );

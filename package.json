@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "pm2 start ecosystem.config.js",
     "dev": "pm2 start ecosystem.config.js --env development",
-    "cronjob": "node cronjobs/logDaemon.js"
+    "cronjob": "node cronjobs/logDaemon.js",
+    "mock-mail": "node test/mock-mail.js"
   },
   "author": "Quickpayus Team",
   "license": "ISC",

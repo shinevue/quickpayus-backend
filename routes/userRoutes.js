@@ -13,6 +13,7 @@ router.route("/:uuid").get(isAuthenticatedUser, getUser);
 router.put("/update/profile", isAuthenticatedUser, updateProfile);
 router
   .route("/update/kyc")
-  .post(isAuthenticatedUser, imageUpload.array("images", 5), kycUpsert);
+  .post(isAuthenticatedUser, 
+    imageUpload.fields([{name: "images", maxCount: 3}, {name: "documents", maxCount: 3}]), kycUpsert);
 
 module.exports = router;
