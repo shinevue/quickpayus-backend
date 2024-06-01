@@ -31,7 +31,7 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
   const total = await this.countDocuments({});
 
   if (!total) {
-    return next(new ErrorHandler("No announcements found"));
+    return next(new ErrorHandler("No Announcements found"));
   }
 
   const data = await this.paginate({}, { page, pageSize });
@@ -79,7 +79,6 @@ exports.removeAll = catchAsyncErrors(async (req, res, next) => {
       success: true,
     });
   }
-
   return res.json({
     success: false,
   });
@@ -105,7 +104,6 @@ exports.updateMany = async (userId, payload) => {
 exports.deleteMany = async (query) => {
   return await Announcements.deleteMany(query);
 };
-
 exports.find = async (query) => {
   return await Announcements.find(query);
 };

@@ -21,15 +21,14 @@ exports.findByInvestment = async (investment) => {
     {
       "data.investment": { $lte: investment },
     },
+
     { level: 1, data: 1, _id: 0 }
   )
     .sort({ "data.investment": -1 })
     .limit(1);
 
   if (!program) return null;
-
   const { level, data } = program;
-
   const selectedData = data
     .reverse()
     .find((item) => item?.investment <= investment);
@@ -42,6 +41,7 @@ exports.findByLevels = async (query) => {
     {
       level: String(query?.level),
     },
+
     { level: 1, data: 1, _id: 0 }
   ).limit(1);
 

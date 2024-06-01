@@ -8,8 +8,9 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
   const userID = req.user.id;
   let user = await User.findById(userID);
 
-  console.log('----', req.files);
-  if (req.files && req.files.length > 0) {   
+  console.log("----", req.files);
+
+  if (req.files && req.files.length > 0) {
     if (user.kyc && user.kyc.images) {
       // Delete previous files
       await Promise.all(
@@ -38,9 +39,7 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
           );
           try {
             await fs.unlink(filePath);
-          } catch (err) {
-            // console.error(`Error deleting file ${filePath}: ${err.message}`);
-          }
+          } catch (err) {}
         })
       );
     }
@@ -134,7 +133,6 @@ exports.balanceByType = async (query) => {
       balance = user[key] ?? 0;
       break;
   }
-
   return { key, balance };
 };
 
