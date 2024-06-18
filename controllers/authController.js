@@ -1,9 +1,9 @@
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const verifyCaptcha = require("../utils/recaptchaVerifier");
-const  User  = require("../models/userModel");
+const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
 const sendToken = require("../utils/jwtToken");
-const sendEmail = require("../utils/sendEmail");
+const { sendEmail } = require("../utils/sendEmail");
 const crypto = require("crypto");
 
 exports.checkAuth = catchAsyncErrors(async (req, res, next) => {
@@ -64,10 +64,10 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.signout = catchAsyncErrors(async (req, res, next) => {
-  res.cookie("token", null, {
-    expires: new Date(Date.now()),
-    httpOnly: true,
-  });
+  // res.cookie("token", null, {
+  //   expires: new Date(Date.now()),
+  //   httpOnly: true,
+  // });
   res.json({
     success: true,
     message: "Signed Out Successfully",
@@ -75,10 +75,10 @@ exports.signout = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
-  const captchaResult = await verifyCaptcha(req.body.recaptchaToken);
-  if (!captchaResult) {
-    return next(new ErrorHandler("Something went wrong Please try again", 401));
-  }
+  // const captchaResult = await verifyCaptcha(req.body.recaptchaToken);
+  // if (!captchaResult) {
+  //   return next(new ErrorHandler("Something went wrong Please try again", 401));
+  // }
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return next(new ErrorHandler("user not found", 404));
@@ -107,10 +107,10 @@ exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
-  const captchaResult = await verifyCaptcha(req.body.recaptchaToken);
-  if (!captchaResult) {
-    return next(new ErrorHandler("Something went wrong Please try again", 401));
-  }
+  // const captchaResult = await verifyCaptcha(req.body.recaptchaToken);
+  // if (!captchaResult) {
+  //   return next(new ErrorHandler("Something went wrong Please try again", 401));
+  // }
   const { password, confirmPassword } = req.body;
   const resetPasswordToken = crypto
     .createHash("sha256")

@@ -61,13 +61,13 @@ const kycSchema = new mongoose.Schema(
     images: [
       {
         name: { type: String, required: true },
-      }
+      },
     ],
     documents: [
       {
         name: { type: String, required: true },
-      }
-    ]
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -95,7 +95,7 @@ const userSchema = new mongoose.Schema(
     },
     countryCode: {
       type: String,
-      required: [true, "Country Code is required."],
+      // required: [true, "Country Code is required."],
     },
     phoneNumber: {
       type: String,
@@ -203,7 +203,6 @@ userSchema.index({ email: 1 });
 userSchema.index({ uuid: 1 });
 userSchema.index({ username: 1 });
 
-
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model("User", userSchema);
 
 module.exports = User;
