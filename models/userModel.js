@@ -184,8 +184,10 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 userSchema.methods.getJWTToken = function () {
+  console.log(this._id, "------------------------------------------------------------", process.env.JWT_EXPIRE)
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE,
+    // expiresIn: '1h',
   });
 };
 userSchema.methods.setResetPasswordToken = function () {

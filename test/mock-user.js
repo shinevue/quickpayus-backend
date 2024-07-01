@@ -54,5 +54,5 @@ async function updateUserReferrals() {
     }
 }
 
-// insertUsers(5000);
+insertUsers(10);
 updateUserReferrals();

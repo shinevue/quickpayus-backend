@@ -6,10 +6,12 @@ const jwt = require("jsonwebtoken");
 exports.isAuthenticatedUser = catchAsyncErrors(async (req, res, next) => {
   const { token } = req.headers;
   if (!token) {
-    return next(new ErrorHandler("Please login to access this resource.", 401));
+    return next(new ErrorHandler("Please login to access this resource. Token not found", 401));
   }
 
+  console.log(__filename, token)
   const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+
   const userFound = await User.findById(decodedData.id);
   if (!userFound) {
     return next(new ErrorHandler("Please login to access this resource.", 401));
