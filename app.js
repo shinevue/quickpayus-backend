@@ -61,7 +61,7 @@ const announcementRoutes = require("./routes/announcementRoutes");
 const rankRoutes = require("./routes/rankRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const rewardRoutes = require("./routes/rewardRoutes");
-const {checkDeletedUser} = require("./controllers/authController");
+// const {checkDeletedUser} = require("./controllers/authController");    // import check deleted user inspect part
 
 const BASE_ROUTE = "/api/v1";
 
@@ -83,8 +83,9 @@ app.use(`${BASE_ROUTE}/rank`, rankRoutes);
 app.use(`${BASE_ROUTE}/otp`, otpRoutes);
 app.use(`${BASE_ROUTE}/reward`, rewardRoutes);
 
-// exec deleted Check User.
-checkDeletedUser();
+
+//  Check deleted status and remove finally part.
+// checkDeletedUser();
 
 app.set('view engine', 'ejs');
 app.set('views', './utils/emailTemplates');

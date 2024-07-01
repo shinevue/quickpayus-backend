@@ -53,7 +53,7 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
   const user = await User.findOne({
     $or: [{ email: email }, { username: email }],
   }).select("+password");
-  if (!user || user.isDeleted == 2) {
+  if (!user) {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
   const isPasswordMatched = await user.comparePassword(password);
@@ -95,7 +95,6 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
       },
       { new: true }
     );
-    // const result = await User.findByIdAndDelete(userId);
     res.json({
       success: true,
     });
@@ -308,8 +307,7 @@ exports.deactivateAccount = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.checkDeletedUser = async () => {
-  const cutoffTime = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days ago in milliseconds
-  console.log(cutoffTime);
+  const cutoffTime = Date.now() - 14 * 24 * 60 * 60 * 1000; // 7 days ago in milliseconds
   const resultUsers = await User.find({
     isDeleted: 1,
     isDeletedAt: { $lt: new Date(cutoffTime).toISOString() },
