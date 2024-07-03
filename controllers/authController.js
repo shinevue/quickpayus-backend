@@ -56,8 +56,8 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
   if (!user) {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
-  const isPasswordMateched = await user.comparePassword(password);
-  if (!isPasswordMateched) {
+  const isPasswordMatched = await user.comparePassword(password);
+  if (!isPasswordMatched) {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
   sendToken(user, 200, res);
