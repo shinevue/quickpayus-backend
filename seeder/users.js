@@ -12,38 +12,42 @@ const levels = {
   5: "E",
 };
 
-const generateDummyUser = () => ({
-  firstName: faker.person.firstName(),
-  lastName: faker.person.lastName(),
-  username: faker.internet.userName(),
-  email: faker.internet.email(),
-  countryCode: faker.location.countryCode(),
-  mobileNo: faker.number.int({ min: 100000000, max: 999999999 }),
-  createdAt: faker.date.past(),
+const generateDummyUser = () => {
+  const level = levels[faker.number.int({ min: 1, max: 5 })];
+  return {
+    firstName: faker.person.firstName(),
+    lastName: faker.person.lastName(),
+    username: faker.internet.userName(),
+    email: faker.internet.email(),
+    countryCode: faker.location.countryCode(),
+    phoneNumber: faker.number.int({ min: 100000000, max: 999999999 }),
+    createdAt: faker.date.past(),
 
-  depositBalance: faker.number.int({ min: 50, max: 500 }),
+    depositBalance: faker.number.int({ min: 50, max: 500 }),
 
-  rewardBalance: faker.number.int({ min: 50, max: 100 }),
-  creditBalance: 0,
-  profitBalance: 0,
-  password: "Pakistan@123",
-  investmentLevel: levels[faker.number.int({ min: 1, max: 5 })],
-  termsAndConditions: true,
-  kyc: {
-    identification: [
-      //   {
-      //     documentType: faker.lorem.word(), // Placeholder, replace with appropriate type
-      //     documentName: `${faker.person.firstName()} ${faker.person.lastName()} ${faker.lorem.word()}`,
-      //   },
-    ],
-    status: "APPROVED",
-  },
-});
+    rewardBalance: faker.number.int({ min: 50, max: 100 }),
+    creditBalance: 0,
+    profitBalance: 0,
+    password: "111111",
+    investmentLevel: level,
+    investmentSubLevel: level + faker.number.int({ min: 1, max: 5 }),
+    termsAndConditions: true,
+    // kyc: {
+    // identification: [
+    //   {
+    //     documentType: faker.lorem.word(), // Placeholder, replace with appropriate type
+    //     documentName: `${faker.person.firstName()} ${faker.person.lastName()} ${faker.lorem.word()}`,
+    //   },
+    // ],
+    // status: "APPROVED",
+    // },`
+  };
+};
 
 async function seedDummyUsers() {
   console.time("TOTAL_TIME");
   try {
-    for (let i = 0; i < 10000; i++) {
+    for (let i = 0; i < 1000; i++) {
       //console.log(`Inserting row - ${i}`);
       const user = new User(generateDummyUser());
       await user.save();

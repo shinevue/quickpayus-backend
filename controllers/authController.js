@@ -150,7 +150,7 @@ exports.changePassword = catchAsyncErrors(async (req, res, next) => {
   if (!user) {
     return next(
       new ErrorHandler(
-        "User not found for not logged In. Please login and try again.",
+        "User not found or not logged In. Please login and try again.",
         400
       )
     );

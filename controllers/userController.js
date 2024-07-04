@@ -8,8 +8,6 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
   const userID = req.user.id;
   let user = await User.findById(userID);
 
-  console.log("----", req.files);
-
   if (req.files && req.files.length > 0) {
     if (user.kyc && user.kyc.images) {
       // Delete previous files
@@ -70,11 +68,39 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
 });
 exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   const userID = req.user.id;
-  const user = await User.findByIdAndUpdate(userID, req.body, { new: true });
+  const { password, ...data } = req.body;
+  const user = await User.findById(userID).select("+password");
+  if (!user) {
+    return next(
+      new ErrorHandler(
+        "User not found or not logged In. Please login and try again.",
+        400
+      )
+    );
+  }
+
+  const isMatched = await user.comparePassword(password);
+  if (!isMatched) {
+    return next(
+      new ErrorHandler("Please enter correct password and try again.", 400)
+    );
+  }
+
+  Object.keys(data).forEach(async (key) => {
+    const isSame = await user.compareField({ [key]: data[key] });
+    if (isSame) {
+      return next(
+        new ErrorHandler(`Please enter a new ${key} and try again.`, 400)
+      );
+    }
+    user[key] = data[key];
+  });
+  await user.save();
+
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    data: user,
+    user,
   });
 });
 

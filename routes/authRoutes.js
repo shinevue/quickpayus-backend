@@ -7,7 +7,6 @@ const {
   resetPassword,
   checkAuth,
   checkDataExist,
-  updateProfile,
   usernameToName,
   changePassword,
 } = require("../controllers/authController");
