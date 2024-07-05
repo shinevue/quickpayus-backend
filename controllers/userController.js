@@ -176,3 +176,16 @@ exports.getUser = catchAsyncErrors(async (req, res, next) => {
     data,
   });
 });
+
+
+exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
+  const keyword = req.params.key;
+  const users = await User.find({
+    $or: [
+      { email: { $regex: keyword, $options: 'i' } },
+      { username: { $regex: keyword, $options: 'i' } }
+    ]
+  });
+
+  res.json({users});
+});

@@ -20,12 +20,11 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   //   return next(new ErrorHandler("Something went wrong Please try again", 401));
   // }
 
-  const { referralCode } = req?.body || {};
-
+  const { referral } = req?.body || {};
   let referralId = null;
 
-  if (referralCode) {
-    const parentUser = await User.findOne({ username: referralCode });
+  if (referral) {
+    const parentUser = await User.findOne({ username: referral });
 
     if (parentUser) referralId = parentUser?._id || parentUser?.id;
   }
@@ -35,8 +34,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   user.referralId = referralId;
 
   const saved = await user.save();
-
-  res.json({ success: true, message: "User Created", data: saved });
+  res.json({ success: true, message: "User Created", data: saved});
 });
 
 exports.signin = catchAsyncErrors(async (req, res, next) => {

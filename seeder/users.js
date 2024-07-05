@@ -47,7 +47,7 @@ const generateDummyUser = () => {
 async function seedDummyUsers() {
   console.time("TOTAL_TIME");
   try {
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 10; i++) {
       //console.log(`Inserting row - ${i}`);
       const user = new User(generateDummyUser());
       await user.save();

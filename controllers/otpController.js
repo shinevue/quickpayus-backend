@@ -63,3 +63,21 @@ exports.verify = catchAsyncErrors(async (req, res, next) => {
     message: "The otp has been successfully verified.",
   });
 });
+
+
+exports.confirm = catchAsyncErrors(async (req, res, next) => {
+  const {data, id} = req.query;
+  const user = await User.find({email: data});
+  const otpModel = new OTP({ userId: user.id });
+  await otpModel.save();
+  const otp = otpModel?.code?.toString();
+  await sendEmail(
+    {
+      email: data,
+      ...emailTemplates.otpEmailConfirm,
+    },
+    otp
+  );
+  res.json({ success: true, otp, message: "OTP sent successfully on email" });
+  res.json({success: true})
+})
