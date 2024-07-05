@@ -9,6 +9,7 @@ const {
   checkDataExist,
   usernameToName,
   changePassword,
+  deactivateAccount,
 } = require("../controllers/authController");
 const { isAuthenticatedUser, authorizeRole } = require("../middlewares/auth");
 const router = express.Router();
@@ -21,6 +22,7 @@ router
   .get("/signout", signout)
   .post("/password/forgot", forgotPassword)
   .put("/password/reset/:token", resetPassword)
-  .patch("/password/change", isAuthenticatedUser, changePassword);
+  .patch("/password/change", isAuthenticatedUser, changePassword)
+  .patch("/user/deactivate", isAuthenticatedUser, deactivateAccount);
 
 module.exports = router;

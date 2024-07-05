@@ -245,3 +245,36 @@ exports.usernameToName = catchAsyncErrors(async (req, res, next) => {
     },
   });
 });
+
+exports.deactivateAccount = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req?.user || {};
+  const { password } = req.body || {};
+
+  const user = await User.findById(id).select("+password");
+
+  if (!user) {
+    return next(
+      new ErrorHandler(
+        "User not found or not logged In. Please login and try again.",
+        400
+      )
+    );
+  }
+
+  const isMatched = await user.comparePassword(password);
+
+  if (!isMatched) {
+    return next(
+      new ErrorHandler("Please enter correct old password and try again.", 400)
+    );
+  }
+
+  user.isActive = false;
+  await user.save();
+
+  res.json({
+    success: true,
+    message: "Account deactivated Successfully",
+    data: user,
+  });
+});
