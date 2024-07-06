@@ -44,7 +44,7 @@ const generateDummyUser = () => {
   };
 };
 
-async function seedDummyUsers() {
+exports.seedDummyUsers = async () => {
   console.time("TOTAL_TIME");
   try {
     for (let i = 0; i < 10; i++) {
@@ -60,4 +60,4 @@ async function seedDummyUsers() {
   console.timeEnd("TOTAL_TIME");
 }
 
-seedDummyUsers();
+// seedDummyUsers();
