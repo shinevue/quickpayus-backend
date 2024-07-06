@@ -2,23 +2,23 @@ const nodeMailer = require("nodemailer");
 const ejs = require("ejs");
 const fs = require("fs").promises;
 
-const sendEmail = async (options) => {
+const sendEmail = async (options, otp) => {
   try {
     // Create a nodemailer transporter
     const transporter = nodeMailer.createTransport({
-      host: "smtp.ethereal.email",
+      host: "smtp.outlook.com",
       port: 587,
-
+      secure: false,
       auth: {
-        user: "janick.baumbach82@ethereal.email",
-        pass: "dB459PeQJfKGXzu2Pm",
+        user: "timons128@outlook.com",
+        pass: "Timon2000220",
       },
     });
-
     const mailOptions = {
-      from: "m.001108@outlook.com",
+      from: "timons128@outlook.com",
       to: options.email,
       subject: options.subject,
+      text: `Your opt code is ${otp}`,
     };
 
     if (options.templatePath && options.templateData) {

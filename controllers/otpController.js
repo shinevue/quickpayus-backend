@@ -12,13 +12,15 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   await otpModel.save();
 
   const otp = otpModel?.code?.toString();
+  await sendEmail(
+    {
+      email: email,
+      ...emailTemplates.otpEmailConfirm,
+    },
+    otp
+  );
 
-  await sendEmail({
-    email: email,
-    ...emailTemplates.otpEmailConfirm
-  });
-
-  res.json({ success: true, message: "OTP sent successfully on email" });
+  res.json({ success: true, otp, message: "OTP sent successfully on email" });
 });
 
 exports.verify = catchAsyncErrors(async (req, res, next) => {

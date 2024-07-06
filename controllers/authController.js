@@ -75,16 +75,21 @@ exports.signout = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
-  const { pwd, userId } = req.body;
+  const { pwd, userId, check } = req.body;
   const user = await User.findById(userId).select("+password");
   const isPasswordMatched = await user.comparePassword(pwd);
-  if (!isPasswordMatched) {
-    return next(new ErrorHandler("Wrong Password", 401));
+  if (check) {
+    if (!isPasswordMatched) {
+      return next(new ErrorHandler("Wrong Password", 401));
+    } else {
+      return res.json({ success: true });
+    }
+  } else {
+    const result = await User.findByIdAndDelete(userId);
+    res.json({
+      success: true,
+    });
   }
-  const result = await User.findByIdAndDelete(userId);
-  res.json({
-    success: true,
-  });
 });
 
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
