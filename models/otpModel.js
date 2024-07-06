@@ -25,20 +25,21 @@ otpSchema.pre("save", async function (next) {
     const min = Math.pow(10, 5);
     const max = Math.pow(10, 6) - 1;
     
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
+    const characters =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let result = "";
 
     for (let i = 0; i < 10; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
-        result += characters.charAt(randomIndex);
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      result += characters.charAt(randomIndex);
     }
 
     bcrypt.hash(result, bcrypt.genSaltSync(10), (err, hash) => {
-      this.code = hash.toString().replace(/[^a-zA-Z0-9]/g, '').slice(0, 6).toUpperCase();
-    })
-
+      result = hash.toString().replace(/[^a-zA-Z0-9]/g, "");
+    });
+    this.code = result.slice(0, 6).toUpperCase();
     this.createdAt = new Date().toISOString(); // Set the creation time for the new OTP
-    
+
     // Continue with the save operation
     next();
   } catch (error) {
