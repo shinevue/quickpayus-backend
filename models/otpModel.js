@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-var randomNumber = require("random-number-csprng");
+const crypto = require('crypto');
 
 const otpSchema = new mongoose.Schema({
   userId: {
@@ -24,7 +24,9 @@ otpSchema.pre("save", async function (next) {
     // Generate a new OTP code
     const min = Math.pow(10, 5);
     const max = Math.pow(10, 6) - 1;
-    this.code = await randomNumber(min, max) // 6 digits
+    // this.code = await randomNumber(min, max) // 6 digits
+    const randomBytes = crypto.randomBytes(3);
+    this.code = parseInt(randomBytes.toString('hex'), 16).toString().slice(0, 6);
     this.createdAt = new Date().toISOString(); // Set the creation time for the new OTP
 
     // Continue with the save operation

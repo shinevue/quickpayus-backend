@@ -12,6 +12,7 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   await otpModel.save();
 
   const otp = otpModel?.code?.toString();
+  console.log("This is otp part", otp);
   await sendEmail(
     {
       email: email,
