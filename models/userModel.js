@@ -152,6 +152,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, default: "user" },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
+    isDeleted: {type: Boolean, default: false},
   },
   { timestamps: true }
 );
