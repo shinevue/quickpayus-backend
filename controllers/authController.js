@@ -56,8 +56,8 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
   if (!user) {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
-  const isPasswordMateched = await user.comparePassword(password);
-  if (!isPasswordMateched) {
+  const isPasswordMatched = await user.comparePassword(password);
+  if (!isPasswordMatched) {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
   sendToken(user, 200, res);
@@ -150,7 +150,7 @@ exports.changePassword = catchAsyncErrors(async (req, res, next) => {
   if (!user) {
     return next(
       new ErrorHandler(
-        "User not found for not logged In. Please login and try again.",
+        "User not found or not logged In. Please login and try again.",
         400
       )
     );
@@ -243,5 +243,38 @@ exports.usernameToName = catchAsyncErrors(async (req, res, next) => {
       firstName: user?.firstName,
       lastName: user?.lastName,
     },
+  });
+});
+
+exports.deactivateAccount = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req?.user || {};
+  const { password } = req.body || {};
+
+  const user = await User.findById(id).select("+password");
+
+  if (!user) {
+    return next(
+      new ErrorHandler(
+        "User not found or not logged In. Please login and try again.",
+        400
+      )
+    );
+  }
+
+  const isMatched = await user.comparePassword(password);
+
+  if (!isMatched) {
+    return next(
+      new ErrorHandler("Please enter correct old password and try again.", 400)
+    );
+  }
+
+  user.isActive = false;
+  await user.save();
+
+  res.json({
+    success: true,
+    message: "Account deactivated Successfully",
+    data: user,
   });
 });

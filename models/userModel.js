@@ -117,12 +117,12 @@ const userSchema = new mongoose.Schema(
     investmentLevel: {
       type: String,
       required: false,
-      default: null,
+      default: "A",
     },
     investmentSubLevel: {
       type: String,
       required: false,
-      default: null,
+      default: "A1",
     },
     kyc: { type: kycSchema },
     profitBalance: {
@@ -182,6 +182,10 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
+};
+userSchema.methods.compareField = async function (fieldData) {
+  const [key, value] = Object.entries(fieldData)[0];
+  return this[key] === value;
 };
 userSchema.methods.getJWTToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {

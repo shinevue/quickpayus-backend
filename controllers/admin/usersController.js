@@ -35,7 +35,6 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
       query.kyc = { $exists: true };
     }
   }
-  console.log(query);
   if (type === "Active" || type === "inActive") {
     query.isActive = type === "Active";
   }

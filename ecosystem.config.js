@@ -20,7 +20,10 @@ module.exports = {
         watch: true, // Enable watcher mode
         // Optional: Environment variables for development
         NODE_ENV: "development",
-        PORT: 3001
+        // PORT: 3001,
+        // JWT_SECRET: "secretOrPrivateKey",
+        // JWT_EXPIRE: "1hhhh",
+        // COOKIE_EXPIRE: 1
       },
     },
   ],

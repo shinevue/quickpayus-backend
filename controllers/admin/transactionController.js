@@ -265,6 +265,5 @@ exports.totalSumByKey = async (key) => {
       },
     },
   ]);
-  console.log(response);
   return response?.length ? response[0]?.sumOfKey : 0;
 };
