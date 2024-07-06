@@ -74,6 +74,19 @@ exports.signout = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
+  const { pwd, userId } = req.body;
+  const user = await User.findById(userId).select("+password");
+  const isPasswordMatched = await user.comparePassword(pwd);
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Wrong Password", 401));
+  }
+  const result = await User.findByIdAndDelete(userId);
+  res.json({
+    success: true,
+  });
+});
+
 exports.forgotPassword = catchAsyncErrors(async (req, res, next) => {
   // const captchaResult = await verifyCaptcha(req.body.recaptchaToken);
   // if (!captchaResult) {
