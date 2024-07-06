@@ -154,6 +154,7 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpire: Date,
     isDeleted: { type: Number, default: 0 },
     isDeletedAt: { type: Date },
+    avatarBg: {type: String}
   },
   { timestamps: true }
 );
