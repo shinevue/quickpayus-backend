@@ -28,8 +28,12 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 
     if (parentUser) referralId = parentUser?._id || parentUser?.id;
   }
+  
+  const primaryColorsList = ["#007AFF", "#34C759", "#FF3B30", "#FFCC00", "#FF9500", "#00C7BE", "#FF2D55", "#AF52DE", "#5856D6"]
+  const secondaryColorsList = ["#D5E4F4", "#E7F8EB", "#FFE7E6", "#FFF9E0", "#FFF2E0", "#E0F8F7", "#FFE6EB", "#F5EAFB", "#EBEBFA"]
+  const randomIndex = Math.floor(Math.random() * primaryColorsList.length);
 
-  const user = new User(req.body);
+  const user = new User({...req.body, avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)`});
 
   user.referralId = referralId;
 
