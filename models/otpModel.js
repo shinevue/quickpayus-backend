@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+const crypto = require("crypto");
 
 const otpSchema = new mongoose.Schema({
   userId: {
@@ -24,20 +24,9 @@ otpSchema.pre("save", async function (next) {
     // Generate a new OTP code
     const min = Math.pow(10, 5);
     const max = Math.pow(10, 6) - 1;
-    
-    const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let result = "";
-
-    for (let i = 0; i < 10; i++) {
-      const randomIndex = Math.floor(Math.random() * characters.length);
-      result += characters.charAt(randomIndex);
-    }
-
-    bcrypt.hash(result, bcrypt.genSaltSync(10), (err, hash) => {
-      result = hash.toString().replace(/[^a-zA-Z0-9]/g, "");
-    });
-    this.code = result.slice(0, 6).toUpperCase();
+    const randomBytes = crypto.randomBytes(2);
+    const randomNumber = parseInt(randomBytes.toString('hex'), 16);
+    this.code = randomNumber.toString().padStart(6, '0');
     this.createdAt = new Date().toISOString(); // Set the creation time for the new OTP
 
     // Continue with the save operation

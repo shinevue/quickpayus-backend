@@ -40,6 +40,45 @@ const sendEmail = async (options, otp) => {
   }
 };
 
+// send warning mail part
+const sendWarningEmail = async (options) => {
+  try {
+    // Create a nodemailer transporter
+    const transporter = nodeMailer.createTransport({
+      host: "smtp.outlook.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: "timons128@outlook.com",
+        pass: "Timon2000220",
+      },
+    });
+    const mailOptions = {
+      from: "timons128@outlook.com",
+      to: options.email,
+      subject: options.subject,
+      text: "If you login in 14 days again,  your account will be re alive. But not, it will be deleted forever",
+    };
+
+    if (options.templatePath && options.templateData) {
+      const template = await fs.readFile(options.templatePath, "utf-8");
+
+      const html = ejs.render(template, options.templateData);
+
+      mailOptions.html = html;
+    }
+
+    if (options.message) {
+      mailOptions.text = options.message;
+    }
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+};
+
 const emailTemplates = {
   otpEmailConfirm: {
     templatePath: "./utils/emailTemplates/otpEmailConfirm.ejs",
@@ -129,3 +168,4 @@ const emailTemplates = {
 
 exports.emailTemplates = emailTemplates;
 exports.sendEmail = sendEmail;
+exports.sendWarningEmail = sendWarningEmail;

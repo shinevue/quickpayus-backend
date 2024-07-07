@@ -2,17 +2,18 @@ const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const OTP = require("../models/otpModel");
 const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
-const { sendEmail, emailTemplates } = require("../utils/sendEmail");
+const {
+  sendEmail,
+  sendWarningEmail,
+  emailTemplates,
+} = require("../utils/sendEmail");
 
 exports.create = catchAsyncErrors(async (req, res, next) => {
   const { email, id } = req.user || {};
 
   const otpModel = new OTP({ userId: id });
-
   await otpModel.save();
-
   const otp = otpModel?.code?.toString();
-  console.log("This is otp part", otp);
   await sendEmail(
     {
       email: email,
@@ -20,7 +21,21 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
     },
     otp
   );
+  res.json({ success: true, otp, message: "OTP sent successfully on email" });
+});
 
+exports.send = catchAsyncErrors(async (req, res, next) => {
+  const { email, id } = req.user || {};
+
+  const otpModel = new OTP({ userId: id });
+  await otpModel.save();
+  const otp = otpModel?.code?.toString();
+
+  console.log("otp controller ____++++ warning message");
+  await sendWarningEmail({
+    email: email,
+    ...emailTemplates.otpEmailConfirm,
+  });
   res.json({ success: true, otp, message: "OTP sent successfully on email" });
 });
 
