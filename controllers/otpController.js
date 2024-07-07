@@ -36,7 +36,7 @@ exports.send = catchAsyncErrors(async (req, res, next) => {
     email: email,
     ...emailTemplates.otpEmailConfirm,
   });
-  res.json({ success: true, otp, message: "OTP sent successfully on email" });
+  res.json({ success: true, message: "Confirm sent successfully on email" });
 });
 
 exports.verify = catchAsyncErrors(async (req, res, next) => {

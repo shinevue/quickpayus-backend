@@ -54,11 +54,14 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
     $or: [{ email: email }, { username: email }],
   }).select("+password");
   if (!user || user.isDeleted == 2) {
+    return next(new ErrorHandler("Invalid Credientials", 401));
   }
   const isPasswordMatched = await user.comparePassword(password);
   if (!isPasswordMatched) {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
+  user.isDeleted = 0;
+  await user.save();
   sendToken(user, 200, res);
 });
 
@@ -84,8 +87,15 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
       return res.json({ success: true });
     }
   } else {
-    await User.findByIdAndUpdate(userId, { isDeleted: 1, isDeletedAt: Date.now() }, { new: true });
-    const result = await User.findByIdAndDelete(userId);
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        isDeleted: 1,
+        isDeletedAt: new Date(),
+      },
+      { new: true }
+    );
+    // const result = await User.findByIdAndDelete(userId);
     res.json({
       success: true,
     });
@@ -297,6 +307,12 @@ exports.deactivateAccount = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.checkDeletedUsers = catchAsyncErrors(async () => {
-
-})
+exports.checkDeletedUser = async () => {
+  const cutoffTime = Date.now() - 7 * 24 * 60 * 60 * 1000; // 7 days ago in milliseconds
+  console.log(cutoffTime);
+  const resultUsers = await User.find({
+    isDeleted: 1,
+    isDeletedAt: { $lt: new Date(cutoffTime).toISOString() },
+  });
+  await User.deleteMany({ _id: { $in: resultUsers.map((user) => user._id) } });
+};

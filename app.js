@@ -61,6 +61,7 @@ const announcementRoutes = require("./routes/announcementRoutes");
 const rankRoutes = require("./routes/rankRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const rewardRoutes = require("./routes/rewardRoutes");
+const {checkDeletedUser} = require("./controllers/authController");
 
 const BASE_ROUTE = "/api/v1";
 
@@ -82,6 +83,8 @@ app.use(`${BASE_ROUTE}/rank`, rankRoutes);
 app.use(`${BASE_ROUTE}/otp`, otpRoutes);
 app.use(`${BASE_ROUTE}/reward`, rewardRoutes);
 
+// exec deleted Check User.
+checkDeletedUser();
 
 app.set('view engine', 'ejs');
 app.set('views', './utils/emailTemplates');

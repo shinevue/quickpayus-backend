@@ -171,6 +171,7 @@ userSchema.set("toJSON", {
 });
 
 userSchema.pre("save", async function (next) {
+  this.isDeletedAt = new Date();
   if (!this.isModified("password")) return next();
   try {
     const salt = await bcrypt.genSalt(10);
