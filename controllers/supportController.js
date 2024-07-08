@@ -16,6 +16,6 @@ exports.createFeedback = catchAsyncErrors(async (req, res, next) => {
         const result = newFeedBack.save();
         res.json({result, message: "success to create feedback"});
     } catch (error) {
-        console.log(error);
+        console.log("Error is",error);
     }
 });
