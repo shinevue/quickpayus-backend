@@ -13,48 +13,22 @@ const depositCtlr = require("./transactionController");
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 
 exports.counts = catchAsyncErrors(async (req, res, next) => {
-  const userId = new ObjectId(req.user.id) || null;
-
-  if (!userId) {
-    return res.json(defaultResponse);
-  }
+  const user = req.user;
 
   const defaultResponse = {
-    accountBalance: 0,
-    profitBalance: 0,
-    depositBalance: 0,
-    equityBalance: 0,
-    creditBalance: 0,
-    rankRewardBalance: 0,
+    accountBalance: user.depositBalance + user.profitBalance,
+    profitBalance: user.profitBalance,
+    depositBalance: user.depositBalance,
+    equityBalance: user.referralCreditBalance + user.depositBalance,
+    creditBalance: user.referralCreditBalance,
+    rankRewardBalance: user.rankRewardBalance,
   };
-
-  defaultResponse.depositBalance = await depositCtlr.userDepositlBalanceByQuery(
-    userId
-  );
-
-  defaultResponse.profitBalance = await depositCtlr.userProfitBalanceByQuery(
-    userId
-  );
-
-  defaultResponse.creditBalance = await depositCtlr.userCreditBalanceByQuery(
-    userId
-  );
-
-  defaultResponse.equityBalance = await depositCtlr.userEquityBalanceByQuery(
-    userId
-  );
-
-  defaultResponse.accountBalance = await depositCtlr.userAccountBalanceByQuery(
-    userId
-  );
-  defaultResponse.rankRewardBalance =
-    await depositCtlr.userRewardBalanceByQuery(userId);
 
   res.json(defaultResponse);
 });
 
 exports.getBalanceInformation = catchAsyncErrors(async (req, res, next) => {
-  const { id: userid } = req.user;
+  const userId = new ObjectId(req.user.id) || null;
   const { balanceframe, timeframe } = req.params;
 
   const balanceInformation = [];
@@ -76,7 +50,7 @@ exports.getBalanceInformation = catchAsyncErrors(async (req, res, next) => {
 
   for (let i = 0; i < dateQueries.length; i++) {
     balanceInformation.push(
-      await userBalanceFunction(userid, {
+      await userBalanceFunction(userId, {
         createdAt: dateQueries[i],
       })
     );
