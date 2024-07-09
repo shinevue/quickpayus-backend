@@ -22,12 +22,12 @@ const generateDummyUser = () => {
     countryCode: faker.location.countryCode(),
     phoneNumber: faker.number.int({ min: 100000000, max: 999999999 }),
     createdAt: faker.date.past(),
-
-    depositBalance: faker.number.int({ min: 50, max: 500 }),
-
+    // depositBalance: faker.number.int({ min: 50, max: 500 }),
+    depositBalance: 24000,
     rewardBalance: faker.number.int({ min: 50, max: 100 }),
     creditBalance: 0,
     profitBalance: 0,
+    referralId: '668c8b23b11e65ea59d66acc',
     password: "111111",
     investmentLevel: level,
     investmentSubLevel: level + faker.number.int({ min: 1, max: 5 }),
@@ -44,10 +44,10 @@ const generateDummyUser = () => {
   };
 };
 
-exports.seedDummyUsers = async () => {
+const seedDummyUsers = async () => {
   console.time("TOTAL_TIME");
   try {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       //console.log(`Inserting row - ${i}`);
       const user = new User(generateDummyUser());
       await user.save();
@@ -60,4 +60,4 @@ exports.seedDummyUsers = async () => {
   console.timeEnd("TOTAL_TIME");
 }
 
-// seedDummyUsers();
+seedDummyUsers();

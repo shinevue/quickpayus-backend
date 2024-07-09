@@ -16,7 +16,8 @@ exports.getDirectReferrals = async (query, options) => {
 };
 
 exports.directReferralsCount = async (query) => {
-  return (await User.countDocuments(query)) || 0;
+  const result = await User.countDocuments(query) || 0;
+  return result;
 };
 
 exports.getIndirectReferrals = async (query, options) => {

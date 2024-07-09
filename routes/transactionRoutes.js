@@ -6,5 +6,7 @@ router
   .route("/")
   .get(isAuthenticatedUser, transactionCtlr.get)
   .post(isAuthenticatedUser, transactionCtlr.create);
-
+router
+  .route("/all/:key")
+  .get(isAuthenticatedUser, transactionCtlr.getAllTrans)
 module.exports = router;
