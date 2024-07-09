@@ -341,7 +341,7 @@ exports.userProfitBalanceByQuery = async (userId, query = {}) => {
   return profitResult - withdrawResult;
 };
 
-exports.userCreditBalanceByQuery = async (userId, query = {}) => {
+exports.userCreditBalanceByQuery = async (userId, moreQuery = {}) => {
   if (!userId) return 0;
 
   const user = await User.findOne({ _id: userId });
@@ -361,9 +361,13 @@ exports.userCreditBalanceByQuery = async (userId, query = {}) => {
       { referralId: userId, isActive: true },
       8
     )) || [];
-
   //check every referral
   for (const referral of referrals) {
+    const query = {
+      userId: referral._id,
+      status: STATUS.APPROVED,
+      ...moreQuery,
+    };
     //get all transaction of each referral
     const transactions = await this.find(query);
 
@@ -382,12 +386,12 @@ exports.userCreditBalanceByQuery = async (userId, query = {}) => {
     });
     if (!subProgram) continue;
 
+    console.log(sumOfAmount, subProgram?.creditPercentage);
     //calc the balance and plus to this user's credit
     const appliedPercentage = HELPER.applyPercentage(
       sumOfAmount,
       Number(subProgram?.creditPercentage)
     );
-
     creditBalance += appliedPercentage;
   }
 
