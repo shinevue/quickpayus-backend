@@ -23,7 +23,7 @@ const { ObjectId } = require("mongodb");
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { id, role } = req?.user || {};
 
-  const pageSize = process.env.RECORDS_PER_PAGE || 30;
+  const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
   const q = req?.query || {};
   const { page = 1, status, transactionType, from, to, search } = q || {};
@@ -57,7 +57,6 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
 
   if (transactionType) query.transactionType = transactionType;
   if (status) query.status = status;
-
   const data = await this.paginate(query, { page, pageSize });
 
   const total = (await this.countDocuments(query)) ?? 0;

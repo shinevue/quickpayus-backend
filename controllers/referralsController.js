@@ -203,7 +203,7 @@ exports.referrals = catchAsyncErrors(async (req, res, next) => {
   const userId = new ObjectId(req?.user?.id) || null;
   let referrals = null,
     total = 0,
-    pageSize = Number(process.env.RECORDS_PER_PAGE) || 20;
+    pageSize = Number(process.env.RECORDS_PER_PAGE) || 15;
 
   if (!userId) {
     return next(new ErrorHandler("No user found"));

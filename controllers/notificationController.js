@@ -5,7 +5,7 @@ const ErrorHandler = require("../utils/errorHandler");
 exports.get = catchAsyncErrors(async (req, res) => {
   const { page = 1, isRead = false } = req?.query || {};
 
-  const pageSize = process.env.RECORDS_PER_PAGE || 30;
+  const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
   const { id } = req.user || {};
 
