@@ -26,7 +26,7 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { page = 1 } = req?.query || {};
 
-  const pageSize = process.env.RECORDS_PER_PAGE || 30;
+  const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
   const total = await this.countDocuments({});
 
