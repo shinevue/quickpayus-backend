@@ -16,7 +16,7 @@ const notificationService = require("../../services/notificationService");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { type, kycStatus, page = 1, kyc = false, search } = req?.query || {};
-  const pageSize = process.env.RECORDS_PER_PAGE;
+  const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
   const query = {};
   if (search) {
@@ -363,7 +363,7 @@ exports.deleteUser = catchAsyncErrors(async (req, res, next) => {
 
 exports.claimedRewards = catchAsyncErrors(async (req, res, next) => {
   const { page = 1, status } = req?.query || {};
-  const pageSize = process.env.RECORDS_PER_PAGE || 20;
+  const pageSize = process.env.RECORDS_PER_PAGE || 15;
   const skip = (page - 1) & pageSize;
 
   const query = {

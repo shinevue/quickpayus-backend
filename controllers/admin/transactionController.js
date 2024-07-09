@@ -21,7 +21,7 @@ const {
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { type, page = 1 } = req?.query || {};
-  const pageSize = process.env.RECORDS_PER_PAGE;
+  const pageSize = process.env.RECORDS_PER_PAGE || 15;
   let query = {};
   if (type) {
     query.status = type;
