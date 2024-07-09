@@ -64,9 +64,9 @@ exports.verify = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-
+// confirm mail send
 exports.confirm = catchAsyncErrors(async (req, res, next) => {
-  const {data, id} = req.query;
+  const {data} = req.query;
   const user = await User.find({email: data});
   const otpModel = new OTP({ userId: user.id });
   await otpModel.save();

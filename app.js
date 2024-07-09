@@ -61,7 +61,11 @@ const announcementRoutes = require("./routes/announcementRoutes");
 const rankRoutes = require("./routes/rankRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const rewardRoutes = require("./routes/rewardRoutes");
+const supportRoutes = require("./routes/supportRoutes");
+
 // const {checkDeletedUser} = require("./controllers/authController");    // import check deleted user inspect part
+
+// const {seedDummyUsers} = require("./seeder/users");
 
 const BASE_ROUTE = "/api/v1";
 
@@ -82,10 +86,16 @@ app.use(`${BASE_ROUTE}/announcements`, announcementRoutes);
 app.use(`${BASE_ROUTE}/rank`, rankRoutes);
 app.use(`${BASE_ROUTE}/otp`, otpRoutes);
 app.use(`${BASE_ROUTE}/reward`, rewardRoutes);
+app.use(`${BASE_ROUTE}/support`, supportRoutes);
+
 
 
 //  Check deleted status and remove finally part.
 // checkDeletedUser();
+
+
+// Make seed user's profile data
+// seedDummyUsers();
 
 app.set('view engine', 'ejs');
 app.set('views', './utils/emailTemplates');
