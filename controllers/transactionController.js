@@ -365,7 +365,7 @@ exports.userCreditBalanceByQuery = async (userId, query = {}) => {
   //check every referral
   for (const referral of referrals) {
     //get all transaction of each referral
-    const transactions = await depositCtlr.find(query);
+    const transactions = await this.find(query);
 
     if (!transactions?.length) continue;
 
