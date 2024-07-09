@@ -434,3 +434,207 @@ exports.userRewardBalanceByQuery = async (userid, query = {}) => {
   if (result.length > 0) return result[0].sumOfKey;
   return 0;
 };
+
+exports.userCreditBalanceByQuery = async (userId, moreQuery = {}) => {
+  if (!userId) return 0;
+
+  const user = await User.findOne({ _id: userId });
+
+  if (!user) return 0;
+
+  //get program of this user with his investmentLevel get creditPercentage
+  const program = await programCtlr.findOne({
+    level: user?.investmentLevel,
+  });
+
+  let creditBalance = 0;
+
+  //get all referrals of this user
+  const referrals =
+    (await referralCtlr.getAllReferrals(
+      { referralId: userId, isActive: true },
+      8
+    )) || [];
+  //check every referral
+  for (const referral of referrals) {
+    const query = {
+      userId: referral._id,
+      status: STATUS.APPROVED,
+      ...moreQuery,
+    };
+    //get all transaction of each referral
+    const transactions = await this.find(query);
+
+    if (!transactions?.length) continue;
+
+    //sum of all transactions amount
+    const sumOfAmount = transactions?.reduce((total, { amount }) => {
+      return total + amount;
+    }, 0);
+
+    const subProgram = program?.data?.find((row) => {
+      if (referral?.sublevel == row?.level) {
+        //need to add more checks
+        return row;
+      }
+    });
+    if (!subProgram) continue;
+
+    console.log(sumOfAmount, subProgram?.creditPercentage);
+    //calc the balance and plus to this user's credit
+    const appliedPercentage = HELPER.applyPercentage(
+      sumOfAmount,
+      Number(subProgram?.creditPercentage)
+    );
+    creditBalance += appliedPercentage;
+  }
+
+  return creditBalance;
+};
+
+exports.userEquityBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userCreditBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userAccountBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userProfitBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userRewardBalanceByQuery = async (userid, query = {}) => {
+  const rewardQuery = {
+    userId: userid,
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    ...query,
+  };
+  const result = await Reward.aggregate([
+    {
+      $match: rewardQuery,
+    },
+    {
+      $group: {
+        _id: null,
+        sumOfKey: { $sum: "$amount" },
+      },
+    },
+  ]);
+  if (result.length > 0) return result[0].sumOfKey;
+  return 0;
+};
+
+// getting data for sales analystic chart
+exports.getAllTrans = async (req, res) => {
+  // console.log("+++++++++++",req.params.key);
+  const { id } = req.user;
+  const userId = new ObjectId(id);
+  const query = {
+    referralId: userId,
+    isActive: true,
+  };
+  const referrals = (await referralCtlr.getAllReferrals(query, 8)) || [];
+  let transactions = [];
+  for (const referral of referrals) {
+    const depositQuery = {
+      status: STATUS.APPROVED,
+      userId: referral?._id,
+    };
+
+    const result = await Transaction.find(depositQuery);
+    if (result.toString().length != 0) {
+      transactions.push(result);
+    }
+  }
+
+  if (req.params.key == "month") {
+    const monthlyData = {};
+    transactions.forEach((item) => {
+      const date = new Date(item[0].createdAt);
+      console.log("date --", item[0].createdAt, "-- amount -", item[0].amount);
+      const formattedDate = `${padZero(date.getMonth() + 1)}`;
+      if (!monthlyData[formattedDate]) {
+        monthlyData[formattedDate] = 0;
+      }
+      monthlyData[formattedDate] += item[0].amount;
+    });
+    const arr = Object.entries(monthlyData).map(([key, value]) => [key, value]);
+    const monthResult = Array(12).fill(0);
+    for (let i = 0; i < 12; i++) {
+      arr.map((arrItem) => {
+        let itemMonth = Number(arrItem[0].toString());
+        if (i == itemMonth - 1) {
+          monthResult[i] = arrItem[1];
+        }
+      });
+    }
+    return res.json({ monthResult });
+  } else {
+    const dailyData = {};
+
+    transactions.forEach((item) => {
+      const date = new Date(item[0].createdAt);
+      const formattedDate = `${padZero(date.getDate())}`;
+      if (!dailyData[formattedDate]) {
+        dailyData[formattedDate] = 0;
+      }
+      dailyData[formattedDate] += item[0].amount;
+    });
+
+    const dailyDataArray = Object.entries(dailyData).map(([key, value]) => ({
+      [key]: value,
+    }));
+    const convertdailydate = dailyDataArray.map((str) => {
+      let temp = JSON.stringify(str);
+      temp = temp.slice(1, temp.length - 1);
+      let day = temp.split(":")[0];
+      day = day.slice(1, day.length - 1);
+      const amount = temp.split(":")[1];
+      return [Number(day), Number(amount)];
+    });
+
+    let currentDate = new Date();
+    let monthNumber = currentDate.getMonth();
+    let months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    let initialArrayDay = new Array(months[monthNumber]).fill(0);
+    let index = 0;
+    for (index; index < initialArrayDay.length; index++) {
+      convertdailydate.map((item, key) => {
+        if (index == item[0]) {
+          initialArrayDay[index] = item[1];
+        }
+      });
+    }
+
+    if (req.params.key == "day") {
+      return res.json({ initialArrayDay });
+    } else if (req.params.key == "week") {
+      let flag = 0;
+      let weekResult = [];
+      let temp = 0;
+      console.log(initialArrayDay);
+      initialArrayDay.map((item) => {
+        if (flag < 6) {
+          temp += item;
+          flag++;
+        } else {
+          weekResult.push(temp);
+          temp = 0;
+          flag = 0;
+        }
+      });
+      weekResult[weekResult.length - 1] =
+        weekResult[weekResult.length - 1] + temp;
+      return res.json({ weekResult });
+    }
+  }
+};
+
+const padZero = (num) => {
+  return num.toString().padStart(2, "0");
+};

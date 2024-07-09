@@ -14,11 +14,10 @@ exports.rank = catchAsyncErrors(async (req, res, next) => {
     thirtyDaysAgo = minusDaysFromDate(30);
 
   let sumOfLast30DaysSales = 0;
-
   const query = { referralId: userId, isActive: true };
 
   const approvedReward = await Reward.findOne({
-    userId,
+    userId: id,
     status: STATUS.APPROVED,
   })
     .sort({
@@ -26,16 +25,9 @@ exports.rank = catchAsyncErrors(async (req, res, next) => {
     })
     .limit(1)
     .exec();
-
-  console.log("approved reward", approvedReward);
-
   const directReferralsCount = await referralCtlr.directReferralsCount(query);
-
-  console.log("direct referrals", directReferralsCount);
-
   // all referrals with transactions for last 30 days;
   const referrals = (await referralCtlr.getAllReferrals(query, 8)) || [];
-
   let useApprovedAt = false;
 
   if (approvedReward?.approvedAt) useApprovedAt = true;
@@ -50,23 +42,22 @@ exports.rank = catchAsyncErrors(async (req, res, next) => {
     };
 
     const transactions = await depositCtlr.find(depositQuery);
-
     if (!transactions?.length) continue;
 
     sumOfLast30DaysSales += transactions?.reduce((total, { amount }) => {
       return total + amount;
     }, 0);
   }
-
+  
   const rankQuery = {
     directReferralsRequired: {
       $lte: directReferralsCount,
     },
     requiredSalesFrom: {
-      $gte: sumOfLast30DaysSales,
+      $lte: sumOfLast30DaysSales,
     },
     requiredSalesTo: {
-      $lte: sumOfLast30DaysSales,
+      $gte: sumOfLast30DaysSales,
     },
   };
 
@@ -75,9 +66,7 @@ exports.rank = catchAsyncErrors(async (req, res, next) => {
       $ne: approvedReward?.rankId,
     };
   }
-
-  const rank = await this.findOne(rankQuery);
-
+  const rank = await Rank.findOne(rankQuery);
   return res.json({
     success: true,
     data: {

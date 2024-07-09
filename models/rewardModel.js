@@ -16,7 +16,6 @@ const rewardsSchema = new mongoose.Schema(
     rankId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Rank",
-      required: true,
     },
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
