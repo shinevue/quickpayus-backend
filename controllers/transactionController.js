@@ -1,6 +1,9 @@
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const programCtlr = require("../controllers/programController");
 const userCtlr = require("../controllers/userController");
+const referralCtlr = require("./referralsController");
+const rewardCtlr = require("./rewardsController");
+const Reward = require("../models/rewardModel");
 const Transaction = require("../models/transactionModel");
 const notificationService = require("../services/notificationService");
 const User = require("../models/userModel");
@@ -17,6 +20,7 @@ const {
 } = require("../config/constants");
 
 const { ObjectId } = require("mongodb");
+const { query } = require("express");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { id, role } = req?.user || {};
@@ -74,10 +78,6 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     data,
   });
 });
-
-exports.countDocuments = async (query) => {
-  return await Transaction.countDocuments(query);
-};
 
 exports.create = catchAsyncErrors(async (req, res, next) => {
   const {
@@ -228,73 +228,12 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.userProfitBalance = async (userId) => {
-  const profitQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.PROFIT],
-    },
-  };
-  const withdrawalQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED, STATUS.PENDING],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.PROFIT],
-    },
-    withdrawalType: {
-      $in: [WITHDRAWAL_TYPES.PROFIT],
-    },
-  };
-
-  const profitResult = (await this.userSum(profitQuery, "$amount")) ?? 0;
-  const withdrawResult =
-    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
-
-  return profitResult - withdrawResult;
-};
-
-exports.userDepositBalance = async (userId) => {
-  const depositQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.DEPOSIT],
-    },
-  };
-
-  const withdrawalQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED, STATUS.PENDING],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.WITHDRAWAL],
-    },
-    withdrawalType: {
-      $in: [WITHDRAWAL_TYPES.DEPOSIT],
-    },
-  };
-
-  const depositResult = (await this.userSum(depositQuery, "$amount")) ?? 0;
-  const withdrawResult =
-    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
-
-  return depositResult - withdrawResult;
-};
-
 exports.find = async (query) => {
   return Transaction.find(query);
 };
 
 exports.userSum = async (query, key) => {
-  const [{ sumOfKey }] = await Transaction.aggregate([
+  const result = await Transaction.aggregate([
     {
       $match: query,
     },
@@ -305,8 +244,9 @@ exports.userSum = async (query, key) => {
       },
     },
   ]);
+  if (result.length > 0) return result[0].sumOfKey;
 
-  return sumOfKey;
+  return 0;
 };
 
 exports.save = async (payload) => {
@@ -325,4 +265,168 @@ exports.paginate = async (query, options) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(pageSize);
+};
+
+exports.countDocuments = async (query) => {
+  return await Transaction.countDocuments(query);
+};
+
+exports.userDepositlBalanceByQuery = async (userId, query = {}) => {
+  if (!userId) return 0;
+
+  const depositQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.DEPOSIT],
+    },
+    ...query,
+  };
+
+  const depositResult = (await this.userSum(depositQuery, "$amount")) ?? 0;
+
+  const withdrawalQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.WITHDRAWAL],
+    },
+    withdrawalType: {
+      $in: [WITHDRAWAL_TYPES.DEPOSIT],
+    },
+    ...query,
+  };
+  const withdrawResult =
+    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
+  return depositResult - withdrawResult;
+};
+
+exports.userProfitBalanceByQuery = async (userId, query = {}) => {
+  if (!userId) return 0;
+
+  const profitQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.PROFIT],
+    },
+    ...query,
+  };
+
+  const withdrawalQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.PROFIT],
+    },
+    withdrawalType: {
+      $in: [WITHDRAWAL_TYPES.PROFIT],
+    },
+    ...query,
+  };
+
+  const profitResult = (await this.userSum(profitQuery, "$amount")) ?? 0;
+
+  const withdrawResult =
+    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
+
+  return profitResult - withdrawResult;
+};
+
+exports.userCreditBalanceByQuery = async (userId, query = {}) => {
+  if (!userId) return 0;
+
+  const user = await User.findOne({ _id: userId });
+
+  if (!user) return 0;
+
+  //get program of this user with his investmentLevel get creditPercentage
+  const program = await programCtlr.findOne({
+    level: user?.investmentLevel,
+  });
+
+  let creditBalance = 0;
+
+  //get all referrals of this user
+  const referrals =
+    (await referralCtlr.getAllReferrals(
+      { referralId: userId, isActive: true },
+      8
+    )) || [];
+
+  //check every referral
+  for (const referral of referrals) {
+    //get all transaction of each referral
+    const transactions = await depositCtlr.find(query);
+
+    if (!transactions?.length) continue;
+
+    //sum of all transactions amount
+    const sumOfAmount = transactions?.reduce((total, { amount }) => {
+      return total + amount;
+    }, 0);
+
+    const subProgram = program?.data?.find((row) => {
+      if (referral?.sublevel == row?.level) {
+        //need to add more checks
+        return row;
+      }
+    });
+    if (!subProgram) continue;
+
+    //calc the balance and plus to this user's credit
+    const appliedPercentage = HELPER.applyPercentage(
+      sumOfAmount,
+      Number(subProgram?.creditPercentage)
+    );
+
+    creditBalance += appliedPercentage;
+  }
+
+  return creditBalance;
+};
+
+exports.userEquityBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userCreditBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userAccountBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userProfitBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userRewardBalanceByQuery = async (userid, query = {}) => {
+  const rewardQuery = {
+    userId: userid,
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    ...query,
+  };
+  const result = await Reward.aggregate([
+    {
+      $match: rewardQuery,
+    },
+    {
+      $group: {
+        _id: null,
+        sumOfKey: { $sum: "$amount" },
+      },
+    },
+  ]);
+  if (result.length > 0) return result[0].sumOfKey;
+  return 0;
 };
