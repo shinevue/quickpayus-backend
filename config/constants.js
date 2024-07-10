@@ -8,6 +8,11 @@ module.exports = {
     createdAt: 1,
     investmentSubLevel: 1,
   },
+  ANALYTICS_TYPE: {
+    PROFIT: "profits",
+    CREDIT: "credits",
+    REWARD: "rewards",
+  },
   DOCUMENT_TYPES: {
     ID_CARD: "ID_CARD",
     PASSPORT: "PASSPORT",

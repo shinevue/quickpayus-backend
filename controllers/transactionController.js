@@ -1,14 +1,15 @@
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const programCtlr = require("../controllers/programController");
 const userCtlr = require("../controllers/userController");
+const referralCtlr = require("./referralsController");
+const rewardCtlr = require("./rewardsController");
+const Reward = require("../models/rewardModel");
 const Transaction = require("../models/transactionModel");
 const notificationService = require("../services/notificationService");
 const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
 const Trc20 = require("../utils/trc20Validator");
 const HELPER = require("../helpers");
-const referralCtlr = require("./referralsController");
-
 
 const {
   STATUS,
@@ -19,11 +20,12 @@ const {
 } = require("../config/constants");
 
 const { ObjectId } = require("mongodb");
+const { query } = require("express");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { id, role } = req?.user || {};
 
-  const pageSize = process.env.RECORDS_PER_PAGE || 15;
+  const pageSize = process.env.RECORDS_PER_PAGE || 30;
 
   const q = req?.query || {};
   const { page = 1, status, transactionType, from, to, search } = q || {};
@@ -57,6 +59,7 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
 
   if (transactionType) query.transactionType = transactionType;
   if (status) query.status = status;
+
   const data = await this.paginate(query, { page, pageSize });
 
   const total = (await this.countDocuments(query)) ?? 0;
@@ -75,10 +78,6 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     data,
   });
 });
-
-exports.countDocuments = async (query) => {
-  return await Transaction.countDocuments(query);
-};
 
 exports.create = catchAsyncErrors(async (req, res, next) => {
   const {
@@ -229,73 +228,12 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.userProfitBalance = async (userId) => {
-  const profitQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.PROFIT],
-    },
-  };
-  const withdrawalQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED, STATUS.PENDING],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.PROFIT],
-    },
-    withdrawalType: {
-      $in: [WITHDRAWAL_TYPES.PROFIT],
-    },
-  };
-
-  const profitResult = (await this.userSum(profitQuery, "$amount")) ?? 0;
-  const withdrawResult =
-    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
-
-  return profitResult - withdrawResult;
-};
-
-exports.userDepositBalance = async (userId) => {
-  const depositQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.DEPOSIT],
-    },
-  };
-
-  const withdrawalQuery = {
-    userId: new ObjectId(userId),
-    status: {
-      $in: [STATUS.APPROVED, STATUS.PENDING],
-    },
-    transactionType: {
-      $in: [TRANSACTION_TYPES.WITHDRAWAL],
-    },
-    withdrawalType: {
-      $in: [WITHDRAWAL_TYPES.DEPOSIT],
-    },
-  };
-
-  const depositResult = (await this.userSum(depositQuery, "$amount")) ?? 0;
-  const withdrawResult =
-    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
-
-  return depositResult - withdrawResult;
-};
-
 exports.find = async (query) => {
   return Transaction.find(query);
 };
 
 exports.userSum = async (query, key) => {
-  const [{ sumOfKey }] = await Transaction.aggregate([
+  const result = await Transaction.aggregate([
     {
       $match: query,
     },
@@ -306,8 +244,9 @@ exports.userSum = async (query, key) => {
       },
     },
   ]);
+  if (result.length > 0) return result[0].sumOfKey;
 
-  return sumOfKey;
+  return 0;
 };
 
 exports.save = async (payload) => {
@@ -328,14 +267,276 @@ exports.paginate = async (query, options) => {
     .limit(pageSize);
 };
 
+exports.countDocuments = async (query) => {
+  return await Transaction.countDocuments(query);
+};
+
+exports.userDepositlBalanceByQuery = async (userId, query = {}) => {
+  if (!userId) return 0;
+
+  const depositQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.DEPOSIT],
+    },
+    ...query,
+  };
+
+  const depositResult = (await this.userSum(depositQuery, "$amount")) ?? 0;
+
+  const withdrawalQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.WITHDRAWAL],
+    },
+    withdrawalType: {
+      $in: [WITHDRAWAL_TYPES.DEPOSIT],
+    },
+    ...query,
+  };
+  const withdrawResult =
+    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
+  return depositResult - withdrawResult;
+};
+
+exports.userProfitBalanceByQuery = async (userId, query = {}) => {
+  if (!userId) return 0;
+
+  const profitQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.PROFIT],
+    },
+    ...query,
+  };
+
+  const withdrawalQuery = {
+    userId: new ObjectId(userId),
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    transactionType: {
+      $in: [TRANSACTION_TYPES.PROFIT],
+    },
+    withdrawalType: {
+      $in: [WITHDRAWAL_TYPES.PROFIT],
+    },
+    ...query,
+  };
+
+  const profitResult = (await this.userSum(profitQuery, "$amount")) ?? 0;
+
+  const withdrawResult =
+    (await this.userSum(withdrawalQuery, "$originalAmount")) ?? 0;
+
+  return profitResult - withdrawResult;
+};
+
+exports.userCreditBalanceByQuery = async (userId, moreQuery = {}) => {
+  if (!userId) return 0;
+
+  const user = await User.findOne({ _id: userId });
+
+  if (!user) return 0;
+
+  //get program of this user with his investmentLevel get creditPercentage
+  const program = await programCtlr.findOne({
+    level: user?.investmentLevel,
+  });
+
+  let creditBalance = 0;
+
+  //get all referrals of this user
+  const referrals =
+    (await referralCtlr.getAllReferrals(
+      { referralId: userId, isActive: true },
+      8
+    )) || [];
+  //check every referral
+  for (const referral of referrals) {
+    const query = {
+      userId: referral._id,
+      status: STATUS.APPROVED,
+      ...moreQuery,
+    };
+    //get all transaction of each referral
+    const transactions = await this.find(query);
+
+    if (!transactions?.length) continue;
+
+    //sum of all transactions amount
+    const sumOfAmount = transactions?.reduce((total, { amount }) => {
+      return total + amount;
+    }, 0);
+
+    const subProgram = program?.data?.find((row) => {
+      if (referral?.sublevel == row?.level) {
+        //need to add more checks
+        return row;
+      }
+    });
+    if (!subProgram) continue;
+
+    console.log(sumOfAmount, subProgram?.creditPercentage);
+    //calc the balance and plus to this user's credit
+    const appliedPercentage = HELPER.applyPercentage(
+      sumOfAmount,
+      Number(subProgram?.creditPercentage)
+    );
+    creditBalance += appliedPercentage;
+  }
+
+  return creditBalance;
+};
+
+exports.userEquityBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userCreditBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userAccountBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userProfitBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userRewardBalanceByQuery = async (userid, query = {}) => {
+  const rewardQuery = {
+    userId: userid,
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    ...query,
+  };
+  const result = await Reward.aggregate([
+    {
+      $match: rewardQuery,
+    },
+    {
+      $group: {
+        _id: null,
+        sumOfKey: { $sum: "$amount" },
+      },
+    },
+  ]);
+  if (result.length > 0) return result[0].sumOfKey;
+  return 0;
+};
+
+exports.userCreditBalanceByQuery = async (userId, moreQuery = {}) => {
+  if (!userId) return 0;
+
+  const user = await User.findOne({ _id: userId });
+
+  if (!user) return 0;
+
+  //get program of this user with his investmentLevel get creditPercentage
+  const program = await programCtlr.findOne({
+    level: user?.investmentLevel,
+  });
+
+  let creditBalance = 0;
+
+  //get all referrals of this user
+  const referrals =
+    (await referralCtlr.getAllReferrals(
+      { referralId: userId, isActive: true },
+      8
+    )) || [];
+  //check every referral
+  for (const referral of referrals) {
+    const query = {
+      userId: referral._id,
+      status: STATUS.APPROVED,
+      ...moreQuery,
+    };
+    //get all transaction of each referral
+    const transactions = await this.find(query);
+
+    if (!transactions?.length) continue;
+
+    //sum of all transactions amount
+    const sumOfAmount = transactions?.reduce((total, { amount }) => {
+      return total + amount;
+    }, 0);
+
+    const subProgram = program?.data?.find((row) => {
+      if (referral?.sublevel == row?.level) {
+        //need to add more checks
+        return row;
+      }
+    });
+    if (!subProgram) continue;
+
+    console.log(sumOfAmount, subProgram?.creditPercentage);
+    //calc the balance and plus to this user's credit
+    const appliedPercentage = HELPER.applyPercentage(
+      sumOfAmount,
+      Number(subProgram?.creditPercentage)
+    );
+    creditBalance += appliedPercentage;
+  }
+
+  return creditBalance;
+};
+
+exports.userEquityBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userCreditBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userAccountBalanceByQuery = async (userid, query = {}) => {
+  return (
+    (await this.userProfitBalanceByQuery(userid, query)) +
+    (await this.userDepositlBalanceByQuery(userid, query))
+  );
+};
+
+exports.userRewardBalanceByQuery = async (userid, query = {}) => {
+  const rewardQuery = {
+    userId: userid,
+    status: {
+      $in: [STATUS.APPROVED, STATUS.PENDING],
+    },
+    ...query,
+  };
+  const result = await Reward.aggregate([
+    {
+      $match: rewardQuery,
+    },
+    {
+      $group: {
+        _id: null,
+        sumOfKey: { $sum: "$amount" },
+      },
+    },
+  ]);
+  if (result.length > 0) return result[0].sumOfKey;
+  return 0;
+};
+
 // getting data for sales analystic chart
 exports.getAllTrans = async (req, res) => {
   // console.log("+++++++++++",req.params.key);
-  const {id} = req.user;
+  const { id } = req.user;
   const userId = new ObjectId(id);
   const query = {
     referralId: userId,
-    isActive: true
+    isActive: true,
   };
   const referrals = (await referralCtlr.getAllReferrals(query, 8)) || [];
   let transactions = [];
@@ -353,7 +554,7 @@ exports.getAllTrans = async (req, res) => {
 
   if (req.params.key == "month") {
     const monthlyData = {};
-    transactions.forEach(item => {
+    transactions.forEach((item) => {
       const date = new Date(item[0].createdAt);
       console.log("date --", item[0].createdAt, "-- amount -", item[0].amount);
       const formattedDate = `${padZero(date.getMonth() + 1)}`;
@@ -364,19 +565,19 @@ exports.getAllTrans = async (req, res) => {
     });
     const arr = Object.entries(monthlyData).map(([key, value]) => [key, value]);
     const monthResult = Array(12).fill(0);
-    for (let i = 0; i < 12 ; i ++) {
-      arr.map(arrItem => {
+    for (let i = 0; i < 12; i++) {
+      arr.map((arrItem) => {
         let itemMonth = Number(arrItem[0].toString());
         if (i == itemMonth - 1) {
           monthResult[i] = arrItem[1];
-        } 
-      })
+        }
+      });
     }
-    return res.json({monthResult})
+    return res.json({ monthResult });
   } else {
     const dailyData = {};
 
-    transactions.forEach(item => {
+    transactions.forEach((item) => {
       const date = new Date(item[0].createdAt);
       const formattedDate = `${padZero(date.getDate())}`;
       if (!dailyData[formattedDate]) {
@@ -385,53 +586,55 @@ exports.getAllTrans = async (req, res) => {
       dailyData[formattedDate] += item[0].amount;
     });
 
-    const dailyDataArray = Object.entries(dailyData).map(([key, value]) => ({ [key]: value }));
-    const convertdailydate = dailyDataArray.map(str => {
+    const dailyDataArray = Object.entries(dailyData).map(([key, value]) => ({
+      [key]: value,
+    }));
+    const convertdailydate = dailyDataArray.map((str) => {
       let temp = JSON.stringify(str);
-      temp = temp.slice(1,temp.length - 1);
-      let day = temp.split(':')[0];
+      temp = temp.slice(1, temp.length - 1);
+      let day = temp.split(":")[0];
       day = day.slice(1, day.length - 1);
-      const amount = temp.split(':')[1];
-      return ([Number(day), Number(amount)])
+      const amount = temp.split(":")[1];
+      return [Number(day), Number(amount)];
     });
-
 
     let currentDate = new Date();
     let monthNumber = currentDate.getMonth();
     let months = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     let initialArrayDay = new Array(months[monthNumber]).fill(0);
     let index = 0;
-    for (index ; index < initialArrayDay.length ; index ++) {
+    for (index; index < initialArrayDay.length; index++) {
       convertdailydate.map((item, key) => {
         if (index == item[0]) {
-          initialArrayDay[index] = item[1]
+          initialArrayDay[index] = item[1];
         }
-      })
+      });
     }
 
-    if(req.params.key == "day") {
-      return res.json({initialArrayDay});
+    if (req.params.key == "day") {
+      return res.json({ initialArrayDay });
     } else if (req.params.key == "week") {
       let flag = 0;
       let weekResult = [];
       let temp = 0;
       console.log(initialArrayDay);
-      initialArrayDay.map(item => {
+      initialArrayDay.map((item) => {
         if (flag < 6) {
           temp += item;
-          flag ++;
+          flag++;
         } else {
           weekResult.push(temp);
           temp = 0;
           flag = 0;
-          }
-        })
-        weekResult[weekResult.length - 1] = weekResult[weekResult.length - 1] + temp;
-        return res.json({weekResult});
+        }
+      });
+      weekResult[weekResult.length - 1] =
+        weekResult[weekResult.length - 1] + temp;
+      return res.json({ weekResult });
     }
-  } 
+  }
 };
 
 const padZero = (num) => {
-  return num.toString().padStart(2, '0');
-}
+  return num.toString().padStart(2, "0");
+};

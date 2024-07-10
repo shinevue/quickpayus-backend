@@ -1,16 +1,14 @@
-const connectDB = require("../config/db.js");
-const User = require("../models/userModel");
-const ProfitConfig = require("../models/profitConfigModel");
-const HELPER = require("../helpers");
-const transactionCtlr = require("../controllers/transactionController");
-const notificationService = require("../services/notificationService");
-
+const connectDB = require('../config/db.js');
+const User = require('../models/userModel');
+const ProfitConfig = require('../models/profitConfigModel');
+const HELPER = require('../helpers');
+const transactionCtlr = require('../controllers/transactionController');
+const notificationService = require('../services/notificationService');
 const {
   TRANSACTION_TYPES,
   NOTIFICATION_TYPES,
   STATUS,
-} = require("../config/constants.js");
-
+} = require('../config/constants.js');
 
 const main = async (page, pageSize) => {
   try {
@@ -66,7 +64,7 @@ const main = async (page, pageSize) => {
 
       console.log(`<------- Updating user (${username}) profit------->`);
 
-      const percentage = Number(profit[investmentLevel] ?? 0);
+      const percentage = Number(profit['ABCDE'.indexOf(investmentLevel)] ?? 0);
 
       const equityBalance =
         Number(referralCreditBalance ?? 0) + Number(depositBalance ?? 0);
@@ -105,19 +103,13 @@ const main = async (page, pageSize) => {
         profitPercentage: percentage,
       };
 
-      console.log(transaction);
-
       await transactionCtlr.save(transaction);
 
-      // await notificationService.create({
-      //   userId: id,
-      //   type: NOTIFICATION_TYPES.ACTIVITY,
-      //   message: `${TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
-      // });
-
-      //
-
-      /* await transactionCtlr.save(payload);
+      await notificationService.create({
+        userId: id,
+        type: NOTIFICATION_TYPES.ACTIVITY,
+        message: `${TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
+      });
 
       await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
 
@@ -125,7 +117,7 @@ const main = async (page, pageSize) => {
         userId: id,
         type: NOTIFICATION_TYPES.ACTIVITY,
         message: `${TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
-      }) */
+      });
     }
   } catch (err) {
     console.log(`Error running the cronjob - ${err}`);
@@ -135,97 +127,111 @@ const main = async (page, pageSize) => {
 };
 
 async function applyNormal() {
-  console.time("TOTAL_TIME_TOOK");
+  console.time('TOTAL_TIME_TOOK');
   await main(1, 5000);
-  console.timeEnd("TOTAL_TIME_TOOK");
+  console.timeEnd('TOTAL_TIME_TOOK');
 }
 function applyCronJob() {
   const jobNames = [];
   const { Worker, Queue } = require('bullmq');
-  
+
   const IORedis = require('ioredis');
   const connection = new IORedis({ maxRetriesPerRequest: null });
-  
+
   const queue = new Queue('myQueue', { connection });
-  
+
   let earliestStartTime = Infinity;
   let latestEndTime = 0;
   let completionCounter = 0;
-  
+
   async function removePrevJobs() {
     await queue.getRepeatableJobs().then(async (repeatableJobs) => {
       for (const job of repeatableJobs) {
-        queue.removeRepeatableByKey(job.key).then(() => {
-          console.log(`previous job ${job.name} removed`);
-        }).catch((error) => {
-          console.log(error);
-        })
+        queue
+          .removeRepeatableByKey(job.key)
+          .then(() => {
+            console.log(`previous job ${job.name} removed`);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       }
     });
   }
-  
+
   async function startWorkers() {
-    const worker = new Worker('myQueue', async job => {
-      if (jobNames.includes(job.name)) {
-  
-      } else {
-        console.log(`Skipping ${job.name}`);
-      }
-  
-      const startTime = Date.now();
-      if (startTime < earliestStartTime) {
+    const worker = new Worker(
+      'myQueue',
+      async (job) => {
+        if (jobNames.includes(job.name)) {
+        } else {
+          console.log(`Skipping ${job.name}`);
+        }
+
+        const startTime = Date.now();
+        if (startTime < earliestStartTime) {
           earliestStartTime = startTime;
-      }
-  
-      await main(job.data.page, 100);
-  
-      const endTime = Date.now();
-      if (endTime > latestEndTime) {
+        }
+
+        await main(job.data.page, 100);
+
+        const endTime = Date.now();
+        if (endTime > latestEndTime) {
           latestEndTime = endTime;
-      }
-  
-      completionCounter ++;
-      if (completionCounter === 10) {
-          console.log(`Total processing time for ${10} workers is: ${(latestEndTime - earliestStartTime)/1000} seconds`);
-  
+        }
+
+        completionCounter++;
+        if (completionCounter === 10) {
+          console.log(
+            `Total processing time for ${10} workers is: ${
+              (latestEndTime - earliestStartTime) / 1000
+            } seconds`
+          );
+
           earliestStartTime = Infinity;
-          latestEndTime = 0
+          latestEndTime = 0;
           completionCounter = 0;
-      }
-    }, { connection });
+        }
+      },
+      { connection }
+    );
     worker.on('failed', (job, err) => {
       console.error(`${job.name} failed with error:`, err);
     });
-  
+
     worker.on('completed', (job) => {
       console.log(`${job.name} with id ${job.id} has been completed`);
     });
   }
-  
+
   queue.on('waiting', (job) => {
     console.error(`${job.name} added`);
   });
-  
+
   queue.on('error', (error) => {
     console.log(`Queue error: ${error}`);
   });
-  
+
   async function addJobs() {
-    for (let i = 1; i <= 10; i ++) {
+    for (let i = 1; i <= 10; i++) {
       jobNames.push('Job' + i);
-      await queue.add('Job' + i, {page: i}, {
-        repeat: {
-          pattern: '0 3-6 * * Mon-Fri',
-          endDate: new Date(Date.now() + (5 * 24 * 60 * 60 * 1000)),
-        },
-      });
+      await queue.add(
+        'Job' + i,
+        { page: i },
+        {
+          repeat: {
+            pattern: '0 3-6 * * Mon-Fri',
+            endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
+          },
+        }
+      );
     }
   }
-  
+
   removePrevJobs();
   startWorkers();
-  addJobs();  
+  addJobs();
 }
 
-// applyNormal();
-applyCronJob();
+applyNormal();
+// applyCronJob();

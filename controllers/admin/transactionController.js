@@ -191,7 +191,7 @@ exports.update = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.updateCreditToParents = async (user, transType) => {
+exports.updateCreditToParents = async (user, type, amount) => {
   const parentReferralsQuery = {
     _id: new ObjectId(user?._id),
     isActive: true,
@@ -207,8 +207,8 @@ exports.updateCreditToParents = async (user, transType) => {
     }
 
     const program = await programCtlr.findByLevels({
-      level: investmentLevel,
-      sublevel: investmentSubLevel,
+      level: parent?.investmentLevel,
+      sublevel: parent?.investmentSubLevel,
     });
 
     if (!program?.data?.creditPercentage) continue;
