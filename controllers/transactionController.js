@@ -342,154 +342,26 @@ exports.userProfitBalanceByQuery = async (userId, query = {}) => {
 };
 
 exports.userCreditBalanceByQuery = async (userId, moreQuery = {}) => {
-  if (!userId) return 0;
-
-  const user = await User.findOne({ _id: userId });
-
-  if (!user) return 0;
+  const sales = this.userSalesByQuery(userId, moreQuery);
 
   //get program of this user with his investmentLevel get creditPercentage
   const program = await programCtlr.findOne({
     level: user?.investmentLevel,
   });
-
-  let creditBalance = 0;
-
-  //get all referrals of this user
-  const referrals =
-    (await referralCtlr.getAllReferrals(
-      { referralId: userId, isActive: true },
-      8
-    )) || [];
-  //check every referral
-  for (const referral of referrals) {
-    const query = {
-      userId: referral._id,
-      status: STATUS.APPROVED,
-      ...moreQuery,
-    };
-    //get all transaction of each referral
-    const transactions = await this.find(query);
-
-    if (!transactions?.length) continue;
-
-    //sum of all transactions amount
-    const sumOfAmount = transactions?.reduce((total, { amount }) => {
-      return total + amount;
-    }, 0);
-
-    const subProgram = program?.data?.find((row) => {
-      if (referral?.sublevel == row?.level) {
-        //need to add more checks
-        return row;
-      }
-    });
-    if (!subProgram) continue;
-
-    console.log(sumOfAmount, subProgram?.creditPercentage);
-    //calc the balance and plus to this user's credit
-    const appliedPercentage = HELPER.applyPercentage(
-      sumOfAmount,
-      Number(subProgram?.creditPercentage)
-    );
-    creditBalance += appliedPercentage;
-  }
-
-  return creditBalance;
-};
-
-exports.userEquityBalanceByQuery = async (userid, query = {}) => {
-  return (
-    (await this.userCreditBalanceByQuery(userid, query)) +
-    (await this.userDepositlBalanceByQuery(userid, query))
-  );
-};
-
-exports.userAccountBalanceByQuery = async (userid, query = {}) => {
-  return (
-    (await this.userProfitBalanceByQuery(userid, query)) +
-    (await this.userDepositlBalanceByQuery(userid, query))
-  );
-};
-
-exports.userRewardBalanceByQuery = async (userid, query = {}) => {
-  const rewardQuery = {
-    userId: userid,
-    status: {
-      $in: [STATUS.APPROVED, STATUS.PENDING],
-    },
-    ...query,
-  };
-  const result = await Reward.aggregate([
-    {
-      $match: rewardQuery,
-    },
-    {
-      $group: {
-        _id: null,
-        sumOfKey: { $sum: "$amount" },
-      },
-    },
-  ]);
-  if (result.length > 0) return result[0].sumOfKey;
-  return 0;
-};
-
-exports.userCreditBalanceByQuery = async (userId, moreQuery = {}) => {
-  if (!userId) return 0;
-
-  const user = await User.findOne({ _id: userId });
-
-  if (!user) return 0;
-
-  //get program of this user with his investmentLevel get creditPercentage
-  const program = await programCtlr.findOne({
-    level: user?.investmentLevel,
+  const subProgram = program?.data?.find((row) => {
+    if (referral?.sublevel == row?.level) {
+      //need to add more checks
+      return row;
+    }
   });
+  if (!subProgram) return 0;
+  //calc the balance and plus to this user's credit
+  const appliedPercentage = HELPER.applyPercentage(
+    sales,
+    Number(subProgram?.creditPercentage)
+  );
 
-  let creditBalance = 0;
-
-  //get all referrals of this user
-  const referrals =
-    (await referralCtlr.getAllReferrals(
-      { referralId: userId, isActive: true },
-      8
-    )) || [];
-  //check every referral
-  for (const referral of referrals) {
-    const query = {
-      userId: referral._id,
-      status: STATUS.APPROVED,
-      ...moreQuery,
-    };
-    //get all transaction of each referral
-    const transactions = await this.find(query);
-
-    if (!transactions?.length) continue;
-
-    //sum of all transactions amount
-    const sumOfAmount = transactions?.reduce((total, { amount }) => {
-      return total + amount;
-    }, 0);
-
-    const subProgram = program?.data?.find((row) => {
-      if (referral?.sublevel == row?.level) {
-        //need to add more checks
-        return row;
-      }
-    });
-    if (!subProgram) continue;
-
-    console.log(sumOfAmount, subProgram?.creditPercentage);
-    //calc the balance and plus to this user's credit
-    const appliedPercentage = HELPER.applyPercentage(
-      sumOfAmount,
-      Number(subProgram?.creditPercentage)
-    );
-    creditBalance += appliedPercentage;
-  }
-
-  return creditBalance;
+  return appliedPercentage;
 };
 
 exports.userEquityBalanceByQuery = async (userid, query = {}) => {
@@ -637,4 +509,39 @@ exports.getAllTrans = async (req, res) => {
 
 const padZero = (num) => {
   return num.toString().padStart(2, "0");
+};
+
+/**
+ *
+ * @param {ObjectId} userId  for which you want to get sales volume
+ * @param {object} moreQuery more info to get sales
+ * @returns {Number} sales volume of user
+ */
+exports.userSalesByQuery = async (userId, moreQuery = {}) => {
+  if (!userId) return 0;
+
+  const user = await User.findOne({ _id: userId });
+
+  if (!user) return 0;
+
+  let sales = 0;
+
+  //get all referrals of this user
+  const referrals =
+    (await referralCtlr.getAllReferrals(
+      { referralId: userId, isActive: true },
+      8
+    )) || [];
+
+  //check every referral
+  for (const referral of referrals) {
+    //sum of all transactions amount
+    const sumOfAmount = await this.userDepositlBalanceByQuery(
+      referral._id,
+      moreQuery
+    );
+
+    sales += sumOfAmount;
+  }
+  return sales;
 };
