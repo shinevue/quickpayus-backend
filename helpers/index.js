@@ -4,6 +4,12 @@ const moment = require("moment");
 const momentTZ = require("moment-timezone");
 momentTZ().tz("Asia/Karachi");
 
+function checkRankPeriod(joining) {
+  if (moment.duration(moment().diff(joining)).asSeconds() > 30 * 24 * 60 * 60)
+    return true;
+  return false;
+}
+
 const applyPercentage = (amount, percentage) => {
   return (amount * percentage) / 100;
 };
@@ -59,4 +65,5 @@ module.exports = {
   capitalizeFirstLetter,
   startOfToday,
   endOfToday,
+  checkRankPeriod,
 };
