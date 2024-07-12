@@ -545,3 +545,12 @@ exports.userSalesByQuery = async (userId, moreQuery = {}) => {
   }
   return sales;
 };
+
+exports.firstDepositeDate = async (userid) => {
+  const transaction = await Transaction.findOne({
+    userId: userid,
+    status: STATUS.APPROVED,
+    transactionType: TRANSACTION_TYPES.DEPOSIT,
+  });
+  return transaction?.updatedAt;
+};
