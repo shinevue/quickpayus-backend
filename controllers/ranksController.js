@@ -5,76 +5,23 @@ const ErrorHandler = require("../utils/errorHandler");
 const referralCtlr = require("./referralsController");
 const { ObjectId } = require("mongodb");
 const depositCtlr = require("./transactionController");
-const { minusDaysFromDate } = require("../helpers");
+const { minusDaysFromDate, checkRankPeriod } = require("../helpers");
 const { STATUS } = require("../config/constants");
+const rewardCtlr = require("../controllers/rewardsController");
+const moment = require("moment");
 
 exports.rank = catchAsyncErrors(async (req, res, next) => {
-  const { id, createdAt } = req?.user || {};
-  const userId = new ObjectId(id),
-    thirtyDaysAgo = minusDaysFromDate(30);
+  const { id } = req?.user || {};
 
-  let sumOfLast30DaysSales = 0;
-  const query = { referralId: userId, isActive: true };
-
-  const approvedReward = await Reward.findOne({
-    userId: id,
-    status: STATUS.APPROVED,
-  })
-    .sort({
-      approvedAt: -1,
-    })
-    .limit(1)
-    .exec();
-  const directReferralsCount = await referralCtlr.directReferralsCount(query);
-  // all referrals with transactions for last 30 days;
-  const referrals = (await referralCtlr.getAllReferrals(query, 8)) || [];
-  let useApprovedAt = false;
-
-  if (approvedReward?.approvedAt) useApprovedAt = true;
-
-  for (const referral of referrals) {
-    const depositQuery = {
-      status: STATUS.APPROVED,
-      userId: referral?._id,
-      createdAt: {
-        $gte: useApprovedAt ? approvedReward?.approvedAt : thirtyDaysAgo,
-      },
-    };
-
-    const transactions = await depositCtlr.find(depositQuery);
-    if (!transactions?.length) continue;
-
-    sumOfLast30DaysSales += transactions?.reduce((total, { amount }) => {
-      return total + amount;
-    }, 0);
+  const result = await this.getUserRankInfo(id);
+  if (result) {
+    if (checkRankPeriod(result.joiningDate)) {
+      rewardCtlr.create(id, result, false);
+    }
   }
-  
-  const rankQuery = {
-    directReferralsRequired: {
-      $lte: directReferralsCount,
-    },
-    requiredSalesFrom: {
-      $lte: sumOfLast30DaysSales,
-    },
-    requiredSalesTo: {
-      $gte: sumOfLast30DaysSales,
-    },
-  };
-
-  if (approvedReward) {
-    rankQuery._id = {
-      $ne: approvedReward?.rankId,
-    };
-  }
-  const rank = await Rank.findOne(rankQuery);
-  return res.json({
-    success: true,
-    data: {
-      joiningDate: createdAt,
-      directReferralsCount,
-      sumOfLast30DaysSales,
-      rank,
-    },
+  res.send({
+    success: "true",
+    data: result,
   });
 });
 
@@ -86,14 +33,99 @@ exports.find = async (query) => {
   return await Rank.find(query);
 };
 
-exports.getUserRank = async (req, res, next) => {
-  const query = { ...req?.body };
-  const rank = await this.findOne(query);
-  if (!rank) {
-    return next(new ErrorHandler("No rank found"));
+exports.getUserRankInfo = async (id) => {
+  const userId = new ObjectId(id);
+
+  // joining day of this period
+
+  const lastPeriodReward = await Reward.findOne({
+    userId,
+    statsus: STATUS.APPROVED,
+    isClaimed: false,
+  })
+    .sort({
+      _id: -1,
+    })
+    .limit(1);
+
+  let joiningDate; //start of this rank's period
+  if (lastPeriodReward?.updatedAt) {
+    joiningDate = new Date(lastPeriodReward?.updatedAt);
+  } else {
+    const referrals =
+      (await referralCtlr.getAllReferrals(
+        {
+          referralId: userId,
+          isActive: true,
+        },
+        8
+      )) || [];
+
+    for (const referral of referrals) {
+      const firstDepoistDate = await depositCtlr.firstDepositeDate(
+        referral._id
+      );
+      if (!joiningDate) joiningDate = firstDepoistDate;
+      else if (moment(joiningDate).isAfter(firstDepoistDate)) {
+        joiningDate = firstDepoistDate;
+      }
+    }
   }
-  return res.json({
-    success: true,
-    data: rank,
-  });
+  if (!joiningDate) return {};
+
+  //start day of rank
+  const lastReward = await Reward.findOne({
+    userId: userId,
+    // status: STATUS.APPROVED,
+  })
+    .sort({
+      updatedAt: -1,
+    })
+    .limit(1);
+  const startdate = new Date(lastReward?.createdAt || joiningDate);
+
+  //Count of direct referrals
+  const query = {
+    referralId: userId,
+    isActive: true,
+    createdAt: {
+      $gte: startdate,
+    },
+  };
+  const counts = await referralCtlr.directReferralsCount(query);
+
+  //total sales of user in this period
+  const depositQuery = {
+    updatedAt: {
+      $gte: startdate,
+    },
+  };
+
+  const sales = await depositCtlr.userSalesByQuery(userId, depositQuery);
+
+  //rank of this user
+  const rankQuery = {
+    directReferralsRequired: {
+      $lte: counts,
+    },
+    requiredSalesFrom: {
+      $lte: sales,
+    },
+    requiredSalesTo: {
+      $gte: sales,
+    },
+  };
+  if (lastReward) {
+    rankQuery._id = {
+      $ne: lastReward?.rankId,
+    };
+  }
+  const rank = await Rank.findOne(rankQuery);
+
+  return {
+    joiningDate: new Date(joiningDate),
+    directReferralsCount: counts,
+    sumOfLast30DaysSales: sales,
+    rank,
+  };
 };
