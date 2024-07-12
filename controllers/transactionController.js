@@ -342,26 +342,60 @@ exports.userProfitBalanceByQuery = async (userId, query = {}) => {
 };
 
 exports.userCreditBalanceByQuery = async (userId, moreQuery = {}) => {
-  const sales = this.userSalesByQuery(userId, moreQuery);
+  if (!userId) return 0;
+
+  const user = await User.findOne({ _id: userId });
+
+  if (!user) return 0;
 
   //get program of this user with his investmentLevel get creditPercentage
   const program = await programCtlr.findOne({
     level: user?.investmentLevel,
   });
-  const subProgram = program?.data?.find((row) => {
-    if (referral?.sublevel == row?.level) {
-      //need to add more checks
-      return row;
-    }
-  });
-  if (!subProgram) return 0;
-  //calc the balance and plus to this user's credit
-  const appliedPercentage = HELPER.applyPercentage(
-    sales,
-    Number(subProgram?.creditPercentage)
-  );
 
-  return appliedPercentage;
+  let creditBalance = 0;
+
+  //get all referrals of this user
+  const referrals =
+    (await referralCtlr.getAllReferrals(
+      { referralId: userId, isActive: true },
+      8
+    )) || [];
+  //check every referral
+  for (const referral of referrals) {
+    const query = {
+      userId: referral._id,
+      status: STATUS.APPROVED,
+      ...moreQuery,
+    };
+    //get all transaction of each referral
+    const transactions = await this.find(query);
+
+    if (!transactions?.length) continue;
+
+    //sum of all transactions amount
+    const sumOfAmount = transactions?.reduce((total, { amount }) => {
+      return total + amount;
+    }, 0);
+
+    const subProgram = program?.data?.find((row) => {
+      if (referral?.sublevel == row?.level) {
+        //need to add more checks
+        return row;
+      }
+    });
+    if (!subProgram) continue;
+
+    console.log(sumOfAmount, subProgram?.creditPercentage);
+    //calc the balance and plus to this user's credit
+    const appliedPercentage = HELPER.applyPercentage(
+      sumOfAmount,
+      Number(subProgram?.creditPercentage)
+    );
+    creditBalance += appliedPercentage;
+  }
+
+  return creditBalance;
 };
 
 exports.userEquityBalanceByQuery = async (userid, query = {}) => {
