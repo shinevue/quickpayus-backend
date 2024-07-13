@@ -54,14 +54,31 @@ exports.claimReward = catchAsyncErrors(async (req, res, next) => {
 exports.create = async (userId, rankInfo, isClaimed) => {
   if (!rankInfo.rank) return;
   const rankId = rankInfo.rank._id;
-  const amount = rankInfo.amount;
 
+  const { rewardFrom, rewardTo, requiredSalesFrom, requiredSalesTo } =
+    rankInfo.rank;
   const reward = new Reward({
     userId,
     rankId,
-    amount,
+    amount: rewardAmount(
+      rewardFrom,
+      rewardTo,
+      requiredSalesFrom,
+      requiredSalesTo,
+      rankInfo.sumOfLast30DaysSales
+    ),
     isClaimed,
   });
 
   return await reward.save();
 };
+
+function rewardAmount(rewardMin, rewardMax, requireMin, requireMax, sales) {
+  if (requireMax <= sales) return rewardMax;
+  if (requireMin > sales) return 0;
+  return (
+    ((rewardMax - rewardMin) * (sales - requireMin)) /
+      (requireMax - requireMin) +
+    rewardMin
+  );
+}
