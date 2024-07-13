@@ -30,47 +30,61 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.claimReward = catchAsyncErrors(async (req, res, next) => {
-  const lastReward = await Reward.findOne().sort({ _id: -1 });
-
-  if (lastReward && lastReward.status == STATUS.PENDING) {
-    next(new ErrorHandler("Alearyd Claimed", 400));
-  }
   const userId = new ObjectId(req.user.id);
+
   const rankInfo = await RankCtrl.getUserRankInfo(userId);
 
-  if (rankInfo) {
-    const result = await this.create(userId, rankInfo, true);
-    if (result) {
-      res.json({
-        success: true,
-      });
-    }
+  if (!Object.keys(rankInfo).length) {
+    return next(new ErrorHandler("The rank period has not started.", 400));
   }
-  res.json({
-    success: false,
-  });
+
+  if (!rankInfo.rank.hasOwnProperty("_id")) {
+    return next(new ErrorHandler("The rank level has not been reached.", 400));
+  }
+
+  const lastReward = await Reward.findOne({
+    userId,
+    isClaimed: true,
+  }).sort({ _id: -1 });
+
+  if (lastReward && lastReward.status == STATUS.PENDING) {
+    next(new ErrorHandler("Already Claimed", 400));
+  }
+
+  const result = await this.create(userId, rankInfo, true);
+  if (result) {
+    res.status(200).json({
+      success: true,
+    });
+  }
+  next(new ErrorHandler("Not Claimed", 400));
 });
 
 exports.create = async (userId, rankInfo, isClaimed) => {
-  if (!rankInfo.rank) return;
-  const rankId = rankInfo.rank._id;
+  try {
+    if (!rankInfo.rank) return;
+    const rankId = rankInfo.rank._id;
 
-  const { rewardFrom, rewardTo, requiredSalesFrom, requiredSalesTo } =
-    rankInfo.rank;
-  const reward = new Reward({
-    userId,
-    rankId,
-    amount: rewardAmount(
-      rewardFrom,
-      rewardTo,
-      requiredSalesFrom,
-      requiredSalesTo,
-      rankInfo.sumOfLast30DaysSales
-    ),
-    isClaimed,
-  });
+    const { rewardFrom, rewardTo, requiredSalesFrom, requiredSalesTo } =
+      rankInfo.rank;
+    console.log(rank);
+    const reward = new Reward({
+      userId,
+      rankId,
+      amount: rewardAmount(
+        rewardFrom,
+        rewardTo,
+        requiredSalesFrom,
+        requiredSalesTo,
+        rankInfo.sumOfLast30DaysSales
+      ),
+      isClaimed,
+    });
 
-  return await reward.save();
+    return await reward.save();
+  } catch (error) {
+    return null;
+  }
 };
 
 function rewardAmount(rewardMin, rewardMax, requireMin, requireMax, sales) {

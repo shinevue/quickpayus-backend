@@ -49,6 +49,7 @@ exports.getUserRankInfo = async (id) => {
     .limit(1);
 
   let joiningDate; //start of this rank's period
+  let isFirstRank = false;
   if (lastPeriodReward?.updatedAt) {
     joiningDate = new Date(lastPeriodReward?.updatedAt);
   } else {
@@ -62,14 +63,15 @@ exports.getUserRankInfo = async (id) => {
       )) || [];
 
     for (const referral of referrals) {
-      const firstDepoistDate = await depositCtlr.firstDepositeDate(
+      const firstDepositDate = await depositCtlr.firstDepositeDate(
         referral._id
       );
-      if (!joiningDate) joiningDate = firstDepoistDate;
-      else if (moment(joiningDate).isAfter(firstDepoistDate)) {
-        joiningDate = firstDepoistDate;
+      if (!joiningDate) joiningDate = firstDepositDate;
+      else if (moment(joiningDate).isAfter(firstDepositDate)) {
+        joiningDate = firstDepositDate;
       }
     }
+    isFirstRank = true;
   }
   if (!joiningDate) return {};
 
@@ -92,7 +94,8 @@ exports.getUserRankInfo = async (id) => {
       $gte: startdate,
     },
   };
-  const counts = await referralCtlr.directReferralsCount(query);
+  let counts = await referralCtlr.directReferralsCount(query);
+  if (isFirstRank) counts += 1;
 
   //total sales of user in this period
   const depositQuery = {
@@ -111,19 +114,16 @@ exports.getUserRankInfo = async (id) => {
     requiredSalesFrom: {
       $lte: sales,
     },
-    requiredSalesTo: {
-      $gte: sales,
-    },
   };
   if (lastReward) {
     rankQuery._id = {
       $ne: lastReward?.rankId,
     };
   }
-  const rank = await Rank.findOne(rankQuery);
+  const rank = (await Rank.findOne(rankQuery)) || {};
 
   return {
-    joiningDate: new Date(joiningDate),
+    joiningDate: new Date(startdate),
     directReferralsCount: counts,
     sumOfLast30DaysSales: sales,
     rank,
