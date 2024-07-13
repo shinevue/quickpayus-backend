@@ -17,5 +17,6 @@ router
   .route("/update/kyc")
   .post(isAuthenticatedUser, 
     imageUpload.fields([{name: "images", maxCount: 3}, {name: "documents", maxCount: 3}]), kycUpsert);
+    
 
 module.exports = router;

@@ -40,10 +40,10 @@ async function insertUsers(num) {
   }
 }
 
-async function updateUserReferrals() {
+async function updateUserReferrals(limit) {
   try {
     let firstUser = await User.find({}).limit(10);
-    let users = await User.find({}).skip(10).limit(3000);
+    let users = await User.find({}).skip(10).limit(limit);
     users.forEach(async (user, index) => {
       user.referralId = firstUser[Math.floor(Math.random() * 10)]._id;
       await user.save();
@@ -55,8 +55,9 @@ async function updateUserReferrals() {
 }
 
 async function seedUser() {
-  //   await insertUsers(5000);
-  await updateUserReferrals();
+  await insertUsers(100);
+  await updateUserReferrals(100);
+  process.exit(0);
 }
 
 seedUser();
