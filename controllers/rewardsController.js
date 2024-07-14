@@ -41,47 +41,47 @@ exports.claimReward = catchAsyncErrors(async (req, res, next) => {
   if (!rankInfo.rank.hasOwnProperty("_id")) {
     return next(new ErrorHandler("The rank level has not been reached.", 400));
   }
-
-  const lastReward = await Reward.findOne({
-    userId,
-    isClaimed: true,
-  }).sort({ _id: -1 });
-
-  if (lastReward && lastReward.status == STATUS.PENDING) {
-    next(new ErrorHandler("Already Claimed", 400));
-  }
-
   const result = await this.create(userId, rankInfo, true);
   if (result) {
     res.status(200).json({
       success: true,
+      data: {
+        ...result._doc,
+        title: rankInfo.rank.title,
+      },
     });
-  }
-  next(new ErrorHandler("Not Claimed", 400));
+  } else next(new ErrorHandler("Server error(claim)", 500));
 });
 
 exports.create = async (userId, rankInfo, isClaimed) => {
   try {
-    if (!rankInfo.rank) return;
-    const rankId = rankInfo.rank._id;
+    console.log(rankInfo);
+    if (rankInfo.rank && Object.keys(rankInfo.rank).length) {
+      const rankId = rankInfo.rank._id;
 
-    const { rewardFrom, rewardTo, requiredSalesFrom, requiredSalesTo } =
-      rankInfo.rank;
-    console.log(rank);
-    const reward = new Reward({
-      userId,
-      rankId,
-      amount: rewardAmount(
+      const { rewardFrom, rewardTo, requiredSalesFrom, requiredSalesTo } =
+        rankInfo.rank;
+      const amount = rewardAmount(
         rewardFrom,
         rewardTo,
         requiredSalesFrom,
         requiredSalesTo,
         rankInfo.sumOfLast30DaysSales
-      ),
-      isClaimed,
-    });
-
-    return await reward.save();
+      );
+      const reward = new Reward({
+        userId,
+        rankId,
+        amount,
+        isClaimed,
+      });
+      return await reward.save();
+    } else {
+      const reward = new Reward({
+        userId,
+        isClaimed,
+      });
+      return await reward.save();
+    }
   } catch (error) {
     return null;
   }

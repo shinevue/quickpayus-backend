@@ -16,7 +16,7 @@ exports.rank = catchAsyncErrors(async (req, res, next) => {
   const result = await this.getUserRankInfo(id);
   if (result) {
     if (checkRankPeriod(result.joiningDate)) {
-      rewardCtlr.create(id, result, false);
+      await rewardCtlr.create(id, result, false);
     }
   }
   res.send({
@@ -40,7 +40,6 @@ exports.getUserRankInfo = async (id) => {
 
   const lastPeriodReward = await Reward.findOne({
     userId,
-    statsus: STATUS.APPROVED,
     isClaimed: false,
   })
     .sort({
@@ -49,9 +48,8 @@ exports.getUserRankInfo = async (id) => {
     .limit(1);
 
   let joiningDate; //start of this rank's period
-  let isFirstRank = false;
-  if (lastPeriodReward?.updatedAt) {
-    joiningDate = new Date(lastPeriodReward?.updatedAt);
+  if (lastPeriodReward) {
+    joiningDate = new Date(lastPeriodReward?.createdAt);
   } else {
     const referrals =
       (await referralCtlr.getAllReferrals(
@@ -71,14 +69,12 @@ exports.getUserRankInfo = async (id) => {
         joiningDate = firstDepositDate;
       }
     }
-    isFirstRank = true;
   }
   if (!joiningDate) return {};
 
   //start day of rank
   const lastReward = await Reward.findOne({
     userId: userId,
-    // status: STATUS.APPROVED,
   })
     .sort({
       updatedAt: -1,
@@ -95,7 +91,7 @@ exports.getUserRankInfo = async (id) => {
     },
   };
   let counts = await referralCtlr.directReferralsCount(query);
-  if (isFirstRank) counts += 1;
+  if (!lastReward) counts += 1;
 
   //total sales of user in this period
   const depositQuery = {
@@ -115,17 +111,14 @@ exports.getUserRankInfo = async (id) => {
       $lte: sales,
     },
   };
-  if (lastReward) {
-    rankQuery._id = {
-      $ne: lastReward?.rankId,
-    };
-  }
-  const rank = (await Rank.findOne(rankQuery)) || {};
 
+  const rank = await Rank.findOne(rankQuery).sort({ _id: -1 });
+
+  console.log(rank);
   return {
     joiningDate: new Date(startdate),
     directReferralsCount: counts,
     sumOfLast30DaysSales: sales,
-    rank,
+    rank: rank ? rank.toObject() : {},
   };
 };

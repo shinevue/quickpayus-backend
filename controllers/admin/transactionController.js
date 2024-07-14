@@ -162,7 +162,6 @@ exports.update = catchAsyncErrors(async (req, res, next) => {
         program = await programCtlr.findByInvestment(balance);
         userUpdate.investmentLevel = program?.level || null;
         userUpdate.investmentSubLevel = program?.data?.level || null;
-        await this.updateCreditToParents(user, transactionType, balance);
         break;
     }
   }
