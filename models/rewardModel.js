@@ -28,6 +28,11 @@ const rewardsSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    isClaimed: {
+      type: Boolean,
+      default: false,
+      require: false,
+    },
     reason: { type: String, required: false },
   },
 

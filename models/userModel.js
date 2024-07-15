@@ -24,22 +24,22 @@ const kycSchema = new mongoose.Schema(
     },
     addressLine: {
       type: String,
-      // required: true,
+      required: true,
     },
     // addressLine2: {
     //   type: String,
     // },
     city: {
       type: String,
-      // required: true,
+      required: true,
     },
     state: {
       type: String,
-      // required: true,
+      required: true,
     },
     postalCode: {
       type: String,
-      // required: true,
+      required: true,
     },
     country: { type: String },
     occupation: { type: String },
@@ -122,7 +122,7 @@ const userSchema = new mongoose.Schema(
     investmentSubLevel: {
       type: String,
       required: false,
-      default: "A1",
+      default: "1",
     },
     kyc: { type: kycSchema },
     profitBalance: {
@@ -154,7 +154,7 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpire: Date,
     isDeleted: { type: Number, default: 0 },
     isDeletedAt: { type: Date },
-    avatarBg: {type: String}
+    avatarBg: { type: String },
   },
   { timestamps: true }
 );

@@ -21,7 +21,7 @@ exports.counts = catchAsyncErrors(async (req, res, next) => {
     depositBalance: user.depositBalance,
     equityBalance: user.referralCreditBalance + user.depositBalance,
     creditBalance: user.referralCreditBalance,
-    rankRewardBalance: user.rankRewardBalance,
+    rankRewardBalance: user.rewardBalance,
   };
 
   res.json(defaultResponse);
