@@ -8,8 +8,9 @@ const {
   create,
   get,
   remove,
+  update,
   removeAll,
-} = require("../../controllers/roleController");
+} = require("../../controllers/admin/roleController");
 const router = express.Router();
 
 router
