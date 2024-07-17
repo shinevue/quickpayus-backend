@@ -1,23 +1,27 @@
 const mongoose = require("mongoose");
 
 const ticketSchema = new mongoose.Schema(
-    {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
-        },
-        subject: {
-            type: String,
-        },
-        description: {
-            type: String,
-        },
-        uploadedUrl: {
-            type: String,
-        }     
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    { timestamps: true }
+    subject: {
+      type: String,
+    },
+    description: {
+      type: String,
+    },
+    uploadedUrl: {
+      type: String,
+    },
+    status: {
+      type: String,
+      enum: ["PENDING", "RESOLVED"],
+    }
+  },
+  { timestamps: true }
 );
 
 ticketSchema.pre("save", async function (next) {
