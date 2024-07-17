@@ -30,7 +30,7 @@ app.use(userRateLimiter);
 app.use(express.json());
 app.use(helmet()); // Use helmet for security headers
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use("/uploads/kyc", express.static(path.join(__dirname, "uploads/kyc")));
 //app.use(express.static("uploads"));

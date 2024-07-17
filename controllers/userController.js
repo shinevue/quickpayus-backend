@@ -6,9 +6,6 @@ const path = require("path");
 const fs = require("fs").promises;
 
 exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
-  console.log(req.body, "Initial Request Body");
-  console.log(req.files, "Uploaded Files");
-
   const userID = req.user.id;
   let user = await User.findById(userID);
 
@@ -64,7 +61,6 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
       })
     );
 
-    console.log(req.body, "Updated Request Body with File Info");
   }
 
   user = await User.findByIdAndUpdate(userID, { kyc: req.body }, { new: true });

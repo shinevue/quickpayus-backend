@@ -1,26 +1,28 @@
-const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
-const { Roles } = require("../models/roleModel");
-const ErrorHandler = require("../utils/errorHandler");
+const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
+const Roles = require("../../models/roleModel");
+const ErrorHandler = require("../../utils/errorHandler");
 
 exports.create = catchAsyncErrors(async (req, res, next) => {
-  if (!req?.body) {
-    return next(new ErrorHandler("No request body found"));
-  }
-
-  const alreadyExist = await this.findOne({ roleName: req?.body?.roleName });
-
-  if (alreadyExist)
-    return next(
-      new ErrorHandler(`Role already exist with this: ${req.body.roleName}`)
-    );
-
-  const data = await this.save({ ...req?.body });
-
-  return res.json({
-    success: true,
-    message: "Role created successfully",
-    data,
+  const newRole = new Roles({
+    roleName: req.body.roleName,
+    permissions: ["A", "B", "C"],
   });
+
+  newRole
+    .save()
+    .then((role) => {
+      res.json({
+        success: true,
+        msg: "Role created successfully:",
+        role: role,
+      });
+    })
+    .catch((error) => {
+      res.json({
+        success: false,
+        msg: error,
+      });
+    });
 });
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
@@ -53,29 +55,24 @@ exports.paginate = async (query, options) => {
     .limit(pageSize);
 };
 
-exports.update = catchAsyncErrors(async (req, res, next) => {
-  const { id } = req?.params || {};
-  const updated = await this.update({ _id: id, payload: req.body });
-
-  if (updated?.updatedCount) {
-    return res.json({
-      id,
-      success: true,
-      message: "Role updated successfully",
+exports.updateRole = (req, res) => {
+  let id = req.params.id;
+  let data = req.body;
+  Roles.findByIdAndUpdate(id, data)
+    .then(() => {
+      res.status(201).json({ msg: "Updated successfully." });
+    })
+    .catch(() => {
+      res.status(500).json({ msg: "Can't update role" });
     });
-  }
-
-  return res.json({
-    success: false,
-    message: "Role not found",
-  });
-});
+};
 
 exports.remove = catchAsyncErrors(async (req, res, next) => {
-  const { id } = req?.body || {};
-  const updated = await this.deleteOne({ _id: id });
+  let id = req.params.id;
 
-  if (updated?.deletedCount) {
+  const deleted = await this.deleteOne({ _id: id });
+
+  if (deleted?.deletedCount) {
     return res.json({
       id,
       success: true,
