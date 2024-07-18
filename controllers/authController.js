@@ -316,17 +316,25 @@ exports.checkDeletedUser = async () => {
 
 
 exports.checkRole = catchAsyncErrors(async (req, res, next) => {
-  const user = User.findOne(req.body);
+  const { username, password, email } = req.body;
+
+
+  const user = await User.findOne({
+    username, email
+  }).select("+password");
+
   if (!user) {
-    req.send({
-      success: true,
-      role: user.role
-    })
+    return next(new ErrorHandler("User not found", 400))
   }
-  else {
-    res.send({
-      success: false,
-      message: "User not found"
-    })
+
+  const isPasswordMatched = await user.comparePassword(password);
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Invalid Credientials", 400));
   }
+
+  res.send({
+    success: true,
+    role: user.role
+  })
 })
+
