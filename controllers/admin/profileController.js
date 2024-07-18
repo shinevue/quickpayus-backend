@@ -26,7 +26,7 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
     "#EBEBFA",
   ];
   const randomIndex = Math.floor(Math.random() * primaryColorsList.length);
-  
+
   const userInfo = req.body;
 
   const updateInfo = {
@@ -37,7 +37,7 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
     phoneNumber: userInfo.phone,
     role: userInfo.role,
     password: userInfo.password,
-    termsAndConditions: true
+    termsAndConditions: true,
   };
 
   const user = new User({
@@ -68,7 +68,7 @@ exports.edit = catchAsyncErrors(async (req, res, next) => {
     phoneNumber: userInfo.phone,
     role: userInfo.role,
     password: userInfo.password,
-    termsAndConditions: true
+    termsAndConditions: true,
   };
 
   const user = await User.findByIdAndUpdate(userID, updateInfo);
@@ -101,6 +101,24 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+exports.remove = catchAsyncErrors(async (req, res, next) => {
+  let id = req.params.id;
+  console.log(id);
+  const deleted = await this.deleteOne({ _id: id });
+
+  if (deleted?.deletedCount) {
+    return res.json({
+      id,
+      success: true,
+      message: "User deleted successfully",
+    });
+  }
+
+  return res.json({
+    success: false,
+    message: "User not found",
+  });
+});
 
 exports.paginate = async (query, options) => {
   const { page, pageSize } = options || {};
@@ -113,4 +131,8 @@ exports.paginate = async (query, options) => {
 
 exports.countDocuments = async (query) => {
   return await User.countDocuments(query);
+};
+
+exports.deleteOne = async (query) => {
+  return await User.deleteOne(query);
 };

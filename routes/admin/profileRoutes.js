@@ -7,7 +7,7 @@ const {
   create,
   getAllUser,
   edit,
-  // remove,
+  remove,
 } = require("../../controllers/admin/profileController");
 
 const router = express.Router();
@@ -20,6 +20,6 @@ router
 router
   .route("/:id")
   .put(isAuthenticatedUser, authorizeRole("admin"), edit)
-  // .delete(isAuthenticatedUser, authorizeRole("admin"), remove);
+  .delete(isAuthenticatedUser, authorizeRole("admin"), remove);
 
 module.exports = router;
