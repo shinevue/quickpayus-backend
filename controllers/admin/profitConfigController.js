@@ -37,11 +37,10 @@ exports.upsert = catchAsyncErrors(async (req, res, next) => {
     const _profitConfig = new ProfitConfig({ profit });
     response = await _profitConfig.save();
   } else {
-    const updatedProfit = { ...profitConfig?.profit, ...profit };
     response = await ProfitConfig.findByIdAndUpdate(
       profitConfig?._id,
       {
-        profit: updatedProfit,
+        profit,
       },
       { new: true }
     );
