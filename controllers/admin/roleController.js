@@ -5,7 +5,7 @@ const ErrorHandler = require("../../utils/errorHandler");
 exports.create = catchAsyncErrors(async (req, res, next) => {
   const newRole = new Roles({
     roleName: req.body.roleName,
-    permissions: ["A", "B", "C"],
+    permissions: req.body.permissions,
   });
 
   newRole
