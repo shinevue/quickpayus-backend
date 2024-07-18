@@ -46,6 +46,7 @@ app.use(
 //route Imports
 const authRoutes = require("./routes/authRoutes");
 const adminUserRoutes = require("./routes/admin/userRoutes");
+const profileRoutes = require("./routes/admin/profileRoutes");
 const adminRoleRoutes = require("./routes/admin/roleRoutes.js");
 const adminTransactionRoutes = require("./routes/admin/transactionRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
@@ -81,6 +82,7 @@ app.use(`${BASE_ROUTE}/referrals`, referralRoutes);
 app.use(`${BASE_ROUTE}/analytics`, analyticsRoutes);
 app.use(`${BASE_ROUTE}/admin/analytics`, adminAnalyticsRoutes);
 app.use(`${BASE_ROUTE}/admin/users`, adminUserRoutes);
+app.use(`${BASE_ROUTE}/admin/profile`, profileRoutes);
 app.use(`${BASE_ROUTE}/admin/roles`, adminRoleRoutes);
 app.use(`${BASE_ROUTE}/admin/transactions`, adminTransactionRoutes);
 app.use(`${BASE_ROUTE}/admin/announcements`, adminAnnouncementRoutes);
