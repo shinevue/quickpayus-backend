@@ -27,6 +27,6 @@ router
   .put("/password/reset/:token", resetPassword)
   .patch("/password/change", isAuthenticatedUser, changePassword)
   .patch("/user/deactivate", isAuthenticatedUser, deactivateAccount)
-  .get("/checkRole", isAuthenticatedUser, checkRole);
+  .post("/checkrole", isAuthenticatedUser, checkRole);
 
 module.exports = router;
