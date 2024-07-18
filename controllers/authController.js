@@ -332,6 +332,9 @@ exports.checkRole = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Invalid Credientials", 400));
   }
 
+  if (email !== req.user.email) {
+    return next(new ErrorHandler("Please enter your email.", 400));
+  }
   res.send({
     success: true,
     role: user.role
