@@ -11,6 +11,7 @@ const {
   changePassword,
   deactivateAccount,
   deleteUser,
+  checkRole
 } = require("../controllers/authController");
 const { isAuthenticatedUser, authorizeRole } = require("../middlewares/auth");
 const router = express.Router();
@@ -25,6 +26,7 @@ router
   .post("/delete", deleteUser)
   .put("/password/reset/:token", resetPassword)
   .patch("/password/change", isAuthenticatedUser, changePassword)
-  .patch("/user/deactivate", isAuthenticatedUser, deactivateAccount);
+  .patch("/user/deactivate", isAuthenticatedUser, deactivateAccount)
+  .post("/checkrole", isAuthenticatedUser, checkRole);
 
 module.exports = router;

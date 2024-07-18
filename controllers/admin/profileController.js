@@ -30,13 +30,9 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   const userInfo = req.body;
 
   const updateInfo = {
+    ...userInfo,
     firstName: "John",
     lastName: "Doe",
-    username: userInfo.name,
-    email: userInfo.email,
-    phoneNumber: userInfo.phone,
-    role: userInfo.role,
-    password: userInfo.password,
     termsAndConditions: true,
   };
 
@@ -61,13 +57,9 @@ exports.edit = catchAsyncErrors(async (req, res, next) => {
   const userInfo = req.body;
 
   const updateInfo = {
+    ...userInfo,
     firstName: "John",
     lastName: "Doe",
-    username: userInfo.name,
-    email: userInfo.email,
-    phoneNumber: userInfo.phone,
-    role: userInfo.role,
-    password: userInfo.password,
     termsAndConditions: true,
   };
 
