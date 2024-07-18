@@ -89,7 +89,7 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     total,
     totalPages: Math.ceil(total / pageSize),
-    data,
+    data: data.filter((user) => user.username !== req.user.username),
   });
 });
 
