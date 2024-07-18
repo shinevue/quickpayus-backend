@@ -27,15 +27,15 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 
     if (parentUser) referralId = parentUser?._id || parentUser?.id;
   }
-  
+
   const primaryColorsList = ["#007AFF", "#34C759", "#FF3B30", "#FFCC00", "#FF9500", "#00C7BE", "#FF2D55", "#AF52DE", "#5856D6"]
   const secondaryColorsList = ["#D5E4F4", "#E7F8EB", "#FFE7E6", "#FFF9E0", "#FFF2E0", "#E0F8F7", "#FFE6EB", "#F5EAFB", "#EBEBFA"]
   const randomIndex = Math.floor(Math.random() * primaryColorsList.length);
-  const user = new User({...req.body, avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)`});
+  const user = new User({ ...req.body, avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)` });
   user.referralId = referralId;
 
   const saved = await user.save();
-  res.json({ success: true, message: "User Created", data: saved});
+  res.json({ success: true, message: "User Created", data: saved });
 });
 
 exports.signin = catchAsyncErrors(async (req, res, next) => {
@@ -313,3 +313,28 @@ exports.checkDeletedUser = async () => {
   });
   await User.deleteMany({ _id: { $in: resultUsers.map((user) => user._id) } });
 };
+
+
+exports.checkRole = catchAsyncErrors(async (req, res, next) => {
+  const { username, password, email } = req.body;
+
+
+  const user = await User.findOne({
+    username, email
+  }).select("+password");
+
+  if (!user) {
+    return next(new ErrorHandler("User not found", 400))
+  }
+
+  const isPasswordMatched = await user.comparePassword(password);
+  if (!isPasswordMatched) {
+    return next(new ErrorHandler("Invalid Credientials", 400));
+  }
+
+  res.send({
+    success: true,
+    role: user.role
+  })
+})
+
