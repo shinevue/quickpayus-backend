@@ -56,14 +56,27 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.edit = catchAsyncErrors(async (req, res, next) => {
-  // const userID = req.params.id;
+  const userID = req.params.id;
 
-  // const user = await User.findByIdAndUpdate(userID, updateInfo);
+  const userInfo = req.body;
+
+  const updateInfo = {
+    firstName: "John",
+    lastName: "Doe",
+    username: userInfo.name,
+    email: userInfo.email,
+    phoneNumber: userInfo.phone,
+    role: userInfo.role,
+    password: userInfo.password,
+    termsAndConditions: true
+  };
+
+  const user = await User.findByIdAndUpdate(userID, updateInfo);
 
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    // user,
+    user,
   });
 });
 
