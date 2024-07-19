@@ -84,7 +84,7 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
   }
 
   const data = await this.paginate(
-    { firstName: "Admin", lastName: "Clone" },
+    { role: { $ne: "user" } },
     { page, pageSize }
   );
 
