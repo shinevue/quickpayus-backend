@@ -55,6 +55,37 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+exports.suspendUser = catchAsyncErrors(async (req, res, next) => {
+  const id = req.params.id;
+  const user = await User.findByIdAndUpdate(id, req.body);
+
+  res.status(200).json({
+    success: true,
+    message: "User suspended successfully",
+    user,
+  });
+});
+
+exports.editUser = catchAsyncErrors(async (req, res, next) => {
+  const id = req.params.id;
+
+  const { balance, profit, kyc, status, verificationDate } = req.body;
+  const updateInfo = { depositBalance: balance, profitBalance: profit, kyc, status, verificationDate };
+
+  console.log("+==============================+");
+  console.log(id, updateInfo);
+
+  const user = await User.findByIdAndUpdate(id, updateInfo);
+
+  console.log("iser: ", user);
+
+  res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    user,
+  });
+});
+
 /* exports.getUsersWithBalance = async (page, pageSize, query) => {
   try {
     console.log(TRANSACTION_TYPES.DEPOSIT, STATUS.APPROVED);
