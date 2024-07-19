@@ -58,8 +58,8 @@ exports.edit = catchAsyncErrors(async (req, res, next) => {
 
   const updateInfo = {
     ...userInfo,
-    firstName: "John",
-    lastName: "Doe",
+    firstName: "Admin",
+    lastName: "Clone",
     termsAndConditions: true,
   };
 
