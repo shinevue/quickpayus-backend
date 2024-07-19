@@ -31,8 +31,8 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
 
   const updateInfo = {
     ...userInfo,
-    firstName: "John",
-    lastName: "Doe",
+    firstName: "Admin",
+    lastName: "Clone",
     termsAndConditions: true,
   };
 
@@ -83,7 +83,10 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("No User found"));
   }
 
-  const data = await this.paginate({}, { page, pageSize });
+  const data = await this.paginate(
+    { firstName: "Admin", lastName: "Clone" },
+    { page, pageSize }
+  );
 
   return res.json({
     success: true,
@@ -116,7 +119,7 @@ exports.paginate = async (query, options) => {
   const { page, pageSize } = options || {};
   const skip = (page - 1) * pageSize;
   return await User.find(query)
-    .sort({ createdAt: -1 })
+    .sort({ createdAt: 1 })
     .skip(skip)
     .limit(pageSize);
 };
