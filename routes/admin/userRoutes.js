@@ -15,23 +15,23 @@ const {
 } = require("../../controllers/admin/usersController");
 const router = express.Router();
 
-router.route("/").get(isAuthenticatedUser, authorizeRole("admin"), get);
+router.route("/").get(isAuthenticatedUser, authorizeRole, get);
 router
   .route("/update/status")
-  .put(isAuthenticatedUser, authorizeRole("admin"), updateStatus);
+  .put(isAuthenticatedUser, authorizeRole, updateStatus);
 
 router
   .route("/update/kyc")
-  .put(isAuthenticatedUser, authorizeRole("admin"), updateKyc);
+  .put(isAuthenticatedUser, authorizeRole, updateKyc);
 
 router
   .route("/claimed-rewards")
-  .get(isAuthenticatedUser, authorizeRole("admin"), claimedRewards)
-  .put(isAuthenticatedUser, authorizeRole("admin"), updateStatusOfReward);
+  .get(isAuthenticatedUser, authorizeRole, claimedRewards)
+  .put(isAuthenticatedUser, authorizeRole, updateStatusOfReward);
 
 router
   .route("/:id")
-  .get(isAuthenticatedUser, authorizeRole("admin"), getUser)
-  .delete(isAuthenticatedUser, authorizeRole("admin"), deleteUser);
+  .get(isAuthenticatedUser, authorizeRole, getUser)
+  .delete(isAuthenticatedUser, authorizeRole, deleteUser);
 
 module.exports = router;

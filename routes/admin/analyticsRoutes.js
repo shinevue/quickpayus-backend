@@ -8,6 +8,6 @@ const { counts } = require("../../controllers/admin/analyticsController");
 const router = express.Router();
 router
   .route("/counts")
-  .get(isAuthenticatedUser, authorizeRole("admin"), counts);
+  .get(isAuthenticatedUser, authorizeRole, counts);
 
 module.exports = router;
