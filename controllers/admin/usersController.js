@@ -69,8 +69,8 @@ exports.suspendUser = catchAsyncErrors(async (req, res, next) => {
 exports.editUser = catchAsyncErrors(async (req, res, next) => {
   const id = req.params.id;
 
-  const { firstName, lastName, username, email } = req.body;
-  const updateInfo = { firstName, lastName, username, email };
+  const { name, username, email } = req.body;
+  const updateInfo = { firstName:name.split(" ")[0], lastName:name.split(" ")[1], username, email };
 
   const user = await User.findByIdAndUpdate(id, updateInfo);
 
