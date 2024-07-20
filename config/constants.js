@@ -89,4 +89,47 @@ module.exports = {
       directReferralsRequired: 100,
     },
   ],
+  ALLOWED_ROUTES: [
+    {
+      TITLE: "Create User",
+      ROUTE: [
+        {
+          PATH: "/api/v1/admin/profile",
+          METHOD: "POST"
+        },
+      ]
+    },
+    {
+      TITLE: "Edit User",
+      ROUTE: [
+        {
+          PATH: "/api/v1/admin/profile",
+          METHOD: "PUT"
+        },
+      ]
+    },
+    {
+      TITLE: "Delete User",
+      ROUTE: [
+        {
+          PATH: "/api/v1/admin/profile",
+          METHOD: "DELETE"
+        },
+      ]
+    },
+    {
+      TITLE: "View Dashboard",
+      ROUTE: [
+        {
+          PATH: "/api/v1/admin/analytics",
+          METHOD: "GET"
+        },
+      ]
+    },
+    {
+      TITLE: "Manage Content",
+      ROUTE: [
+      ]
+    }
+  ]
 };
