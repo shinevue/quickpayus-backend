@@ -8,6 +8,7 @@ const {
   get,
   updateRole,
   remove,
+  getPermission,
 } = require("../../controllers/admin/roleController");
 
 const router = express.Router();
@@ -21,5 +22,9 @@ router
   .route("/:id")
   .put(isAuthenticatedUser, authorizeRole, updateRole)
   .delete(isAuthenticatedUser, authorizeRole, remove);
+
+router
+  .route("/permission")
+  .get(isAuthenticatedUser, authorizeRole, getPermission);
 
 module.exports = router;
