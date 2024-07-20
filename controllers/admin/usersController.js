@@ -35,9 +35,9 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
       query.kyc = { $exists: true };
     }
   }
-  if (type === "Active" || type === "inActive") {
-    query.isActive = type === "Active";
-  }
+  // if (type === "Active" || type === "inActive") {
+  //   query.isActive = type === "Active";
+  // }
 
   const data = await User.find(query)
     .skip((page - 1) * pageSize)
