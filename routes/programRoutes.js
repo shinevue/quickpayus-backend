@@ -1,6 +1,6 @@
 const express = require("express");
-const { get } = require("../controllers/programController");
+const { get, update } = require("../controllers/programController");
 const router = express.Router();
-router.get("/", get);
+router.route("/").get(get).put(update);
 
 module.exports = router;

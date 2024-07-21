@@ -16,6 +16,16 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+exports.update = catchAsyncErrors(async (req, res, next) => {
+  const programs = req.body.program;
+  await Program.deleteMany({});
+  const savePromises = programs.map(program => new Program(program).save());
+  await Promise.all(savePromises);
+  res.send({
+    success: true
+  })
+})
+
 exports.findByInvestment = async (investment) => {
   const program = await Program.findOne(
     {
