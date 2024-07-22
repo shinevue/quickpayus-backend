@@ -12,7 +12,7 @@ const {
 
 router
   .route("/")
-  .get(isAuthenticatedUser, authorizeRole("admin"), get)
-  .post(isAuthenticatedUser, authorizeRole("admin"), upsert);
+  .get(isAuthenticatedUser, authorizeRole, get)
+  .post(isAuthenticatedUser, authorizeRole, upsert);
 
 module.exports = router;
