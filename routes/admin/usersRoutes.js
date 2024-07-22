@@ -11,7 +11,9 @@ const {
   claimedRewards,
   updateStatusOfReward,
   claimReward,
+  suspendUser,
   updateKyc,
+  editUser,
 } = require("../../controllers/admin/usersController");
 const router = express.Router();
 
@@ -32,6 +34,16 @@ router
 router
   .route("/:id")
   .get(isAuthenticatedUser, authorizeRole, getUser)
-  .delete(isAuthenticatedUser, authorizeRole, deleteUser);
+  .delete(isAuthenticatedUser, authorizeRole, deleteUser)
+  .put(isAuthenticatedUser, authorizeRole, editUser);
+
+router.route("/:id").get(isAuthenticatedUser, authorizeRole, getUser);
+
+router.put(
+  "/suspend/:id",
+  isAuthenticatedUser,
+  authorizeRole,
+  suspendUser
+);
 
 module.exports = router;

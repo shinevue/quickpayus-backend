@@ -45,7 +45,7 @@ app.use(
 
 //route Imports
 const authRoutes = require("./routes/authRoutes");
-const adminUserRoutes = require("./routes/admin/userRoutes");
+const adminUserRoutes = require("./routes/admin/usersRoutes.js");
 const profileRoutes = require("./routes/admin/profileRoutes");
 const adminRoleRoutes = require("./routes/admin/roleRoutes.js");
 const adminTransactionRoutes = require("./routes/admin/transactionRoutes");

@@ -35,9 +35,9 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
       query.kyc = { $exists: true };
     }
   }
-  if (type === "Active" || type === "inActive") {
-    query.isActive = type === "Active";
-  }
+  // if (type === "Active" || type === "inActive") {
+  //   query.isActive = type === "Active";
+  // }
 
   const data = await User.find(query)
     .skip((page - 1) * pageSize)
@@ -52,6 +52,32 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     data,
     total,
     totalPages: Math.ceil(total / pageSize),
+  });
+});
+
+exports.suspendUser = catchAsyncErrors(async (req, res, next) => {
+  const id = req.params.id;
+  const user = await User.findByIdAndUpdate(id, req.body);
+
+  res.status(200).json({
+    success: true,
+    message: "User suspended successfully",
+    user,
+  });
+});
+
+exports.editUser = catchAsyncErrors(async (req, res, next) => {
+  const id = req.params.id;
+
+  const { name, username, email } = req.body;
+  const updateInfo = { firstName:name.split(" ")[0], lastName:name.split(" ")[1], username, email };
+
+  const user = await User.findByIdAndUpdate(id, updateInfo);
+
+  res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    user,
   });
 });
 
