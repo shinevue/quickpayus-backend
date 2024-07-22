@@ -319,7 +319,7 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
     },
   };
 
-  const user = await User.findOneAndUpdate({ uuid }, userUpdate, { new: true });
+  const user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
   if (!user) {
     return next(new ErrorHandler("User Not Found", 401));
   }
