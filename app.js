@@ -111,6 +111,7 @@ app.get('/email', async(req, res) => {
     });
 });
 
+app.use('/uploads', express.static('uploads'));
 
 // errorMidelware
 app.use(errorMiddleware);
