@@ -14,12 +14,12 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(isAuthenticatedUser, authorizeRole("admin"), create)
-  .get(isAuthenticatedUser, authorizeRole("admin"), get)
-  .delete(isAuthenticatedUser, authorizeRole("admin"), remove);
+  .post(isAuthenticatedUser, authorizeRole, create)
+  .get(isAuthenticatedUser, authorizeRole, get)
+  .delete(isAuthenticatedUser, authorizeRole, remove);
 
 router
   .route("/removeall")
-  .delete(isAuthenticatedUser, authorizeRole("admin"), removeAll);
+  .delete(isAuthenticatedUser, authorizeRole, removeAll);
 
 module.exports = router;

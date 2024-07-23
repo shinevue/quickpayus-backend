@@ -8,10 +8,10 @@ const { update } = require("../../controllers/admin/transactionController");
 const { get } = require("../../controllers/transactionController");
 
 const router = express.Router();
-router.route("/").get(isAuthenticatedUser, authorizeRole("admin"), get);
+router.route("/").get(isAuthenticatedUser, authorizeRole, get);
 
 router
   .route("/status/update")
-  .post(isAuthenticatedUser, authorizeRole("admin"), update);
+  .post(isAuthenticatedUser, authorizeRole, update);
 
 module.exports = router;
