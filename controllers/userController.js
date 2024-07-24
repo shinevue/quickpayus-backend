@@ -14,7 +14,11 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
       // Delete previous image files
       await Promise.all(
         user.kyc.images.map(async (file) => {
-          const filePath = path.join(__dirname, `../uploads/kyc/${user.username}`, file.name);
+          const filePath = path.join(
+            __dirname,
+            `../uploads/kyc/${user.username}`,
+            file.name
+          );
           try {
             await fs.unlink(filePath);
           } catch (err) {
@@ -28,7 +32,11 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
       // Delete previous document files
       await Promise.all(
         user.kyc.documents.map(async (file) => {
-          const filePath = path.join(__dirname, `../uploads/kyc/${user.username}`, file.name);
+          const filePath = path.join(
+            __dirname,
+            `../uploads/kyc/${user.username}`,
+            file.name
+          );
           try {
             await fs.unlink(filePath);
           } catch (err) {
@@ -60,10 +68,13 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
         return { name: file.filename };
       })
     );
-
   }
 
-  user = await User.findByIdAndUpdate(userID, { kyc: req.body }, { new: true });
+  user = await User.findByIdAndUpdate(
+    userID,
+    { kyc: { ...req.body, addressLine: req.body.address } },
+    { new: true }
+  );
 
   res.status(200).json({
     success: true,
