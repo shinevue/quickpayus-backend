@@ -5,7 +5,7 @@ const receiverSchema = new mongoose.Schema(
   {
     adminId: {
       type: String,
-      required: true
+      required: true,
     },
     action: {
       type: String,
@@ -16,7 +16,7 @@ const receiverSchema = new mongoose.Schema(
     },
     newAddress: {
       type: String,
-      required: true
+      required: true,
     },
   },
 

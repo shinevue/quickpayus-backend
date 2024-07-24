@@ -94,26 +94,23 @@ app.use(`${BASE_ROUTE}/otp`, otpRoutes);
 app.use(`${BASE_ROUTE}/reward`, rewardRoutes);
 app.use(`${BASE_ROUTE}/support`, supportRoutes);
 
-
-
 //  Check deleted status and remove finally part.
 // checkDeletedUser();
-
 
 // Make seed user's profile data
 // seedDummyUsers();
 
-app.set('view engine', 'ejs');
-app.set('views', './utils/emailTemplates');
+app.set("view engine", "ejs");
+app.set("views", "./utils/emailTemplates");
 
-app.get('/email', async(req, res) => {
-    res.render('emailConfirm', {
-        title: 'EJS Components Example',
-        content: 'This is the content of the main page.',
-    });
+app.get("/email", async (req, res) => {
+  res.render("emailConfirm", {
+    title: "EJS Components Example",
+    content: "This is the content of the main page.",
+  });
 });
 
-app.use('/uploads', express.static('uploads'));
+app.use("/uploads", express.static("uploads"));
 
 // errorMidelware
 app.use(errorMiddleware);
