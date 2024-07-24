@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
 const { STATUS } = require("../config/constants");
 
-const rewardsSchema = new mongoose.Schema(
+const receiverSchema = new mongoose.Schema(
   {
     adminId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+      type: String,
+      required: true
     },
     action: {
       type: String,
@@ -14,17 +13,16 @@ const rewardsSchema = new mongoose.Schema(
     },
     oldAddress: {
       type: String,
-      required: false
     },
     newAddress: {
       type: String,
-      required: false
+      required: true
     },
   },
 
   { timestamps: true }
 );
 
-const Reward = mongoose.model("rewards", rewardsSchema);
+const Receiver = mongoose.model("receiver", receiverSchema);
 
-module.exports = Reward;
+module.exports = Receiver;

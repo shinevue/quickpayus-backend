@@ -4,13 +4,11 @@ const {
   authorizeRole,
 } = require("../../middlewares/auth");
 const {
-  updateAddress
+  addReceiver,
 } = require("../../controllers/admin/receiverAddressController");
 
 const router = express.Router();
 
-router
-  .route("/")
-  .put(isAuthenticatedUser, authorizeRole, updateAddress)
+router.route("/").post(isAuthenticatedUser, authorizeRole, addReceiver);
 
 module.exports = router;
