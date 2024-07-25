@@ -11,9 +11,15 @@ exports.get = catchAsyncErrors(async (req, res) => {
 
   if (isRead === "false") {
     const total = await notificationService.countDocuments({
-      userId: id,
-      isRead: isRead,
+      $or: [
+        {
+          userId: id,
+          isRead: isRead,
+        },
+        { adminCreated: true },
+      ],
     });
+    console.log(total);
     return res.json({
       success: true,
       total,
