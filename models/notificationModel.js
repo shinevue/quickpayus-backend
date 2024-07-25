@@ -10,6 +10,7 @@ const notificationSchema = new mongoose.Schema(
 
     message: { type: String, required: true, minlength: 1 },
     isRead: { type: Boolean, default: false },
+    adminCreated: { type: Boolean, default: false },
     type: { type: String, required: false },
   },
   { timestamps: true }
