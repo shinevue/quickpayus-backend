@@ -21,6 +21,7 @@ const {
 
 const { ObjectId } = require("mongodb");
 const { query } = require("express");
+const Receiver = require("../models/receiverAddressModel");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { id, role } = req?.user || {};
@@ -76,6 +77,15 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     total,
     totalPages: Math.ceil(total / pageSize),
     data,
+  });
+});
+
+exports.getAddress = catchAsyncErrors(async (req, res, next) => {
+  const data = await Receiver.find().sort({ createdAt: -1 }).limit(1);
+  console.log("data: ", data[0]);
+  return res.json({
+    success: true,
+    address: data[0],
   });
 });
 
