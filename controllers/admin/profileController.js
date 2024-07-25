@@ -3,6 +3,7 @@ const User = require("../../models/userModel");
 const ErrorHandler = require("../../utils/errorHandler");
 
 exports.create = catchAsyncErrors(async (req, res, next) => {
+  let referralId = req.user.id;
   const primaryColorsList = [
     "#007AFF",
     "#34C759",
@@ -40,8 +41,9 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
     ...updateInfo,
     avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)`,
   });
+  user.referralId = referralId;
 
-  const saved = await user
+  user
     .save()
     .then((result) => {
       res.json({ success: true, message: "User Created", data: result });
