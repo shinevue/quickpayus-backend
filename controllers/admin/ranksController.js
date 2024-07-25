@@ -20,10 +20,10 @@ const {
 const { date } = require("faker/lib/locales/az");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
-  console.log("First Step:", req.query);
-  const { status, page = 1 } = req?.query || {};
-  const pageSize = process.env.RECORDS_PER_PAGE || 15;
+  const { status, page = 1 } = req.query;
+  const pageSize = parseInt(process.env.RECORDS_PER_PAGE, 10) || 15;
   let query = {};
+
   if (status) query.status = status;
 
   const ranks = await Reward.aggregate([
@@ -69,7 +69,10 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
       }
     },
     {
-      $unwind: "$indirectReferrals"
+      $unwind: {
+        path: "$indirectReferrals",
+        preserveNullAndEmptyArrays: true
+      }
     },
     {
       $group: {
@@ -83,12 +86,6 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
         reward: { $first: "$amount" },
         status: { $first: "$status" },
         rank: { $first: "$rank.title" }
-      }
-    },
-    {
-      $match: {
-        directReferrals: { $gt: 0 }, // Filter for users with at least one direct referral
-        indirectReferrals: { $ne: [] } // Filter for users with at least one indirect referral
       }
     },
     {
@@ -113,13 +110,12 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
   ]);
 
   const totalCount = await Reward.countDocuments(query);
-  console.log("Second Step:", ranks);
 
   res.json({
     success: true,
     ranks,
     totalCount,
-    totalPages: Math.ceil(ranks.length / pageSize),
+    totalPages: Math.ceil(totalCount / pageSize),
   });
 });
 
