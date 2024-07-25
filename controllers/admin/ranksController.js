@@ -76,7 +76,7 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     },
     {
       $group: {
-        _id: "$user._id",
+        _id: "$_id",
         rewardId: { $first: "$_id" },
         id: { $first: "$user._id" },
         name: { $first: "$user.username" },
