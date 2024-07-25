@@ -9,6 +9,15 @@ exports.paginate = async (userId, options) => {
     .limit(pageSize);
 };
 
+exports.paginateQuery = async (query, options) => {
+  const { page, pageSize } = options || {};
+  const skip = (page - 1) * pageSize;
+  return await Notification.find(query)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(pageSize);
+};
+
 exports.countDocuments = async (query) => {
   return await Notification.countDocuments(query);
 };

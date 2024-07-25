@@ -27,14 +27,31 @@ exports.get = catchAsyncErrors(async (req, res) => {
   }
 
   const total = await notificationService.countDocuments({
-    userId: id,
+    $or: [
+      {
+        userId: id,
+        isRead: isRead,
+      },
+      { adminCreated: true },
+    ],
   });
 
   if (!total) {
     return next(new ErrorHandler("No notifications found"));
   }
 
-  const data = await notificationService.paginate(id, { page, pageSize });
+  const data = await notificationService.paginateQuery(
+    {
+      $or: [
+        { adminCreated: true },
+        {
+          userId: id,
+          isRead: isRead,
+        },
+      ],
+    },
+    { page, pageSize }
+  );
 
   return res.json({
     success: true,

@@ -2,20 +2,19 @@ const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const notificationService = require("../../services/notificationService");
 const ErrorHandler = require("../../utils/errorHandler");
 
-exports.create = catchAsyncErrors(async (req, res) => {
+exports.create = catchAsyncErrors(async (req, res, next) => {
   if (!req?.body) {
     return next(new ErrorHandler("No request body found"));
   }
 
   const alreadyExist = await notificationService.findOne({
-    title: req?.body?.title,
+    message: req?.body?.message,
   });
 
   if (alreadyExist)
     return next(
       new ErrorHandler(`Notification already exist with title: ${title}`)
     );
-
   const data = await notificationService.create(req.body);
 
   return res.json({
@@ -30,13 +29,13 @@ exports.get = catchAsyncErrors(async (req, res) => {
 
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
-  const total = await notificationService.countDocuments({});
+  const total = await notificationService.countDocuments({ adminCreated: true });
 
   if (!total) {
     return next(new ErrorHandler("No Announcements found"));
   }
 
-  const data = await notificationService.paginate(
+  const data = await notificationService.paginateQuery(
     { adminCreated: true },
     { page, pageSize }
   );
@@ -48,5 +47,5 @@ exports.get = catchAsyncErrors(async (req, res) => {
     data,
   });
 });
-exports.remove = catchAsyncErrors(async (req, res) => {})
-exports.removeAll = catchAsyncErrors(async (req, res) => {})
+exports.remove = catchAsyncErrors(async (req, res) => {});
+exports.removeAll = catchAsyncErrors(async (req, res) => {});
