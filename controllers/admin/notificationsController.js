@@ -8,14 +8,17 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   }
 
   const alreadyExist = await notificationService.findOne({
-    message: req?.body?.message,
+    title: req?.body?.title,
   });
 
   if (alreadyExist)
     return next(
       new ErrorHandler(`Notification already exist with title: ${title}`)
     );
-  const data = await notificationService.create(req.body);
+  const data = await notificationService.create({
+    ...req.body,
+    userId: req.user.username,
+  });
 
   return res.json({
     success: true,
@@ -29,7 +32,9 @@ exports.get = catchAsyncErrors(async (req, res) => {
 
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
-  const total = await notificationService.countDocuments({ adminCreated: true });
+  const total = await notificationService.countDocuments({
+    adminCreated: true,
+  });
 
   if (!total) {
     return next(new ErrorHandler("No Announcements found"));
