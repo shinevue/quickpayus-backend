@@ -18,27 +18,54 @@ const {
   NOTIFICATION_TYPES,
   DEFAULT_FEE_AMOUNT,
 } = require("../../config/constants");
+const { date } = require("faker/lib/locales/az");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
-  const { type, page = 1 } = req?.query || {};
+  const { type, status, page = 1 } = req?.query || {};
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
   let query = {};
-  if (type) {
-    query.status = type;
-  }
+  if (type) query.transactionType = type;
+  if (status) query.status = status;
 
-  const deposites = await this.find(query)
-    .populate("userId")
-    .skip((page - 1) * pageSize)
-    .limit(pageSize);
-
-  const totalDeposites = await this.countDocuments(query);
+  const transactions = await Transaction.aggregate([
+    {
+      $match: query,
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user"
+      }
+    },
+    {
+      $unwind: "$user"
+    },
+    {
+      $project: {
+        date: "$createdAt",
+        user: "$user.username",
+        transactionId: "$_id",
+        type: "$transactionType",
+        status: "$status",
+        amount: "$amount",
+      }
+    },
+    {
+      $skip: (page - 1) * pageSize,
+    },
+    {
+      $limit: pageSize,
+    }
+  ]);
+  const totalCount = await this.countDocuments(query);
 
   res.json({
     success: true,
-    deposites,
-    totalDeposites,
-    totalPages: Math.ceil(totalDeposites / pageSize),
+    transactions,
+    totalCount,
+    totalPages: Math.ceil(transactions / pageSize),
   });
 });
 
