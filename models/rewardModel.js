@@ -28,6 +28,12 @@ const rewardsSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    sales: {
+      required: false,
+      type: Number,
+      default: 0,
+      min: 0,
+    },
     isClaimed: {
       type: Boolean,
       default: false,
