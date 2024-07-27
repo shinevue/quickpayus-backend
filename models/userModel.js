@@ -147,6 +147,7 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
     isActive: { type: Boolean, default: true },
+    isEnableMFA: { type: Boolean, default: true },
     alertNotifications: { type: Boolean, default: false },
     emailNotifications: { type: Boolean, default: false },
     role: { type: String, default: "user" },

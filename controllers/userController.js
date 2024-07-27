@@ -121,6 +121,35 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
+exports.enable2FA = catchAsyncErrors(async (req, res, next) => {
+  const userID = req.user.id;
+  const user = await User.findById(userID);
+  if (!user) {
+    return next(
+      new ErrorHandler(
+        "User not found or not logged In. Please login and try again.",
+        400
+      )
+    );
+  }
+  user.isEnableMFA = req.body.checked;
+  await user
+    .save()
+    .then(() => {
+      res.status(200).json({
+        success: true,
+        message: "MFA status was changes successfully",
+        user,
+      });
+    })
+    .catch(() => {
+      res.status(500).json({
+        success: false,
+        message: "MFA status wasn't changes successfully",
+      });
+    });
+});
+
 exports.balanceByType = async (query) => {
   let balance = 0,
     key = null;

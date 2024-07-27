@@ -6,6 +6,7 @@ const {
   getUser,
   getAllUser,
   kycUpsert,
+  enable2FA
 } = require("../controllers/userController");
 const { imageUpload } = require("../middlewares/imageUpload");
 const router = express.Router();
@@ -13,6 +14,7 @@ const router = express.Router();
 router.route("/:uuid").get(isAuthenticatedUser, getUser);
 router.route("/all/:key").get(getAllUser);
 router.put("/update/profile", isAuthenticatedUser, updateProfile);
+router.put("/update/enable2FA", isAuthenticatedUser, enable2FA);
 router
   .route("/update/kyc")
   .post(isAuthenticatedUser, 
