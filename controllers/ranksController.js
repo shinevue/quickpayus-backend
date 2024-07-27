@@ -77,7 +77,7 @@ exports.getUserRankInfo = async (id) => {
     userId: userId,
   })
     .sort({
-      updatedAt: -1,
+      _id: -1,
     })
     .limit(1);
   const startdate = new Date(lastReward?.createdAt || joiningDate);
