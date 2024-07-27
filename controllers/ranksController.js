@@ -77,7 +77,7 @@ exports.getUserRankInfo = async (id) => {
     userId: userId,
   })
     .sort({
-      updatedAt: -1,
+      _id: -1,
     })
     .limit(1);
   const startdate = new Date(lastReward?.createdAt || joiningDate);
@@ -85,7 +85,6 @@ exports.getUserRankInfo = async (id) => {
   //Count of direct referrals
   const query = {
     referralId: userId,
-    isActive: true,
     createdAt: {
       $gte: startdate,
     },
@@ -93,6 +92,7 @@ exports.getUserRankInfo = async (id) => {
   let counts = await referralCtlr.directReferralsCount(query);
   if (!lastReward) counts += 1;
 
+  let inDirectCounts = await referralCtlr.indirectReferralsCount(query, 8);
   //total sales of user in this period
   const depositQuery = {
     updatedAt: {
@@ -114,10 +114,10 @@ exports.getUserRankInfo = async (id) => {
 
   const rank = await Rank.findOne(rankQuery).sort({ _id: -1 });
 
-  console.log(rank);
   return {
     joiningDate: new Date(startdate),
     directReferralsCount: counts,
+    indirectReferralsCount: inDirectCounts,
     sumOfLast30DaysSales: sales,
     rank: rank ? rank.toObject() : {},
   };

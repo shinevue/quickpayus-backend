@@ -135,10 +135,12 @@ exports.getIndirectReferrals = async (query, options) => {
   ]);
 };
 
-exports.getIndirectReferralsCount = async (query, depth, level) => {
-  return await User.aggregate([
+exports.indirectReferralsCount = async (query, depth) => {
+  const { referralId, ...otherQueryParams } = query;
+
+  const result = await User.aggregate([
     {
-      $match: query,
+      $match: { referralId },
     },
     {
       $graphLookup: {
@@ -147,13 +149,8 @@ exports.getIndirectReferralsCount = async (query, depth, level) => {
         connectFromField: "_id",
         connectToField: "referralId",
         as: "children",
-        depthField: "sublevel",
         maxDepth: depth,
-      },
-    },
-    {
-      $addFields: {
-        sublevel: 1,
+        depthField: "sublevel",
       },
     },
     {
@@ -163,40 +160,30 @@ exports.getIndirectReferralsCount = async (query, depth, level) => {
             input: "$children",
             as: "child",
             in: {
-              $mergeObjects: [
-                "$$child",
-                {
-                  sublevel: { $add: ["$$child.sublevel", 2] }, // Adjust if needed
-                },
-              ],
+              _id: "$$child._id",
+              createdAt: "$$child.createdAt"
             },
           },
         },
       },
     },
     {
-      $addFields: {
-        children: {
-          $filter: {
-            input: "$children",
-            as: "child",
-            cond: { $eq: ["$$child.sublevel", level] }, // Adjust the condition to match the desired sublevel
-          },
-        },
-      },
-    },
-    {
       $project: {
-        count: { $size: "$children" },
-      },
-    },
-    {
-      $group: {
-        _id: null, // Group all documents together
-        total: { $sum: "$count" },
+        _id: 0,
+        children: 1,
       },
     },
   ]);
+
+  const allindrectReferrals = result.flatMap(row => row.children || []);
+
+  // Convert other query parameters to match the indirect children
+  const filterQuery = { ...otherQueryParams, _id: { $in: allindrectReferrals.map(child => child._id) } };
+
+  // Count the filtered indirect referrals
+  const count = await User.countDocuments(filterQuery);
+  console.log(otherQueryParams, count)
+  return count;
 };
 
 exports.referrals = catchAsyncErrors(async (req, res, next) => {

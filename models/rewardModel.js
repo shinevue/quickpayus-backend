@@ -17,11 +17,6 @@ const rewardsSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Rank",
     },
-    // adminId: {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "User",
-    //   required: false,
-    // },
     amount: {
       required: false,
       type: Number,
@@ -33,6 +28,16 @@ const rewardsSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: 0,
+    },
+    directCount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    indirectCount: {
+      type: Number,
+      default: 0,
+      min: 0
     },
     isClaimed: {
       type: Boolean,

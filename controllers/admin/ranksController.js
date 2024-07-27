@@ -21,7 +21,7 @@ const {
 const { date } = require("faker/lib/locales/az");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
-  console.log("request: ", req.query);
+
   const { status, criteria, searchQuery, page = 1 } = req.query;
   const pageSize = parseInt(process.env.RECORDS_PER_PAGE, 10) || 15;
   let query = {};
@@ -30,14 +30,12 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
 
   let matchCriteria = {};
 
-  if (criteria && searchQuery) {
-    if (criteria === 'claimedRewards') {
-      matchCriteria.reward = { $gte: parseFloat(searchQuery) };
-    } else if (criteria === 'amount') {
-      matchCriteria.sales = { $gte: parseFloat(searchQuery) };
-    } else if (criteria === 'date') {
-      matchCriteria.date = { $gte: new Date(searchQuery) };
-    }
+  if (criteria === 'claimedRewards') {
+    matchCriteria.isClaimed = true;
+  } else if (criteria === 'amount') {
+    matchCriteria.sales = { $gte: parseFloat(searchQuery || 0) };
+  } else if (criteria === 'date') {
+    matchCriteria.date = { $gte: new Date(searchQuery || 0) };
   }
 
   const ranks = await Reward.aggregate([
@@ -70,54 +68,18 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
       $unwind: "$rank"
     },
     {
-      $lookup: {
-        from: "users",
-        localField: "user._id",
-        foreignField: "referralId",
-        as: "directReferrals"
-      }
-    },
-    {
-      $lookup: {
-        from: "users",
-        localField: "directReferrals._id",
-        foreignField: "referralId",
-        as: "indirectReferrals"
-      }
-    },
-    {
-      $unwind: {
-        path: "$indirectReferrals",
-        preserveNullAndEmptyArrays: true
-      }
-    },
-    {
-      $group: {
-        _id: "$_id",
-        rewardId: { $first: "$_id" },
-        id: { $first: "$user._id" },
-        name: { $first: "$user.username" },
-        directReferrals: { $first: { $size: "$directReferrals" } },
-        indirectReferrals: { $addToSet: "$indirectReferrals._id" },
-        reward: { $first: "$amount" },
-        sales: { $first: "$sales" },
-        status: { $first: "$status" },
-        rank: { $first: "$rank.title" },
-        date: { $first: "$createdAt" }
-      }
-    },
-    {
       $project: {
-        rewardId: 1,
-        id: 1,
-        name: 1,
-        directReferrals: 1,
-        indirectReferrals: { $size: "$indirectReferrals" },
-        reward: 1,
-        sales: 1,
-        status: 1,
-        rank: 1,
-        date: 1
+        rewardId: "$_id",
+        id: "$user._id",
+        name: "$user.username",
+        directReferrals: "$directCount",
+        indirectReferrals: "$indirectCount",
+        reward: "$amount",
+        sales: "$sales",
+        status: "$status",
+        rank: "$rank.title",
+        date: "$updatedAt",
+        isClaimed: "$isClaimed"
       }
     },
     {

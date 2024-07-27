@@ -133,6 +133,7 @@ exports.update = catchAsyncErrors(async (req, res, next) => {
 
     notificationService.create({
       userId,
+      title: NOTIFICATION_TYPES.ACTIVITY,
       type: NOTIFICATION_TYPES.ACTIVITY,
       message,
     });
@@ -201,6 +202,7 @@ exports.update = catchAsyncErrors(async (req, res, next) => {
 
   notificationService.create({
     userId,
+    title: NOTIFICATION_TYPES.ACTIVITY,
     type: NOTIFICATION_TYPES.ACTIVITY,
     message,
   });
@@ -257,6 +259,7 @@ exports.updateCreditToParents = async (user, type, amount) => {
 
     await notificationService.create({
       userId: parentId,
+      title: NOTIFICATION_TYPES.ACTIVITY,
       type: NOTIFICATION_TYPES.ACTIVITY,
       message: `Congratulations! You've successfully earned a credit of $${appliedCreditPercentage} through your referral from: ${user?.username}. This credit has been added to your account.`,
     });
