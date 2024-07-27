@@ -7,13 +7,13 @@ exports.get = catchAsyncErrors(async (req, res) => {
 
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
-  const { id } = req.user || {};
+  const { username } = req.user || {};
 
   if (isRead === "false") {
     const total = await notificationService.countDocuments({
       $or: [
         {
-          userId: id,
+          userId: username,
           isRead: isRead,
         },
         { adminCreated: true },
@@ -29,7 +29,7 @@ exports.get = catchAsyncErrors(async (req, res) => {
   const total = await notificationService.countDocuments({
     $or: [
       {
-        userId: id,
+        userId: username,
         isRead: isRead,
       },
       { adminCreated: true },
@@ -45,7 +45,7 @@ exports.get = catchAsyncErrors(async (req, res) => {
       $or: [
         { adminCreated: true },
         {
-          userId: id,
+          userId: username,
           isRead: isRead,
         },
       ],
@@ -62,8 +62,8 @@ exports.get = catchAsyncErrors(async (req, res) => {
 });
 
 exports.updateMany = catchAsyncErrors(async (req, res) => {
-  const { id } = req.user;
-  await notificationService.updateMany({ userId: id }, { isRead: true });
+  const { username } = req.user;
+  await notificationService.updateMany({ userId: username }, { isRead: true });
   return res.json({
     success: true,
   });

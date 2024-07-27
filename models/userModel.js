@@ -31,15 +31,15 @@ const kycSchema = new mongoose.Schema(
     // },
     city: {
       type: String,
-      required: true,
+      // required: true,
     },
     state: {
       type: String,
-      required: true,
+      // required: true,
     },
     postalCode: {
       type: String,
-      required: true,
+      // required: true,
     },
     country: { type: String },
     occupation: { type: String },

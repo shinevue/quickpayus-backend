@@ -337,10 +337,13 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
     notificationMsg = `Approved KYC Verification: "Congratulations! Your KYC verification has been successfully approved. You may now proceed with your withdrawal.`;
   } else if (status?.includes(STATUS.REJECTED)) {
     notificationMsg = `Rejected KYC Verification: "Your KYC verification has been rejected. Please review and re-submit.`;
+  } else if (status?.includes(STATUS.PENDING)) {
+    notificationMsg = `Canceled KYC Verification: "Your KYC verification has been canceled. Please wait and it can take a long.`;
   }
 
   notificationService.create({
-    userId: user._id,
+    userId: user.username,
+    title: "KYC updated",
     message: notificationMsg,
     type: NOTIFICATION_TYPES.IMPORTANT,
   });
