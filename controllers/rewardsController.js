@@ -55,7 +55,6 @@ exports.claimReward = catchAsyncErrors(async (req, res, next) => {
 
 exports.create = async (userId, rankInfo, isClaimed) => {
   try {
-    console.log(rankInfo);
     if (rankInfo.rank && Object.keys(rankInfo.rank).length) {
       const rankId = rankInfo.rank._id;
 
@@ -73,7 +72,9 @@ exports.create = async (userId, rankInfo, isClaimed) => {
         rankId,
         amount,
         isClaimed,
-        sales: rankInfo.sumOfLast30DaysSales
+        sales: rankInfo.sumOfLast30DaysSales,
+        directCount: rankInfo.directReferralsCount,
+        indirectCount: rankInfo.indirectReferralsCount,
       });
       return await reward.save();
     } else {
