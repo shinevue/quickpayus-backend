@@ -3,7 +3,8 @@ const { isAuthenticatedUser, authorizeRole } = require("../middlewares/auth");
 const {
     createFeedback,
     createTicket,
-    getFeedback
+    getFeedback,
+    getTicket
 } = require("../controllers/supportController");
 const multer = require("multer");
 const upload = multer({ dest: 'uploads/' });
@@ -16,6 +17,8 @@ router.route("/feedback")
     .get(isAuthenticatedUser, authorizeRole, getFeedback)
     .post(isAuthenticatedUser, upload.single('files'), createFeedback);
 
-router.route("/ticket").post(isAuthenticatedUser, upload.single('files'), createTicket);
+router.route("/ticket")
+    .get(isAuthenticatedUser, authorizeRole, getTicket)
+    .post(isAuthenticatedUser, upload.single('files'), createTicket);
 
 module.exports = router;
