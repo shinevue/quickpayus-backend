@@ -1,3 +1,4 @@
+const config = require("../../config/config");
 const ErrorHandler = require("../../utils/errorHandler");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 
@@ -44,4 +45,23 @@ exports.addReceiver = catchAsyncErrors(async (req, res, next) => {
       msg: "Address validation failed.",
     });
   }
+});
+
+exports.defaultReceiver = catchAsyncErrors(async (req, res, next) => {
+  const count = await Receiver.find();
+  if (count.length) {
+    console.log("--- Can't create Admin Receiver address ---");
+    return;
+  }
+  const adminAddress = config.adminAddress;
+
+  const newReceiver = new Receiver(adminAddress);
+  newReceiver
+    .save()
+    .then(() => {
+      console.log("--- Admin Receiver address created successfully ---");
+    })
+    .catch(() => {
+      console.log("--- Can't create Admin Receiver address ---");
+    });
 });
