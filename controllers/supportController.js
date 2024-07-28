@@ -36,8 +36,14 @@ exports.createFeedback = catchAsyncErrors(async (req, res, next) => {
 
 exports.createTicket = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.user;
+
+    const oldPath = path.join(__dirname, '../uploads', req.file.filename);
     const extension = req.file?.mimetype.split("/")[1];
-    const uploadedfilename = req.file?.path + "." + extension;
+
+    // Rename the file
+    fs.renameSync(oldPath, `${oldPath}.${extension}`);
+
+    const uploadedfilename = `uploads/${req.file.filename}.${extension}`;
     const ticket = {
         userId: id,
         subject: req.body.subject,
@@ -70,7 +76,7 @@ exports.getFeedback = catchAsyncErrors(async (req, res, next) => {
             $gte: new Date(dateRange[0]), $lte: new Date(dateRange[1]),
         }
     }
-    console.log(query)
+
     const feedbacks = await FeedBack.find(query)
         .populate({
             path: 'userId',
@@ -95,3 +101,53 @@ exports.getFeedback = catchAsyncErrors(async (req, res, next) => {
         feedbacks: feedbacksTransformed
     })
 })
+
+
+
+exports.getTicket = catchAsyncErrors(async (req, res, next) => {
+    const { page = 1, pageSize = 10, keyword = "", dateRange = [] } = req.query;
+
+    const query = {};
+    if (keyword) {
+        const users = await User.find({ username: { $regex: keyword, $options: "i" } });
+        console.log(users.map(user => user._id))
+        query.$or = [
+            { description: { $regex: keyword, $options: "i" } },
+            { subject: { $regex: keyword, $options: "i" } },
+            { userId: { $in: users.map(user => user._id) } }
+        ]
+    }
+    if (dateRange && dateRange.length === 2 && dateRange[0] && dateRange[1]) {
+        query.createdAt = {
+            $gte: new Date(dateRange[0]), $lte: new Date(dateRange[1]),
+        }
+    }
+
+    const feedbacks = await Ticket.find(query)
+        .populate({
+            path: 'userId',
+            select: 'username avatarBg',
+            model: 'User'
+        })
+        .sort({ _id: -1 }).skip((page - 1) * pageSize).limit(pageSize);
+
+    const ticketsTransformed = feedbacks.map(ticket => ({
+        id: ticket._id,
+        title: ticket.subject,
+        description: ticket.description,
+        status: ticket.status,
+        priority: ticket.priority,
+        createdBy: ticket.userId.username,
+        image: ticket.uploadedUrl,
+        createdAt: ticket.createdAt
+    }));
+
+    const totalCount = await Ticket.countDocuments(query);
+
+    res.send({
+        success: true,
+        totalCount,
+        tickets: ticketsTransformed
+    })
+})
+
