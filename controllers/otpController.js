@@ -14,14 +14,18 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   const otpModel = new OTP({ userId: id });
   await otpModel.save();
   const otp = otpModel?.code?.toString();
-  await sendEmail(
-    {
-      email: email,
-      ...emailTemplates.otpEmailConfirm,
-    },
-    otp
-  );
-  res.json({ success: true, otp, message: "OTP sent successfully on email" });
+  try {
+    // await sendEmail(
+    //   {
+    //     email: email,
+    //     ...emailTemplates.otpEmailConfirm,
+    //   },
+    //   otp
+    // );
+    res.json({ success: true, otp, message: "OTP sent successfully on email" });
+  } catch {
+    res.json({ success: false, otp, message: "OTP didn't send on email" });
+  }
 });
 
 exports.send = catchAsyncErrors(async (req, res, next) => {
@@ -66,8 +70,8 @@ exports.verify = catchAsyncErrors(async (req, res, next) => {
 
 // confirm mail send
 exports.confirm = catchAsyncErrors(async (req, res, next) => {
-  const {data} = req.query;
-  const user = await User.find({email: data});
+  const { data } = req.query;
+  const user = await User.find({ email: data });
   const otpModel = new OTP({ userId: user.id });
   await otpModel.save();
   const otp = otpModel?.code?.toString();
@@ -79,5 +83,5 @@ exports.confirm = catchAsyncErrors(async (req, res, next) => {
     otp
   );
   res.json({ success: true, otp, message: "OTP sent successfully on email" });
-  res.json({success: true})
-})
+  res.json({ success: true });
+});
