@@ -8,6 +8,7 @@ const path = require("path");
 const cors = require("cors");
 const app = express();
 const errorMiddleware = require("./middlewares/defaultError");
+
 const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT || 30;
 
 const MAX_BAN_TIME_MS = process.env.MAX_BAN_TIME_MS || 1 * 60 * 1000;
@@ -36,7 +37,7 @@ app.use("/uploads/kyc", express.static(path.join(__dirname, "uploads/kyc")));
 //app.use(express.static("uploads"));
 app.use(
   cors({
-    origin: ["http://127.0.0.1:3000", "http://127.0.0.1:5173"],
+    origin: ["http://localhost:3000", "http://localhost:5173"],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
     exposedHeaders: ["X-Total-Records", "X-Total-Pages"],
@@ -112,7 +113,10 @@ app.get("/email", async (req, res) => {
   });
 });
 
-app.use("/uploads", express.static("uploads"));
+app.use('/uploads', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*'); // or specify your origin
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // errorMidelware
 app.use(errorMiddleware);
