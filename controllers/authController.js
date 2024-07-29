@@ -51,6 +51,7 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
   }
   const user = await User.findOne({
     $or: [{ email: email }, { username: email }],
+    isActive: true
   }).select("+password");
   if (!user) {
     return next(new ErrorHandler("Invalid Credientials", 401));
