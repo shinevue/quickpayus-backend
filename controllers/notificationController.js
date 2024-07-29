@@ -7,7 +7,7 @@ exports.get = catchAsyncErrors(async (req, res) => {
 
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
-  const { username } = req.user || {};
+  const { username, id } = req.user || {};
 
   if (isRead === "false") {
     const total = await notificationService.countDocuments({
@@ -17,6 +17,10 @@ exports.get = catchAsyncErrors(async (req, res) => {
           isRead: isRead,
         },
         { adminCreated: true },
+        {
+          userId: id,
+          isRead: isRead,
+        },
       ],
     });
     console.log(total);
@@ -33,6 +37,10 @@ exports.get = catchAsyncErrors(async (req, res) => {
         isRead: isRead,
       },
       { adminCreated: true },
+      {
+        userId: id,
+        isRead: isRead,
+      },
     ],
   });
 
@@ -43,9 +51,13 @@ exports.get = catchAsyncErrors(async (req, res) => {
   const data = await notificationService.paginateQuery(
     {
       $or: [
-        { adminCreated: true },
         {
           userId: username,
+          isRead: isRead,
+        },
+        { adminCreated: true },
+        {
+          userId: id,
           isRead: isRead,
         },
       ],

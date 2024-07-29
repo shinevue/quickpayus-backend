@@ -4,6 +4,11 @@ const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 
 const Receiver = require("../../models/receiverAddressModel");
 const { isValidAddress } = require("../../utils/trc20Validator");
+const notificationService = require("../../services/notificationService");
+
+const {
+  NOTIFICATION_TYPES,
+} = require("../../config/constants");
 
 exports.getAllReceiver = catchAsyncErrors(async (req, res, next) => {
   const data = await Receiver.find({}).sort({ createdAt: -1 });
@@ -23,10 +28,19 @@ exports.getAllReceiver = catchAsyncErrors(async (req, res, next) => {
 
 exports.addReceiver = catchAsyncErrors(async (req, res, next) => {
   const newReceiver = new Receiver({ ...req.body, adminId: req.user.username });
+  const { username } = req.user;
+
   if (isValidAddress(req.body.newAddress))
     newReceiver
       .save()
       .then((receiver) => {
+        notificationService.create({
+          userId: username,
+          title: "RECEIVER ADDRESS CHANGE",
+          type: NOTIFICATION_TYPES.ACTIVITY,
+          message: `Receiver address changed to ${req.body.newAddress}`,
+          adminCreated: true
+        });
         res.json({
           success: true,
           msg: "Receiver created successfully:",
