@@ -5,6 +5,7 @@ const Ticket = require("../models/ticketModel");
 const User = require("../models/userModel");
 const fs = require("fs");
 const path = require("path");
+const notificationService = require("../services/notificationService");
 
 exports.createFeedback = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.user;
@@ -151,3 +152,46 @@ exports.getTicket = catchAsyncErrors(async (req, res, next) => {
     })
 })
 
+exports.saveTicketReply = catchAsyncErrors(async (req, res, next) => {
+    const { ticketId, username, title, content } = req.body;
+
+    if (!title || !content) {
+        res.send({
+            success: false,
+            message: "You should enter any title and content."
+        });
+        return;
+    }
+
+    const user = await User.findOne({ username });
+
+    if (!user) {
+        res.send({
+            success: false,
+            message: "User not found"
+        });
+    }
+
+
+    await notificationService.create({
+        userId: user._id,
+        title,
+        message: content,
+        adminCreated: true
+    });
+
+    await Ticket.findByIdAndUpdate(
+        ticketId,
+        {
+            $set: {
+                status: "RESOLVED"
+            }
+        }
+    )
+
+    res.send({
+        success: true,
+        message: "Reply saved successfully."
+    });
+
+})
