@@ -15,10 +15,31 @@ const {
 const notificationService = require("../../services/notificationService");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
-  const { type, kycStatus, page = 1, kyc = false, search } = req?.query || {};
+  const {
+    type,
+    kycStatus,
+    page = 1,
+    kyc = false,
+    search,
+    startDate,
+    endDate,
+  } = req?.query || {};
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
   const query = {};
+  if (startDate) {
+    query["kyc.updatedAt"] = {
+      $gte: startDate,
+      $lte: endDate,
+    };
+  }
+  if (kyc) {
+    if (kycStatus) {
+      query["kyc.status"] = kycStatus;
+    } else {
+      query.kyc = { $exists: true };
+    }
+  }
   if (search) {
     const regexSearchTerm = new RegExp(search, "i");
     query.$or = [
@@ -27,13 +48,6 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
       { username: { $regex: regexSearchTerm } },
       { email: { $regex: regexSearchTerm } },
     ];
-  }
-  if (kyc) {
-    if (kycStatus) {
-      query["kyc.status"] = kycStatus;
-    } else {
-      query.kyc = { $exists: true };
-    }
   }
   // if (type === "Active" || type === "inActive") {
   //   query.isActive = type === "Active";
@@ -70,7 +84,12 @@ exports.editUser = catchAsyncErrors(async (req, res, next) => {
   const id = req.params.id;
 
   const { name, username, email } = req.body;
-  const updateInfo = { firstName:name.split(" ")[0], lastName:name.split(" ")[1], username, email };
+  const updateInfo = {
+    firstName: name.split(" ")[0],
+    lastName: name.split(" ")[1],
+    username,
+    email,
+  };
 
   const user = await User.findByIdAndUpdate(id, updateInfo);
 
@@ -414,7 +433,6 @@ exports.claimedRewards = catchAsyncErrors(async (req, res, next) => {
     const rank = await Rank.findOne({
       _id: new ObjectId(reward?.rankId),
     });
-    console.log(rank);
     if (!rank) continue;
     merged.push({ rank, reward, user });
   }
@@ -474,7 +492,6 @@ exports.updateStatusOfReward = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("User Not Found"));
     }
     rewardBalance = Number(user?.rewardBalance || 0) + Number(amount);
-    console.log(user?.rewardBalance, amount);
     await User.updateOne(
       { _id: user?._id },
       {
