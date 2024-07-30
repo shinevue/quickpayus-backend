@@ -16,7 +16,7 @@ const notificationService = require("../../services/notificationService");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const {
-    type,
+    criteria,
     kycStatus,
     page = 1,
     kyc = false,
@@ -42,12 +42,30 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
   }
   if (search) {
     const regexSearchTerm = new RegExp(search, "i");
-    query.$or = [
-      { firstName: { $regex: regexSearchTerm } },
-      { lastName: { $regex: regexSearchTerm } },
-      { username: { $regex: regexSearchTerm } },
-      { email: { $regex: regexSearchTerm } },
-    ];
+    switch (criteria) {
+      case "name":
+        query.$or = [
+          { firstName: { $regex: regexSearchTerm } },
+          { lastName: { $regex: regexSearchTerm } }
+        ]
+        break;
+      case "username":
+        query.username = { $regex: regexSearchTerm }
+
+        break;
+      case "email":
+        query.email = { $regex: regexSearchTerm }
+        break;
+      default:
+
+        query.$or = [
+          { firstName: { $regex: regexSearchTerm } },
+          { lastName: { $regex: regexSearchTerm } },
+          { username: { $regex: regexSearchTerm } },
+          { email: { $regex: regexSearchTerm } },
+        ];
+        break;
+    }
   }
   // if (type === "Active" || type === "inActive") {
   //   query.isActive = type === "Active";
