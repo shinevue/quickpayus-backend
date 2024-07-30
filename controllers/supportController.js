@@ -6,6 +6,7 @@ const User = require("../models/userModel");
 const fs = require("fs");
 const path = require("path");
 const notificationService = require("../services/notificationService");
+const { NOTIFICATION_TYPES } = require("../config/constants");
 
 exports.createFeedback = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.user;
@@ -47,6 +48,7 @@ exports.createTicket = catchAsyncErrors(async (req, res, next) => {
     const uploadedfilename = `uploads/${req.file.filename}.${extension}`;
     const ticket = {
         userId: id,
+        priority: req.body.priority,
         subject: req.body.subject,
         description: req.body.description,
         uploadedUrl: uploadedfilename
@@ -171,23 +173,25 @@ exports.saveTicketReply = catchAsyncErrors(async (req, res, next) => {
             message: "User not found"
         });
     }
+    const ticket = await Ticket.findById(ticketId);
 
 
+    if (!ticket) {
+        res.send({
+            success: false,
+            message: "Ticket not found"
+        });
+    }
     await notificationService.create({
         userId: user._id,
         title,
-        message: content,
+        type: NOTIFICATION_TYPES.IMPORTANT,
+        message: `YOUR TICKET(${ticket.subject}) has been resolved. ${content}`,
         adminCreated: true
     });
 
-    await Ticket.findByIdAndUpdate(
-        ticketId,
-        {
-            $set: {
-                status: "RESOLVED"
-            }
-        }
-    )
+    ticket.status = "RESOLVED";
+    await ticket.save();
 
     res.send({
         success: true,
