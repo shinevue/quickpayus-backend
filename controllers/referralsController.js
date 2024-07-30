@@ -182,7 +182,6 @@ exports.indirectReferralsCount = async (query, depth) => {
 
   // Count the filtered indirect referrals
   const count = await User.countDocuments(filterQuery);
-  console.log(otherQueryParams, count)
   return count;
 };
 

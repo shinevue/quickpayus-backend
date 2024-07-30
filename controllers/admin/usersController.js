@@ -5,6 +5,7 @@ const User = require("../../models/userModel");
 const ErrorHandler = require("../../utils/errorHandler");
 const sendEmail = require("../../utils/sendEmail");
 const { ObjectId } = require("mongodb");
+const referralCtrl = require("../referralsController");
 
 const {
   STATUS,
@@ -19,12 +20,13 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     criteria,
     kycStatus,
     page = 1,
+    pageSize = 15,
     kyc = false,
     search,
     startDate,
     endDate,
   } = req?.query || {};
-  const pageSize = process.env.RECORDS_PER_PAGE || 15;
+
 
   const query = {};
   if (startDate) {
@@ -76,12 +78,26 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     .limit(pageSize);
 
   //const data = await this.getUsersWithBalance(page, pageSize, query);
+  const promises =
+    data.map(async (d) => {
+      const directCount = await referralCtrl.directReferralsCount({ referralId: d._id });
+      const indirectCount = await referralCtrl.indirectReferralsCount({ referralId: d._id }, 8);
+      const referredBy = data.find(user => user?._id?.toString() === d?.referralId?.toString());
+
+      return {
+        ...d.toObject(),
+        referredBy: referredBy?.username,
+        directCount,
+        indirectCount,
+      };
+    })
+  const modified = await Promise.all(promises);
 
   const total = await User.countDocuments(query);
 
   res.json({
     success: true,
-    data,
+    data: modified,
     total,
     totalPages: Math.ceil(total / pageSize),
   });
