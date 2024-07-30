@@ -5,6 +5,8 @@ const Ticket = require("../models/ticketModel");
 const User = require("../models/userModel");
 const fs = require("fs");
 const path = require("path");
+const notificationService = require("../services/notificationService");
+const { NOTIFICATION_TYPES } = require("../config/constants");
 
 exports.createFeedback = catchAsyncErrors(async (req, res, next) => {
     const { id } = req.user;
@@ -46,6 +48,7 @@ exports.createTicket = catchAsyncErrors(async (req, res, next) => {
     const uploadedfilename = `uploads/${req.file.filename}.${extension}`;
     const ticket = {
         userId: id,
+        priority: req.body.priority,
         subject: req.body.subject,
         description: req.body.description,
         uploadedUrl: uploadedfilename
@@ -151,3 +154,48 @@ exports.getTicket = catchAsyncErrors(async (req, res, next) => {
     })
 })
 
+exports.saveTicketReply = catchAsyncErrors(async (req, res, next) => {
+    const { ticketId, username, title, content } = req.body;
+
+    if (!title || !content) {
+        res.send({
+            success: false,
+            message: "You should enter any title and content."
+        });
+        return;
+    }
+
+    const user = await User.findOne({ username });
+
+    if (!user) {
+        res.send({
+            success: false,
+            message: "User not found"
+        });
+    }
+    const ticket = await Ticket.findById(ticketId);
+
+
+    if (!ticket) {
+        res.send({
+            success: false,
+            message: "Ticket not found"
+        });
+    }
+    await notificationService.create({
+        userId: user._id,
+        title,
+        type: NOTIFICATION_TYPES.IMPORTANT,
+        message: `YOUR TICKET(${ticket.subject}) has been resolved. ${content}`,
+        adminCreated: true
+    });
+
+    ticket.status = "RESOLVED";
+    await ticket.save();
+
+    res.send({
+        success: true,
+        message: "Reply saved successfully."
+    });
+
+})
