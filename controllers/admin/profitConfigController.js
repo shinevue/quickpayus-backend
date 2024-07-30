@@ -6,7 +6,7 @@ const HELPER = require("../../helpers");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const profitConfigs =
-    (await ProfitConfig.find({}).sort({ createdAt: -1 }).limit(1).exec()) || [];
+    (await ProfitConfig.find({}).sort({ createdAt: -1 }).exec()) || [];
 
   if (!profitConfigs?.length) {
     return res.json({
@@ -19,32 +19,15 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
   return res.json({
     success: true,
     data: profit,
+    history: profitConfigs,
   });
 });
 
 exports.upsert = catchAsyncErrors(async (req, res, next) => {
   const { profit } = req?.body || {};
 
-  const query = {
-    createdAt: { $gte: HELPER.startOfToday(), $lte: HELPER.endOfToday() },
-  };
-
-  const profitConfig = await ProfitConfig.findOne(query);
-
-  let response = null;
-
-  if (!profitConfig) {
-    const _profitConfig = new ProfitConfig({ profit });
-    response = await _profitConfig.save();
-  } else {
-    response = await ProfitConfig.findByIdAndUpdate(
-      profitConfig?._id,
-      {
-        profit,
-      },
-      { new: true }
-    );
-  }
+  const _profitConfig = new ProfitConfig({ profit });
+  const response = await _profitConfig.save();
 
   if (!response) {
     return next(
