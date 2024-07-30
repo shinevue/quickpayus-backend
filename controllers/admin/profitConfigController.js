@@ -24,9 +24,10 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.upsert = catchAsyncErrors(async (req, res, next) => {
+  const { username } = req.user;
   const { profit } = req?.body || {};
 
-  const _profitConfig = new ProfitConfig({ profit });
+  const _profitConfig = new ProfitConfig({ userId: username, profit });
   const response = await _profitConfig.save();
 
   if (!response) {
