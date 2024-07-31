@@ -9,7 +9,7 @@ const cors = require("cors");
 const app = express();
 const errorMiddleware = require("./middlewares/defaultError");
 
-const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT || 30;
+const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT || 3000000;
 
 const MAX_BAN_TIME_MS = process.env.MAX_BAN_TIME_MS || 1 * 60 * 1000;
 
