@@ -8,6 +8,7 @@ const notificationSchema = new mongoose.Schema(
     isRead: { type: Boolean, default: false },
     adminCreated: { type: Boolean, default: false },
     type: { type: String, default: "GERNERAL" },
+    link: { type: String },
   },
   { timestamps: true }
 );
