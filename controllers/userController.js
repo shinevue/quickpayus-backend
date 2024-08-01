@@ -72,7 +72,7 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
 
   user = await User.findByIdAndUpdate(
     userID,
-    { kyc: { ...req.body, addressLine: req.body.address } },
+    { kyc: { ...req.body } },
     { new: true }
   );
 
