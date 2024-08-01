@@ -5,6 +5,7 @@ const User = require("../../models/userModel");
 const ErrorHandler = require("../../utils/errorHandler");
 const sendEmail = require("../../utils/sendEmail");
 const { ObjectId } = require("mongodb");
+const referralCtrl = require("../referralsController");
 
 const {
   STATUS,
@@ -16,15 +17,16 @@ const notificationService = require("../../services/notificationService");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const {
-    type,
+    criteria,
     kycStatus,
     page = 1,
+    pageSize = 15,
     kyc = false,
     search,
     startDate,
     endDate,
   } = req?.query || {};
-  const pageSize = process.env.RECORDS_PER_PAGE || 15;
+
 
   const query = {};
   if (startDate) {
@@ -42,12 +44,30 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
   }
   if (search) {
     const regexSearchTerm = new RegExp(search, "i");
-    query.$or = [
-      { firstName: { $regex: regexSearchTerm } },
-      { lastName: { $regex: regexSearchTerm } },
-      { username: { $regex: regexSearchTerm } },
-      { email: { $regex: regexSearchTerm } },
-    ];
+    switch (criteria) {
+      case "name":
+        query.$or = [
+          { firstName: { $regex: regexSearchTerm } },
+          { lastName: { $regex: regexSearchTerm } }
+        ]
+        break;
+      case "username":
+        query.username = { $regex: regexSearchTerm }
+
+        break;
+      case "email":
+        query.email = { $regex: regexSearchTerm }
+        break;
+      default:
+
+        query.$or = [
+          { firstName: { $regex: regexSearchTerm } },
+          { lastName: { $regex: regexSearchTerm } },
+          { username: { $regex: regexSearchTerm } },
+          { email: { $regex: regexSearchTerm } },
+        ];
+        break;
+    }
   }
   // if (type === "Active" || type === "inActive") {
   //   query.isActive = type === "Active";
@@ -58,12 +78,26 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     .limit(pageSize);
 
   //const data = await this.getUsersWithBalance(page, pageSize, query);
+  const promises =
+    data.map(async (d) => {
+      const directCount = await referralCtrl.directReferralsCount({ referralId: d._id });
+      const indirectCount = await referralCtrl.indirectReferralsCount({ referralId: d._id }, 8);
+      const referredBy = data.find(user => user?._id?.toString() === d?.referralId?.toString());
+
+      return {
+        ...d.toObject(),
+        referredBy: referredBy?.username,
+        directCount,
+        indirectCount,
+      };
+    })
+  const modified = await Promise.all(promises);
 
   const total = await User.countDocuments(query);
 
   res.json({
     success: true,
-    data,
+    data: modified,
     total,
     totalPages: Math.ceil(total / pageSize),
   });
