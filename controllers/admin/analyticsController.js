@@ -199,7 +199,7 @@ const getTopCountries = async () => {
     $sort: { users: -1 }
   },
   {
-    $limit: 5
+    $limit: 15
   }])
   return result;
 }
@@ -237,7 +237,7 @@ const getTopOS = async () => {
     },
     {
       $addFields: {
-        browser: "$_id",
+        oss: "$_id",
       }
     },
     {

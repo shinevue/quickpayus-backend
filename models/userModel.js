@@ -156,8 +156,8 @@ const userSchema = new mongoose.Schema(
     isDeleted: { type: Number, default: 0 },
     isDeletedAt: { type: Date },
     avatarBg: { type: String },
-    browserInfo: { type: String },
-    osInfo: { type: String },
+    browser: { type: String },
+    os: { type: String },
     backupCodes: {
       type: [String],
       require: true,

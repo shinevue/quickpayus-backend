@@ -73,7 +73,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.signin = catchAsyncErrors(async (req, res, next) => {
-  const { password, email, recaptchaToken, browserInfo, osInfo } = req.body;
+  const { password, email, recaptchaToken, browser, os } = req.body;
   /* const captchaResult = await verifyCaptcha(recaptchaToken);
   if (!captchaResult) {
     return next(new ErrorHandler("Something went wrong Please try again", 401));
@@ -95,8 +95,8 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
   user.isDeleted = 0;
-  user.browserInfo = browserInfo;
-  user.osInfo = osInfo;
+  user.browser = browser;
+  user.os = os;
   await user.save();
   sendToken(user, 200, res, {});
 });
