@@ -2,6 +2,8 @@ const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const OTP = require("../models/otpModel");
 const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
+
+const logger = require("../config/logger");
 const {
   sendEmail,
   sendWarningEmail,
@@ -11,10 +13,15 @@ const {
 exports.create = catchAsyncErrors(async (req, res, next) => {
   const { email, id } = req.user || {};
 
-  const otpModel = new OTP({ userId: id });
+  const otpModel = new OTP({ userId: id, ip: req.logEntry.ip_address });
   await otpModel.save();
   const otp = otpModel?.code?.toString();
+
+  // when open the send mail code, this code should be closed 
+  let success = false;
+
   try {
+
     // await sendEmail(
     //   {
     //     email: email,
@@ -22,10 +29,22 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
     //   },
     //   otp
     // );
-    res.json({ success: true, otp, message: "OTP sent successfully on email" });
-  } catch {
-    res.json({ success: false, otp, message: "OTP didn't send on email" });
+
+    success = true;
+
+  } catch (error) {
+    console.log(error)
+    success = false;
+
   }
+  let deliveryStatus = success ? 'sms_sent' : 'sms_failed';
+
+  // Update log entry with response details
+  req.logEntry.status = success ? 'success' : 'failure';
+  req.logEntry.delivery_status = deliveryStatus;
+  logger.info(req.logEntry);
+
+  res.json({ success, otp });
 });
 
 exports.send = catchAsyncErrors(async (req, res, next) => {
@@ -55,6 +74,10 @@ exports.verify = catchAsyncErrors(async (req, res, next) => {
     userId: id,
     code: otp,
   });
+
+  if (otpRecord.ip !== req.logEntry.ip_address) {
+    return next(new ErrorHandler("OTP abuse detected."));
+  }
 
   if (!otpRecord) {
     return next(
