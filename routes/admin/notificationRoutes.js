@@ -15,8 +15,8 @@ const router = express.Router();
 router
   .route("/")
   .post(isAuthenticatedUser, authorizeRole, create)
-  .get(isAuthenticatedUser, authorizeRole, get)
-  .delete(isAuthenticatedUser, authorizeRole, remove);
+  .get(isAuthenticatedUser, authorizeRole, get);
+router.route("/:id").delete(isAuthenticatedUser, authorizeRole, remove);
 
 router
   .route("/removeall")

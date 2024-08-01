@@ -1,4 +1,5 @@
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
+const { Notification } = require("../../models/notificationModel");
 const notificationService = require("../../services/notificationService");
 const ErrorHandler = require("../../utils/errorHandler");
 
@@ -52,5 +53,26 @@ exports.get = catchAsyncErrors(async (req, res) => {
     data,
   });
 });
-exports.remove = catchAsyncErrors(async (req, res) => {});
+exports.remove = catchAsyncErrors(async (req, res, next) => {
+  const { id } = req?.params || {};
+  const removed = await this.deleteOne({ _id: id });
+
+  if (removed?.deletedCount) {
+    return res.json({
+      id,
+      success: true,
+      message: "Notification deleted successfully",
+    });
+  }
+
+  return res.json({
+    success: false,
+    message: "Notification not found",
+  });
+});
+
 exports.removeAll = catchAsyncErrors(async (req, res) => {});
+
+exports.deleteOne = async (query) => {
+  return await Notification.deleteOne(query);
+};
