@@ -364,15 +364,30 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
   const { status, reason, uuid } = req.body || {};
   const adminId = req.user.id;
 
-  const userUpdate = {
-    $set: {
-      "kyc.status": status,
-      "kyc.reason": reason,
-      "kyc.adminId": adminId,
-    },
-  };
+  let user;
 
-  const user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  if (status?.includes(STATUS.REJECTED)) {
+    const userUpdate = {
+      $set: {
+        "kyc.status": status,
+        "kyc.reason": reason,
+        "kyc.adminId": adminId,
+        "kyc.images": [],
+        "kyc.documents": [],
+      },
+    };
+    user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  } else {
+    const userUpdate = {
+      $set: {
+        "kyc.status": status,
+        "kyc.reason": reason,
+        "kyc.adminId": adminId,
+      },
+    };
+    user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  }
+
   if (!user) {
     return next(new ErrorHandler("User Not Found", 401));
   }
@@ -385,11 +400,13 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
   }); */
 
   let notificationMsg = "";
+  let link = "";
 
   if (status?.includes(STATUS.APPROVED)) {
     notificationMsg = `Approved KYC Verification: "Congratulations! Your KYC verification has been successfully approved. You may now proceed with your withdrawal.`;
   } else if (status?.includes(STATUS.REJECTED)) {
     notificationMsg = `Rejected KYC Verification: "Your KYC verification has been rejected. Please review and re-submit.`;
+    link = "/profile";
   } else if (status?.includes(STATUS.PENDING)) {
     notificationMsg = `Canceled KYC Verification: "Your KYC verification has been canceled. Please wait and it can take a long.`;
   }
@@ -399,6 +416,7 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
     title: "KYC updated",
     message: notificationMsg,
     type: NOTIFICATION_TYPES.IMPORTANT,
+    link,
   });
 
   res.json({
