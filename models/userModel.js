@@ -172,7 +172,6 @@ const userSchema = new mongoose.Schema(
         }
       },
       require: true,
-      select: false,
     },
   },
   { timestamps: true }
