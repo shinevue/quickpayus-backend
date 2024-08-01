@@ -330,15 +330,30 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
   const { status, reason, uuid } = req.body || {};
   const adminId = req.user.id;
 
-  const userUpdate = {
-    $set: {
-      "kyc.status": status,
-      "kyc.reason": reason,
-      "kyc.adminId": adminId,
-    },
-  };
+  let user;
 
-  const user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  if (status?.includes(STATUS.REJECTED)) {
+    const userUpdate = {
+      $set: {
+        "kyc.status": status,
+        "kyc.reason": reason,
+        "kyc.adminId": adminId,
+        "kyc.images": [],
+        "kyc.documents": [],
+      },
+    };
+    user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  } else {
+    const userUpdate = {
+      $set: {
+        "kyc.status": status,
+        "kyc.reason": reason,
+        "kyc.adminId": adminId,
+      },
+    };
+    user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  }
+
   if (!user) {
     return next(new ErrorHandler("User Not Found", 401));
   }
