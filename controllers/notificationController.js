@@ -7,13 +7,23 @@ exports.get = catchAsyncErrors(async (req, res) => {
 
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
-  const { id } = req.user || {};
+  const { username, id } = req.user || {};
 
   if (isRead === "false") {
     const total = await notificationService.countDocuments({
-      userId: id,
-      isRead: isRead,
+      $or: [
+        {
+          userId: username,
+          isRead: isRead,
+        },
+        { adminCreated: true },
+        {
+          userId: id,
+          isRead: isRead,
+        },
+      ],
     });
+    console.log(total);
     return res.json({
       success: true,
       total,
@@ -21,14 +31,39 @@ exports.get = catchAsyncErrors(async (req, res) => {
   }
 
   const total = await notificationService.countDocuments({
-    userId: id,
+    $or: [
+      {
+        userId: username,
+        isRead: isRead,
+      },
+      { adminCreated: true },
+      {
+        userId: id,
+        isRead: isRead,
+      },
+    ],
   });
 
   if (!total) {
     return next(new ErrorHandler("No notifications found"));
   }
 
-  const data = await notificationService.paginate(id, { page, pageSize });
+  const data = await notificationService.paginateQuery(
+    {
+      $or: [
+        {
+          userId: username,
+          isRead: isRead,
+        },
+        { adminCreated: true },
+        {
+          userId: id,
+          isRead: isRead,
+        },
+      ],
+    },
+    { page, pageSize }
+  );
 
   return res.json({
     success: true,
@@ -39,8 +74,8 @@ exports.get = catchAsyncErrors(async (req, res) => {
 });
 
 exports.updateMany = catchAsyncErrors(async (req, res) => {
-  const { id } = req.user;
-  await notificationService.updateMany({ userId: id }, { isRead: true });
+  const { username } = req.user;
+  await notificationService.updateMany({ userId: username }, { isRead: true });
   return res.json({
     success: true,
   });

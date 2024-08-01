@@ -26,20 +26,20 @@ const kycSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    // addressLine2: {
-    //   type: String,
-    // },
+    addressLine2: {
+      type: String,
+    },
     city: {
       type: String,
-      required: true,
+      // required: true,
     },
     state: {
       type: String,
-      required: true,
+      // required: true,
     },
     postalCode: {
       type: String,
-      required: true,
+      // required: true,
     },
     country: { type: String },
     occupation: { type: String },
@@ -147,6 +147,7 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
     isActive: { type: Boolean, default: true },
+    isEnableMFA: { type: Boolean, default: true },
     alertNotifications: { type: Boolean, default: false },
     emailNotifications: { type: Boolean, default: false },
     role: { type: String, default: "user" },
@@ -155,6 +156,26 @@ const userSchema = new mongoose.Schema(
     isDeleted: { type: Number, default: 0 },
     isDeletedAt: { type: Date },
     avatarBg: { type: String },
+    browserInfo: { type: String },
+    osInfo: { type: String },
+    backupCodes: {
+      type: [String],
+      require: true,
+    },
+    securityQuestion: {
+      type: {
+        answer: {
+          type: String,
+          require: true,
+        },
+        question: {
+          type: Number,
+          require: true,
+        },
+      },
+      require: true,
+      select: false,
+    },
   },
   { timestamps: true }
 );
@@ -204,6 +225,15 @@ userSchema.methods.setResetPasswordToken = function () {
     .digest("hex");
   this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
   return resetToken;
+};
+
+userSchema.methods.generateBackupCodes = function () {
+  const codes = [];
+  for (let i = 0; i < 10; i++) {
+    codes.push(Math.random().toString(36).substring(2, 15));
+    this.backupCodes.push(bcrypt.hashSync(codes[i], 10));
+  }
+  return codes;
 };
 
 userSchema.index({ referralId: 1 });

@@ -11,6 +11,9 @@ process.on("uncaughtException", (err) => {
 //config
 dotenv.config();
 
+const receiverAddressCtr = require("./controllers/admin/receiverAddressController")
+receiverAddressCtr.defaultReceiver();
+
 const server = app.listen(process.env.PORT, async () => {
   console.log(`Server is running on port: ${process.env.PORT}`);
 });

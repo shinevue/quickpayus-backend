@@ -1,9 +1,10 @@
-const { TRANSACTION_TYPES, WITHDRAWAL_TYPES } = require("../config/constants");
+const { TRANSACTION_TYPES, WITHDRAWAL_TYPES, NOTIFICATION_TYPES } = require("../config/constants");
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
 const path = require("path");
 const fs = require("fs").promises;
+const notificationService = require("../services/notificationService");
 
 exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
   const userID = req.user.id;
@@ -14,7 +15,11 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
       // Delete previous image files
       await Promise.all(
         user.kyc.images.map(async (file) => {
-          const filePath = path.join(__dirname, `../uploads/kyc/${user.username}`, file.name);
+          const filePath = path.join(
+            __dirname,
+            `../uploads/kyc/${user.username}`,
+            file.name
+          );
           try {
             await fs.unlink(filePath);
           } catch (err) {
@@ -28,7 +33,11 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
       // Delete previous document files
       await Promise.all(
         user.kyc.documents.map(async (file) => {
-          const filePath = path.join(__dirname, `../uploads/kyc/${user.username}`, file.name);
+          const filePath = path.join(
+            __dirname,
+            `../uploads/kyc/${user.username}`,
+            file.name
+          );
           try {
             await fs.unlink(filePath);
           } catch (err) {
@@ -60,10 +69,21 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
         return { name: file.filename };
       })
     );
-
   }
 
-  user = await User.findByIdAndUpdate(userID, { kyc: req.body }, { new: true });
+  user = await User.findByIdAndUpdate(
+    userID,
+    { kyc: { ...req.body } },
+    { new: true }
+  );
+
+  notificationService.create({
+    userId: user.username,
+    title: "KYC updated",
+    message:
+      "Your KYC verification has been submitted. Please allow up to 72 hours for approval.",
+    type: NOTIFICATION_TYPES.IMPORTANT,
+  });
 
   res.status(200).json({
     success: true,
@@ -108,6 +128,35 @@ exports.updateProfile = catchAsyncErrors(async (req, res, next) => {
     message: "Profile updated successfully",
     user,
   });
+});
+
+exports.enable2FA = catchAsyncErrors(async (req, res, next) => {
+  const userID = req.user.id;
+  const user = await User.findById(userID);
+  if (!user) {
+    return next(
+      new ErrorHandler(
+        "User not found or not logged In. Please login and try again.",
+        400
+      )
+    );
+  }
+  user.isEnableMFA = req.body.checked;
+  await user
+    .save()
+    .then(() => {
+      res.status(200).json({
+        success: true,
+        message: "MFA status was changes successfully",
+        user,
+      });
+    })
+    .catch(() => {
+      res.status(500).json({
+        success: false,
+        message: "MFA status wasn't changes successfully",
+      });
+    });
 });
 
 exports.balanceByType = async (query) => {

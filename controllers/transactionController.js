@@ -21,6 +21,7 @@ const {
 
 const { ObjectId } = require("mongodb");
 const { query } = require("express");
+const Receiver = require("../models/receiverAddressModel");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { id, role } = req?.user || {};
@@ -76,6 +77,15 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     total,
     totalPages: Math.ceil(total / pageSize),
     data,
+  });
+});
+
+exports.getAddress = catchAsyncErrors(async (req, res, next) => {
+  const data = await Receiver.find().sort({ createdAt: -1 }).limit(1);
+  console.log("data: ", data[0]);
+  return res.json({
+    success: true,
+    address: data[0],
   });
 });
 
@@ -214,12 +224,12 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
 
   await notificationService.create({
     userId: id,
+    title: "DEPOSIT SUCCESSFULLY!",
     type: NOTIFICATION_TYPES.ACTIVITY,
     message: `${transaction?.transactionType
       ?.toLowerCase()
-      ?.capitalizeFirst()} of amount $${amount} is now in ${transaction?.status?.toLowerCase()} state. The transaction status will be updated within 3 working days. ${
-      transaction?.uuid
-    }`,
+      ?.capitalizeFirst()} of amount $${amount} is now in ${transaction?.status?.toLowerCase()} state. The transaction status will be updated within 3 working days. ${transaction?.uuid
+      }`,
   });
 
   res.json({
@@ -549,7 +559,7 @@ const padZero = (num) => {
  *
  * @param {ObjectId} userId  for which you want to get sales volume
  * @param {object} moreQuery more info to get sales
- * @returns {Number} sales volume of user
+ * @returns {Promise<Number>} sales volume of user
  */
 exports.userSalesByQuery = async (userId, moreQuery = {}) => {
   if (!userId) return 0;

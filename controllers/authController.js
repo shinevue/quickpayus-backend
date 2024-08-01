@@ -5,6 +5,7 @@ const ErrorHandler = require("../utils/errorHandler");
 const sendToken = require("../utils/jwtToken");
 const { sendEmail } = require("../utils/sendEmail");
 const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
 
 exports.checkAuth = catchAsyncErrors(async (req, res, next) => {
   if (req.user) {
@@ -19,7 +20,7 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   // if (!captchaResult) {
   //   return next(new ErrorHandler("Something went wrong Please try again", 401));
   // }
-  const { referral } = req?.body || {};
+  const { referral, answer, question } = req?.body || {};
   let referralId = null;
 
   if (referral) {
@@ -27,19 +28,52 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 
     if (parentUser) referralId = parentUser?._id || parentUser?.id;
   }
+  if (answer < 0) {
+    return next(new ErrorHandler("Answer is required", 400));
+  }
+  if (!question) {
+    return next(new ErrorHandler("Question is required", 400));
+  }
 
-  const primaryColorsList = ["#007AFF", "#34C759", "#FF3B30", "#FFCC00", "#FF9500", "#00C7BE", "#FF2D55", "#AF52DE", "#5856D6"]
-  const secondaryColorsList = ["#D5E4F4", "#E7F8EB", "#FFE7E6", "#FFF9E0", "#FFF2E0", "#E0F8F7", "#FFE6EB", "#F5EAFB", "#EBEBFA"]
+  const primaryColorsList = [
+    "#007AFF",
+    "#34C759",
+    "#FF3B30",
+    "#FFCC00",
+    "#FF9500",
+    "#00C7BE",
+    "#FF2D55",
+    "#AF52DE",
+    "#5856D6",
+  ];
+  const secondaryColorsList = [
+    "#D5E4F4",
+    "#E7F8EB",
+    "#FFE7E6",
+    "#FFF9E0",
+    "#FFF2E0",
+    "#E0F8F7",
+    "#FFE6EB",
+    "#F5EAFB",
+    "#EBEBFA",
+  ];
   const randomIndex = Math.floor(Math.random() * primaryColorsList.length);
-  const user = new User({ ...req.body, avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)` });
+
+
+  const user = new User({
+    ...req.body,
+    securityQuestion: { answer: req.body.answer, question: req.body.question },
+    avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)`,
+  });
   user.referralId = referralId;
 
+  const codes = user.generateBackupCodes();
   const saved = await user.save();
-  res.json({ success: true, message: "User Created", data: saved });
+  sendToken(saved, 200, res, { backupCode: codes, message: "User Created" })
 });
 
 exports.signin = catchAsyncErrors(async (req, res, next) => {
-  const { password, email, recaptchaToken } = req.body;
+  const { password, email, recaptchaToken, browserInfo, osInfo } = req.body;
   /* const captchaResult = await verifyCaptcha(recaptchaToken);
   if (!captchaResult) {
     return next(new ErrorHandler("Something went wrong Please try again", 401));
@@ -51,6 +85,7 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
   }
   const user = await User.findOne({
     $or: [{ email: email }, { username: email }],
+    isActive: true,
   }).select("+password");
   if (!user) {
     return next(new ErrorHandler("Invalid Credientials", 401));
@@ -60,8 +95,10 @@ exports.signin = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Invalid Credientials", 401));
   }
   user.isDeleted = 0;
+  user.browserInfo = browserInfo;
+  user.osInfo = osInfo;
   await user.save();
-  sendToken(user, 200, res);
+  sendToken(user, 200, res, {});
 });
 
 exports.signout = catchAsyncErrors(async (req, res, next) => {
@@ -314,17 +351,16 @@ exports.checkDeletedUser = async () => {
   await User.deleteMany({ _id: { $in: resultUsers.map((user) => user._id) } });
 };
 
-
 exports.checkRole = catchAsyncErrors(async (req, res, next) => {
   const { username, password, email } = req.body;
 
-
   const user = await User.findOne({
-    username, email
+    username,
+    email,
   }).select("+password");
 
   if (!user) {
-    return next(new ErrorHandler("User not found", 400))
+    return next(new ErrorHandler("User not found", 400));
   }
 
   const isPasswordMatched = await user.comparePassword(password);
@@ -332,9 +368,49 @@ exports.checkRole = catchAsyncErrors(async (req, res, next) => {
     return next(new ErrorHandler("Invalid Credientials", 400));
   }
 
+  if (email !== req.user.email) {
+    return next(new ErrorHandler("Please enter your email.", 400));
+  }
   res.send({
     success: true,
-    role: user.role
-  })
-})
+    role: user.role,
+  });
+});
 
+exports.checkSecurityQuestion = catchAsyncErrors(async (req, res, next) => {
+  const { question, answer } = req.body;
+  const user = req.user;
+
+  if (user?.securityQuestion?.question?.toString() !== question?.toString() || user?.securityQuestion?.answer?.toString() !== answer?.toString()) {
+    res.status(400).send({
+      success: false,
+      message: "Invalid Security Question",
+    })
+  }
+  res.send({
+    success: true,
+    message: "Verified security question"
+  })
+});
+
+exports.checkBackupCode = catchAsyncErrors(async (req, res, next) => {
+  const { backupCode } = req.body;
+  const user = req.user;
+
+  const codeIndex = user.backupCodes.findIndex((code) => bcrypt.compareSync(backupCode, code));
+
+  if (codeIndex === -1) {
+    return res.status(400).send({
+      success: false,
+      message: "Invalid Backup Code",
+    });
+  }
+
+  user.backupCodes.splice(codeIndex, 1);  // Remove used code
+
+  await user.save();
+  res.send({
+    success: true,
+    message: "Backup Code used successfully",
+  });
+});

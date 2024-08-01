@@ -3,23 +3,23 @@ const {
   isAuthenticatedUser,
   authorizeRole,
 } = require("../../middlewares/auth");
-
 const {
   create,
-  get,
+  getAllUser,
+  edit,
   remove,
-  removeAll,
-} = require("../../controllers/announcementController");
+} = require("../../controllers/admin/profileController");
+
 const router = express.Router();
 
 router
   .route("/")
   .post(isAuthenticatedUser, authorizeRole, create)
-  .get(isAuthenticatedUser, authorizeRole, get)
-  .delete(isAuthenticatedUser, authorizeRole, remove);
+  .get(isAuthenticatedUser, authorizeRole, getAllUser);
 
 router
-  .route("/removeall")
-  .delete(isAuthenticatedUser, authorizeRole, removeAll);
+  .route("/:id")
+  .put(isAuthenticatedUser, authorizeRole, edit)
+  .delete(isAuthenticatedUser, authorizeRole, remove);
 
 module.exports = router;

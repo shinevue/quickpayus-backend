@@ -9,7 +9,7 @@ const {
   get,
   remove,
   removeAll,
-} = require("../../controllers/announcementController");
+} = require("../../controllers/admin/notificationsController");
 const router = express.Router();
 
 router

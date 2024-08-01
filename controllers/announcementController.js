@@ -14,7 +14,7 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
       new ErrorHandler(`Announcement already exist with title: ${title}`)
     );
 
-  const data = await this.save({ ...req?.body });
+  const data = await this.save({ ...req?.body, userId: req.user.username });
 
   return res.json({
     success: true,

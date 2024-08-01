@@ -1,20 +1,27 @@
 const mongoose = require("mongoose");
 
 const feedbackSchema = new mongoose.Schema(
-    {
-        userId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true,
-        },
-        fbCnt: {
-            type: String,
-        },
-        uploadedUrl: {
-            type: String,
-        }     
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    { timestamps: true }
+    fbCnt: {
+      type: String,
+    },
+    uploadedUrl: {
+      type: String,
+    },
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+      require: true
+    }
+  },
+  { timestamps: true }
 );
 
 feedbackSchema.pre("save", async function (next) {

@@ -15,7 +15,7 @@ const router = express.Router();
 
 router
   .route("/")
-  .get(isAuthenticatedUser, authorizeRole("admin"), get)
-  .put(isAuthenticatedUser, authorizeRole("admin"), update);
+  .get(isAuthenticatedUser, authorizeRole, get)
+  .put(isAuthenticatedUser, authorizeRole, update);
 
 module.exports = router;

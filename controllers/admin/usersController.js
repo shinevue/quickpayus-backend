@@ -5,6 +5,7 @@ const User = require("../../models/userModel");
 const ErrorHandler = require("../../utils/errorHandler");
 const sendEmail = require("../../utils/sendEmail");
 const { ObjectId } = require("mongodb");
+const referralCtrl = require("../referralsController");
 
 const {
   STATUS,
@@ -15,18 +16,24 @@ const {
 const notificationService = require("../../services/notificationService");
 
 exports.get = catchAsyncErrors(async (req, res, next) => {
-  const { type, kycStatus, page = 1, kyc = false, search } = req?.query || {};
-  const pageSize = process.env.RECORDS_PER_PAGE || 15;
+  const {
+    criteria,
+    kycStatus,
+    page = 1,
+    pageSize = 15,
+    kyc = false,
+    search,
+    startDate,
+    endDate,
+  } = req?.query || {};
+
 
   const query = {};
-  if (search) {
-    const regexSearchTerm = new RegExp(search, "i");
-    query.$or = [
-      { firstName: { $regex: regexSearchTerm } },
-      { lastName: { $regex: regexSearchTerm } },
-      { username: { $regex: regexSearchTerm } },
-      { email: { $regex: regexSearchTerm } },
-    ];
+  if (startDate) {
+    query["kyc.updatedAt"] = {
+      $gte: startDate,
+      $lte: endDate,
+    };
   }
   if (kyc) {
     if (kycStatus) {
@@ -35,23 +42,95 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
       query.kyc = { $exists: true };
     }
   }
-  if (type === "Active" || type === "inActive") {
-    query.isActive = type === "Active";
+  if (search) {
+    const regexSearchTerm = new RegExp(search, "i");
+    switch (criteria) {
+      case "name":
+        query.$or = [
+          { firstName: { $regex: regexSearchTerm } },
+          { lastName: { $regex: regexSearchTerm } }
+        ]
+        break;
+      case "username":
+        query.username = { $regex: regexSearchTerm }
+
+        break;
+      case "email":
+        query.email = { $regex: regexSearchTerm }
+        break;
+      default:
+
+        query.$or = [
+          { firstName: { $regex: regexSearchTerm } },
+          { lastName: { $regex: regexSearchTerm } },
+          { username: { $regex: regexSearchTerm } },
+          { email: { $regex: regexSearchTerm } },
+        ];
+        break;
+    }
   }
+  // if (type === "Active" || type === "inActive") {
+  //   query.isActive = type === "Active";
+  // }
 
   const data = await User.find(query)
     .skip((page - 1) * pageSize)
     .limit(pageSize);
 
   //const data = await this.getUsersWithBalance(page, pageSize, query);
+  const promises =
+    data.map(async (d) => {
+      const directCount = await referralCtrl.directReferralsCount({ referralId: d._id });
+      const indirectCount = await referralCtrl.indirectReferralsCount({ referralId: d._id }, 8);
+      const referredBy = data.find(user => user?._id?.toString() === d?.referralId?.toString());
+
+      return {
+        ...d.toObject(),
+        referredBy: referredBy?.username,
+        directCount,
+        indirectCount,
+      };
+    })
+  const modified = await Promise.all(promises);
 
   const total = await User.countDocuments(query);
 
   res.json({
     success: true,
-    data,
+    data: modified,
     total,
     totalPages: Math.ceil(total / pageSize),
+  });
+});
+
+exports.suspendUser = catchAsyncErrors(async (req, res, next) => {
+  const id = req.params.id;
+  const user = await User.findByIdAndUpdate(id, req.body);
+
+  res.status(200).json({
+    success: true,
+    message: "User suspended successfully",
+    user,
+  });
+});
+
+exports.editUser = catchAsyncErrors(async (req, res, next) => {
+  const id = req.params.id;
+
+  const { name, username, email } = req.body;
+  const updateInfo = {
+    firstName: name.split(" ")[0],
+    lastName: name.split(" ")[1],
+    username,
+    email,
+  };
+
+  const user = await User.findByIdAndUpdate(id, updateInfo);
+
+  res.status(200).json({
+    success: true,
+    message: "User updated successfully",
+    user,
   });
 });
 
@@ -285,15 +364,30 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
   const { status, reason, uuid } = req.body || {};
   const adminId = req.user.id;
 
-  const userUpdate = {
-    $set: {
-      "kyc.status": status,
-      "kyc.reason": reason,
-      "kyc.adminId": adminId,
-    },
-  };
+  let user;
 
-  const user = await User.findOneAndUpdate({ uuid }, userUpdate, { new: true });
+  if (status?.includes(STATUS.REJECTED)) {
+    const userUpdate = {
+      $set: {
+        "kyc.status": status,
+        "kyc.reason": reason,
+        "kyc.adminId": adminId,
+        "kyc.images": [],
+        "kyc.documents": [],
+      },
+    };
+    user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  } else {
+    const userUpdate = {
+      $set: {
+        "kyc.status": status,
+        "kyc.reason": reason,
+        "kyc.adminId": adminId,
+      },
+    };
+    user = await User.findByIdAndUpdate(uuid, userUpdate, { new: true });
+  }
+
   if (!user) {
     return next(new ErrorHandler("User Not Found", 401));
   }
@@ -306,17 +400,23 @@ exports.updateKyc = catchAsyncErrors(async (req, res, next) => {
   }); */
 
   let notificationMsg = "";
+  let link = "";
 
   if (status?.includes(STATUS.APPROVED)) {
     notificationMsg = `Approved KYC Verification: "Congratulations! Your KYC verification has been successfully approved. You may now proceed with your withdrawal.`;
   } else if (status?.includes(STATUS.REJECTED)) {
     notificationMsg = `Rejected KYC Verification: "Your KYC verification has been rejected. Please review and re-submit.`;
+    link = "/profile";
+  } else if (status?.includes(STATUS.PENDING)) {
+    notificationMsg = `Canceled KYC Verification: "Your KYC verification has been canceled. Please wait and it can take a long.`;
   }
 
   notificationService.create({
-    userId: user._id,
+    userId: user.username,
+    title: "KYC updated",
     message: notificationMsg,
     type: NOTIFICATION_TYPES.IMPORTANT,
+    link,
   });
 
   res.json({
@@ -385,7 +485,6 @@ exports.claimedRewards = catchAsyncErrors(async (req, res, next) => {
     const rank = await Rank.findOne({
       _id: new ObjectId(reward?.rankId),
     });
-    console.log(rank);
     if (!rank) continue;
     merged.push({ rank, reward, user });
   }
@@ -445,7 +544,6 @@ exports.updateStatusOfReward = catchAsyncErrors(async (req, res, next) => {
       return next(new ErrorHandler("User Not Found"));
     }
     rewardBalance = Number(user?.rewardBalance || 0) + Number(amount);
-    console.log(user?.rewardBalance, amount);
     await User.updateOne(
       { _id: user?._id },
       {

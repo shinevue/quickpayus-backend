@@ -12,21 +12,22 @@ const transactionCtrl = require("../controllers/transactionController");
 connectDB();
 
 async function seedTransactions() {
-  Transaction.deleteMany();
+  Transaction.deleteMany({});
   try {
     const users = await User.find({});
 
     for (let i = 1; i < users.length; i++) {
       const date = moment().startOf("year");
-      for (let j = 0; j < 365; j++) {
+      for (let j = 0; j < 20; j++) {
         for (let k = 0; k < 2; k++) {
           const transaction = new Transaction();
           transaction.userId = users[i]._id;
           transaction.adminId = users[0]._id; // Assuming adminId is also fetched similarly
           transaction.reason = faker.lorem.word(); // Generate a random reason (3 words)
-          transaction.status = STATUS.APPROVED;
+          transaction.status = faker.helpers.arrayElement(Object.values(STATUS));
           transaction.amount = 10;
-          transaction.transactionType = TRANSACTION_TYPES.DEPOSIT;
+          transaction.transactionType = faker.helpers.arrayElement(Object.values(TRANSACTION_TYPES));
+          if (transaction.transactionType === TRANSACTION_TYPES.WITHDRAWAL) transaction.withdrawalType = faker.helpers.arrayElement(Object.values(WITHDRAWAL_TYPES));
           transaction.uuid = faker.string.uuid();
           transaction.senderAddress = faker.location.streetAddress(); // Generate a random street address
           transaction.receiverAddress = faker.location.streetAddress(); // Generate another random street

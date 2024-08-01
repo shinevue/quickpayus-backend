@@ -1,3 +1,4 @@
+const { ALLOWED_ROUTES } = require("../../config/constants");
 const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
 const Roles = require("../../models/roleModel");
 const ErrorHandler = require("../../utils/errorHandler");
@@ -5,7 +6,7 @@ const ErrorHandler = require("../../utils/errorHandler");
 exports.create = catchAsyncErrors(async (req, res, next) => {
   const newRole = new Roles({
     roleName: req.body.roleName,
-    permissions: ["A", "B", "C"],
+    permissions: req.body.permissions,
   });
 
   newRole
@@ -98,6 +99,31 @@ exports.removeAll = catchAsyncErrors(async (req, res, next) => {
     success: false,
   });
 });
+
+exports.getPermission = catchAsyncErrors(async (req, res, next) => {
+
+  if (req.user.role === "admin") {
+    res.send({
+      success: true,
+      data: ALLOWED_ROUTES.map(item => item.TITLE)
+    })
+  }
+
+  let role = await Roles.findOne({
+    roleName: req.user.role
+  });
+
+  if (role) {
+    res.send({
+      success: true,
+      data: role.permissions
+    })
+  }
+
+  next(new ErrorHandler("Permission not found", 400))
+
+
+})
 
 exports.countDocuments = async (query) => {
   return await Roles.countDocuments(query);

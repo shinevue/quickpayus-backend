@@ -6,7 +6,8 @@ router
   .route("/")
   .get(isAuthenticatedUser, transactionCtlr.get)
   .post(isAuthenticatedUser, transactionCtlr.create);
+router.route("/all/:key").get(isAuthenticatedUser, transactionCtlr.getAllTrans);
 router
-  .route("/all/:key")
-  .get(isAuthenticatedUser, transactionCtlr.getAllTrans)
+  .route("/receiver")
+  .get(isAuthenticatedUser, transactionCtlr.getAddress)
 module.exports = router;
