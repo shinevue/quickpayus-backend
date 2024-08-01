@@ -18,7 +18,7 @@ const sendEmail = async (options, otp) => {
       from: "timons128@outlook.com",
       to: options.email,
       subject: options.subject,
-      text: `Your opt code is ${otp}`,
+      text: options?.message || `Your opt code is ${otp}`,
     };
 
     if (options.templatePath && options.templateData) {

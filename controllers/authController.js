@@ -3,9 +3,13 @@ const verifyCaptcha = require("../utils/recaptchaVerifier");
 const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
 const sendToken = require("../utils/jwtToken");
-const { sendEmail } = require("../utils/sendEmail");
 const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
+
+const {
+  sendEmail,
+  emailTemplates,
+} = require("../utils/sendEmail");
 
 exports.checkAuth = catchAsyncErrors(async (req, res, next) => {
   if (req.user) {
@@ -68,6 +72,16 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   user.referralId = referralId;
 
   const codes = user.generateBackupCodes();
+
+  await sendEmail(
+    {
+      email: user.email,
+      subject: "Your account has been created",
+      message: `Hi!, ${user.firstName} ${user.lastName}This is your backup code. \n\n\n ${codes.join('\n')}`,
+      ...emailTemplates.otpEmailConfirm,
+    }
+  );
+
   const saved = await user.save();
   sendToken(saved, 200, res, { backupCode: codes, message: "User Created" })
 });
