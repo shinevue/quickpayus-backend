@@ -32,10 +32,10 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 
     if (parentUser) referralId = parentUser?._id || parentUser?.id;
   }
-  if (answer < 0) {
+  if (!answer) {
     return next(new ErrorHandler("Answer is required", 400));
   }
-  if (!question) {
+  if (question < 0) {
     return next(new ErrorHandler("Question is required", 400));
   }
 
@@ -63,7 +63,6 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
   ];
   const randomIndex = Math.floor(Math.random() * primaryColorsList.length);
 
-
   const user = new User({
     ...req.body,
     securityQuestion: { answer: req.body.answer, question: req.body.question },
@@ -73,14 +72,14 @@ exports.createUser = catchAsyncErrors(async (req, res, next) => {
 
   const codes = user.generateBackupCodes();
 
-  await sendEmail(
-    {
-      email: user.email,
-      subject: "Your account has been created",
-      message: `Hi!, ${user.firstName} ${user.lastName}This is your backup code. \n\n\n ${codes.join('\n')}`,
-      ...emailTemplates.otpEmailConfirm,
-    }
-  );
+  // await sendEmail(
+  //   {
+  //     email: user.email,
+  //     subject: "Your account has been created",
+  //     message: `Hi!, ${user.firstName} ${user.lastName}This is your backup code. \n\n\n ${codes.join('\n')}`,
+  //     ...emailTemplates.otpEmailConfirm,
+  //   }
+  // );
 
   const saved = await user.save();
   sendToken(saved, 200, res, { backupCode: codes, message: "User Created" })
