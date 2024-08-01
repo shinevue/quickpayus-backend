@@ -14,19 +14,38 @@ const otpSchema = new mongoose.Schema({
     type: Date,
     expires: 60,
   },
+  ip: {
+    type: String,
+    require: true,
+  }
+
 });
 
 otpSchema.pre("save", async function (next) {
   try {
     // Check if a record with the same userId exists and delete it
     await OTP.findOneAndDelete({ userId: this.userId });
-
+    const allOtp = await OTP.find({});
     // Generate a new OTP code
-    const min = Math.pow(10, 5);
-    const max = Math.pow(10, 6) - 1;
-    const randomBytes = crypto.randomBytes(2);
-    const randomNumber = parseInt(randomBytes.toString('hex'), 16);
-    this.code = randomNumber.toString().padStart(6, '0');
+    const isUnique = true;
+    let otp = "";
+    do {
+      const min = Math.pow(10, 5);
+      const max = Math.pow(10, 6) - 1;
+      const randomBytes = crypto.randomBytes(2);
+      const randomNumber = parseInt(randomBytes.toString('hex'), 16);
+      const otpCandidate = min + (randomNumber % (max - min + 1));
+
+      allOtp.forEach(otpDoc => {
+        if (otpDoc.code === otpCandidate) {
+          isUnique = false;
+          return;
+        }
+      })
+      if (isUnique) otp = otpCandidate;
+    } while (!isUnique)
+    console.log(otp)
+    this.code = otp;
     this.createdAt = new Date().toISOString(); // Set the creation time for the new OTP
 
     // Continue with the save operation
