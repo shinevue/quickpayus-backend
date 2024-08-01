@@ -9,31 +9,48 @@ const notificationService = require("../services/notificationService");
 const { NOTIFICATION_TYPES } = require("../config/constants");
 
 exports.createFeedback = catchAsyncErrors(async (req, res, next) => {
-    const { id } = req.user;
-    let feedback;
-    if(req.file) {
+    const { feedback, rating } = req.body;
 
+    const { id } = req.user;
+
+    if (!feedback) {
+        res.send({
+            success: false,
+            message: "Please provide feedback"
+        });
+        return;
+    }
+
+    if (!feedback || feedback < 0 || feedback > 5) {
+        res.send({
+            success: false,
+            message: "Rating must be between 0 and 5"
+        });
+        return;
+    }
+
+    let uploadedfilename = "";
+    if (req.file?.filename) {
         const oldPath = path.join(__dirname, '../uploads', req.file.filename);
         const extension = req.file?.mimetype.split("/")[1];
 
         // Rename the file
         fs.renameSync(oldPath, `${oldPath}.${extension}`);
 
-        const uploadedfilename = `uploads/${req.file.filename}.${extension}`;
-        feedback = {
-            userId: id,
-            fbCnt: req.body.feedback,
-            uploadedUrl: uploadedfilename
-        };
+        uploadedfilename = `uploads/${req.file.filename}.${extension}`;
     }
     else {
-        feedback = {
-            userId: id,
-            fbCnt: req.body.feedback,
-            uploadedUrl: ""
-        }
+        uploadedfilename = "";
     }
-    const newFeedBack = new FeedBack(feedback);
+
+    const payload = {
+        userId: id,
+        rating,
+        fbCnt: req.body.feedback,
+        uploadedUrl: uploadedfilename
+    };
+
+    const newFeedBack = new FeedBack(payload);
     try {
         await newFeedBack.save();
         res.json({ sucess: true, message: "success to create feedback" });
@@ -47,15 +64,36 @@ exports.createFeedback = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.createTicket = catchAsyncErrors(async (req, res, next) => {
+    const { priority, subject, description } = req.body;
     const { id } = req.user;
 
-    const oldPath = path.join(__dirname, '../uploads', req.file.filename);
-    const extension = req.file?.mimetype.split("/")[1];
+    if (!priority) {
+        res.send({ success: false, message: "Priority is required" });
+    }
 
-    // Rename the file
-    fs.renameSync(oldPath, `${oldPath}.${extension}`);
+    if (!subject) {
+        res.send({ success: false, message: "Subject is required" });
+    }
 
-    const uploadedfilename = `uploads/${req.file.filename}.${extension}`;
+    if (!description) {
+        res.send({ success: false, message: "Description is required" });
+    }
+
+
+    let uploadedfilename = "";
+    if (req.file?.filename) {
+        const oldPath = path.join(__dirname, '../uploads', req.file.filename);
+        const extension = req.file?.mimetype.split("/")[1];
+
+        // Rename the file
+        fs.renameSync(oldPath, `${oldPath}.${extension}`);
+
+        uploadedfilename = `uploads/${req.file.filename}.${extension}`;
+    }
+    else {
+        uploadedfilename = "";
+    }
+
     const ticket = {
         userId: id,
         priority: req.body.priority,

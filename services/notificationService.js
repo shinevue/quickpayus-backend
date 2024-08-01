@@ -35,6 +35,10 @@ exports.updateMany = async (userId, payload) => {
   return await Notification.updateMany(userId, payload);
 };
 
+exports.deleteMany = async (query) => {
+  return await Notification.deleteMany(query);
+}
+
 exports.find = async (query) => {
   return await Notification.find(query);
 };
@@ -42,3 +46,7 @@ exports.find = async (query) => {
 exports.findOne = async (query) => {
   return await Notification.findOne(query);
 };
+
+exports.deleteOne = async (id) => {
+  return await Notification.findByIdAndDelete(id);
+}
