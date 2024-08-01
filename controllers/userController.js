@@ -1,9 +1,10 @@
-const { TRANSACTION_TYPES, WITHDRAWAL_TYPES } = require("../config/constants");
+const { TRANSACTION_TYPES, WITHDRAWAL_TYPES, NOTIFICATION_TYPES } = require("../config/constants");
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const User = require("../models/userModel");
 const ErrorHandler = require("../utils/errorHandler");
 const path = require("path");
 const fs = require("fs").promises;
+const notificationService = require("../services/notificationService");
 
 exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
   const userID = req.user.id;
@@ -75,6 +76,14 @@ exports.kycUpsert = catchAsyncErrors(async (req, res, next) => {
     { kyc: { ...req.body } },
     { new: true }
   );
+
+  notificationService.create({
+    userId: user.username,
+    title: "KYC updated",
+    message:
+      "Your KYC verification has been submitted. Please allow up to 72 hours for approval.",
+    type: NOTIFICATION_TYPES.IMPORTANT,
+  });
 
   res.status(200).json({
     success: true,
