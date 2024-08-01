@@ -15,6 +15,7 @@
   "dependencies": {
     "axios": "^1.6.3",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -33,7 +34,8 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.7",
     "pm2": "^5.4.1",
-    "random-number-csprng": "^1.0.2"
+    "random-number-csprng": "^1.0.2",
+    "winston": "^3.13.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1"
