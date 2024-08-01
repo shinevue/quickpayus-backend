@@ -158,6 +158,24 @@ const userSchema = new mongoose.Schema(
     avatarBg: { type: String },
     browserInfo: { type: String },
     osInfo: { type: String },
+    backupCodes: {
+      type: [String],
+      require: true,
+    },
+    securityQuestion: {
+      type: {
+        answer: {
+          type: String,
+          require: true
+        },
+        question: {
+          type: Number,
+          require: true
+        }
+      },
+      require: true,
+      select: false,
+    },
   },
   { timestamps: true }
 );
@@ -208,6 +226,16 @@ userSchema.methods.setResetPasswordToken = function () {
   this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
   return resetToken;
 };
+
+userSchema.methods.generateBackupCodes = function () {
+  const codes = [];
+  for (let i = 0; i < 10; i++) {
+    codes.push(Math.random().toString(36).substring(2, 15));
+    this.backupCodes.push(bcrypt.hashSync(codes[i], 10))
+  }
+  return codes;
+};
+
 
 userSchema.index({ referralId: 1 });
 userSchema.index({ email: 1 });
