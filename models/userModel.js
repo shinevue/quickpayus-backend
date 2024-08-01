@@ -156,6 +156,8 @@ const userSchema = new mongoose.Schema(
     isDeleted: { type: Number, default: 0 },
     isDeletedAt: { type: Date },
     avatarBg: { type: String },
+    browser: { type: String },
+    os: { type: String },
     backupCodes: {
       type: [String],
       require: true,
@@ -164,12 +166,12 @@ const userSchema = new mongoose.Schema(
       type: {
         answer: {
           type: String,
-          require: true
+          require: true,
         },
         question: {
           type: Number,
-          require: true
-        }
+          require: true,
+        },
       },
       require: true,
     },
@@ -228,11 +230,10 @@ userSchema.methods.generateBackupCodes = function () {
   const codes = [];
   for (let i = 0; i < 10; i++) {
     codes.push(Math.random().toString(36).substring(2, 15));
-    this.backupCodes.push(bcrypt.hashSync(codes[i], 10))
+    this.backupCodes.push(bcrypt.hashSync(codes[i], 10));
   }
   return codes;
 };
-
 
 userSchema.index({ referralId: 1 });
 userSchema.index({ email: 1 });
