@@ -1,4 +1,4 @@
-const sendToken = (user, statusCode, res) => {
+const sendToken = (user, statusCode, res, data) => {
   const token = user.getJWTToken();
 
   //option for cookie
@@ -17,6 +17,7 @@ const sendToken = (user, statusCode, res) => {
       success: true,
       user,
       token,
+      ...data
     });
 };
 
