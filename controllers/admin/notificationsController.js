@@ -28,7 +28,7 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.get = catchAsyncErrors(async (req, res) => {
+exports.get = catchAsyncErrors(async (req, res, next) => {
   const { page = 1 } = req?.query || {};
 
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
@@ -71,7 +71,7 @@ exports.remove = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.removeAll = catchAsyncErrors(async (req, res) => {});
+exports.removeAll = catchAsyncErrors(async (req, res) => { });
 
 exports.deleteOne = async (query) => {
   return await Notification.deleteOne(query);
