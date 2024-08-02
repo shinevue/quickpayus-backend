@@ -2,35 +2,14 @@ const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const notificationService = require("../services/notificationService");
 const ErrorHandler = require("../utils/errorHandler");
 
-exports.get = catchAsyncErrors(async (req, res) => {
+exports.get = catchAsyncErrors(async (req, res, next) => {
   const { page = 1, isRead = false } = req?.query || {};
 
   const pageSize = process.env.RECORDS_PER_PAGE || 15;
 
   const { username, id } = req.user || {};
 
-  if (isRead === "false") {
-    const total = await notificationService.countDocuments({
-      $or: [
-        {
-          userId: username,
-          isRead: isRead,
-        },
-        { adminCreated: true },
-        {
-          userId: id,
-          isRead: isRead,
-        },
-      ],
-    });
-    console.log(total);
-    return res.json({
-      success: true,
-      total,
-    });
-  }
-
-  const total = await notificationService.countDocuments({
+  const query = {
     $or: [
       {
         userId: username,
@@ -42,26 +21,30 @@ exports.get = catchAsyncErrors(async (req, res) => {
         isRead: isRead,
       },
     ],
-  });
+  };
+
+  if (isRead === "false") {
+    const total = await notificationService.countDocuments(query);
+    console.log(total);
+    return res.json({
+      success: true,
+      total,
+    });
+  }
+
+  const total = await notificationService.countDocuments(query);
 
   if (!total) {
-    return next(new ErrorHandler("No notifications found"));
+    return res.json({
+      success: false,
+      message: "No notifications found",
+      total,
+
+    });
   }
 
   const data = await notificationService.paginateQuery(
-    {
-      $or: [
-        {
-          userId: username,
-          isRead: isRead,
-        },
-        { adminCreated: true },
-        {
-          userId: id,
-          isRead: isRead,
-        },
-      ],
-    },
+    query,
     { page, pageSize }
   );
 
@@ -74,8 +57,56 @@ exports.get = catchAsyncErrors(async (req, res) => {
 });
 
 exports.updateMany = catchAsyncErrors(async (req, res) => {
-  const { username } = req.user;
-  await notificationService.updateMany({ userId: username }, { isRead: true });
+  const { id, username } = req.user;
+  await notificationService.updateMany({
+    $or: [
+      {
+        userId: username,
+        isRead: false,
+      },
+      { adminCreated: true },
+      {
+        userId: id,
+        isRead: false,
+      },
+    ]
+  }, { isRead: true });
+  return res.json({
+    success: true,
+  });
+});
+
+exports.deleteMany = catchAsyncErrors(async (req, res) => {
+  const { id, username } = req.user;
+  await notificationService.deleteMany({
+    $or: [
+      {
+        userId: username,
+        isRead: false,
+      },
+      { adminCreated: true },
+      {
+        userId: id,
+        isRead: false,
+      },
+    ]
+  }, { isRead: true });
+  return res.json({
+    success: true,
+  });
+});
+
+exports.updateRead = catchAsyncErrors(async (req, res) => {
+  const { id } = req.params
+  await notificationService.update(id, { isRead: true })
+  return res.json({
+    success: true,
+  });
+});
+
+exports.deleteOne = catchAsyncErrors(async (req, res) => {
+  const { id } = req.params
+  await notificationService.deleteOne(id)
   return res.json({
     success: true,
   });
