@@ -7,7 +7,7 @@ const morgan = require("morgan");
 const path = require("path");
 const cors = require("cors");
 const app = express();
-const errorMiddleware = require("./middlewares/defaultError");
+const errorMiddleware = require("./src/middlewares/defaultError");
 
 const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT || 3000000;
 
@@ -43,32 +43,32 @@ app.use(
 );
 
 //route Imports
-const authRoutes = require("./routes/authRoutes");
-const adminUserRoutes = require("./routes/admin/usersRoutes.js");
-const profileRoutes = require("./routes/admin/profileRoutes");
-const adminRoleRoutes = require("./routes/admin/roleRoutes.js");
-const adminReceiverAddress = require("./routes/admin/receiverAddressRoutes.js");
-const adminTransactionRoutes = require("./routes/admin/transactionRoutes");
-const notificationRoutes = require("./routes/notificationRoutes");
-const programRoutes = require("./routes/programRoutes");
-const ranksRoutes = require("./routes/admin/ranksRoutes");
-const adminProfitConfigRoutes = require("./routes/admin/profitConfigRoutes");
-const transactionRoutes = require("./routes/transactionRoutes");
-const referralRoutes = require("./routes/referralRoutes");
-const userRoutes = require("./routes/userRoutes");
-const analyticsRoutes = require("./routes/analyticsRoutes");
-const adminAnalyticsRoutes = require("./routes/admin/analyticsRoutes");
-const adminAnnouncementRoutes = require("./routes/admin/announcementRoutes");
-const adminNotificationRoutes = require("./routes/admin/notificationRoutes.js");
-const announcementRoutes = require("./routes/announcementRoutes");
-const rankRoutes = require("./routes/rankRoutes");
-const otpRoutes = require("./routes/otpRoutes");
-const rewardRoutes = require("./routes/rewardRoutes");
-const supportRoutes = require("./routes/supportRoutes");
+const authRoutes = require("./src/routes/authRoutes");
+const adminUserRoutes = require("./src/routes/admin/usersRoutes.js");
+const profileRoutes = require("./src/routes/admin/profileRoutes");
+const adminRoleRoutes = require("./src/routes/admin/roleRoutes.js");
+const adminReceiverAddress = require("./src/routes/admin/receiverAddressRoutes.js");
+const adminTransactionRoutes = require("./src/routes/admin/transactionRoutes");
+const notificationRoutes = require("./src/routes/notificationRoutes");
+const programRoutes = require("./src/routes/programRoutes");
+const ranksRoutes = require("./src/routes/admin/ranksRoutes");
+const adminProfitConfigRoutes = require("./src/routes/admin/profitConfigRoutes");
+const transactionRoutes = require("./src/routes/transactionRoutes");
+const referralRoutes = require("./src/routes/referralRoutes");
+const userRoutes = require("./src/routes/userRoutes");
+const analyticsRoutes = require("./src/routes/analyticsRoutes");
+const adminAnalyticsRoutes = require("./src/routes/admin/analyticsRoutes");
+const adminAnnouncementRoutes = require("./src/routes/admin/announcementRoutes");
+const adminNotificationRoutes = require("./src/routes/admin/notificationRoutes.js");
+const announcementRoutes = require("./src/routes/announcementRoutes");
+const rankRoutes = require("./src/routes/rankRoutes");
+const otpRoutes = require("./src/routes/otpRoutes");
+const rewardRoutes = require("./src/routes/rewardRoutes");
+const supportRoutes = require("./src/routes/supportRoutes");
 
-// const {checkDeletedUser} = require("./controllers/authController");    // import check deleted user inspect part
+// const {checkDeletedUser} = require("./src/controllers/authController");    // import check deleted user inspect part
 
-// const {seedDummyUsers} = require("./seeder/users");
+// const {seedDummyUsers} = require("./src/seeder/users");
 
 const BASE_ROUTE = "/api/v1";
 
