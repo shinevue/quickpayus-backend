@@ -1,4 +1,4 @@
-exports.isValidAddress = (address) => {
+export const isValidAddress = (address: string): boolean => {
   // Check if the address is a string
   if (typeof address !== "string") return false;
 

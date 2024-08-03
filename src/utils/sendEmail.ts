@@ -1,28 +1,37 @@
-const nodeMailer = require("nodemailer");
-const ejs = require("ejs");
-const fs = require("fs").promises;
+import nodemailer from 'nodemailer';
+import ejs from 'ejs';
+import fs from 'fs/promises';
 
-const sendEmail = async (options, otp) => {
+interface EmailOptions {
+  email: string;
+  subject: string;
+  message?: string;
+  templatePath?: string;
+  templateData?: Record<string, any>;
+}
+
+const sendEmail = async (options: EmailOptions, otp?: string): Promise<void> => {
   try {
     // Create a nodemailer transporter
-    const transporter = nodeMailer.createTransport({
-      host: "smtp.outlook.com",
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.outlook.com',
       port: 587,
       secure: false,
       auth: {
-        user: "timons128@outlook.com",
-        pass: "Timon2000220",
+        user: 'timons128@outlook.com',
+        pass: 'Timon2000220',
       },
     });
-    const mailOptions = {
-      from: "timons128@outlook.com",
+
+    const mailOptions: nodemailer.MailOptions = {
+      from: 'timons128@outlook.com',
       to: options.email,
       subject: options.subject,
       text: options?.message || `Your opt code is ${otp}`,
     };
 
     if (options.templatePath && options.templateData) {
-      const template = await fs.readFile(options.templatePath, "utf-8");
+      const template = await fs.readFile(options.templatePath, 'utf-8');
 
       const html = ejs.render(template, options.templateData);
 
@@ -35,33 +44,34 @@ const sendEmail = async (options, otp) => {
 
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error('Error sending email:', error);
     throw error;
   }
 };
 
 // send warning mail part
-const sendWarningEmail = async (options) => {
+const sendWarningEmail = async (options: EmailOptions): Promise<void> => {
   try {
     // Create a nodemailer transporter
-    const transporter = nodeMailer.createTransport({
-      host: "smtp.outlook.com",
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.outlook.com',
       port: 587,
       secure: false,
       auth: {
-        user: "timons128@outlook.com",
-        pass: "Timon2000220",
+        user: 'timons128@outlook.com',
+        pass: 'Timon2000220',
       },
     });
-    const mailOptions = {
-      from: "timons128@outlook.com",
+
+    const mailOptions: nodemailer.MailOptions = {
+      from: 'timons128@outlook.com',
       to: options.email,
       subject: options.subject,
-      text: "If you login in 14 days again,  your account will be re alive. But not, it will be deleted forever",
+      text: 'If you login in 14 days again,  your account will be re alive. But not, it will be deleted forever',
     };
 
     if (options.templatePath && options.templateData) {
-      const template = await fs.readFile(options.templatePath, "utf-8");
+      const template = await fs.readFile(options.templatePath, 'utf-8');
 
       const html = ejs.render(template, options.templateData);
 
@@ -74,19 +84,19 @@ const sendWarningEmail = async (options) => {
 
     await transporter.sendMail(mailOptions);
   } catch (error) {
-    console.error("Error sending email:", error);
+    console.error('Error sending email:', error);
     throw error;
   }
 };
 
-const emailTemplates = {
+const emailTemplates: Record<string, EmailOptions> = {
   otpEmailConfirm: {
-    templatePath: "./utils/emailTemplates/otpEmailConfirm.ejs",
-    subject: "Confirm Your Email Address for QUICKPAYUS",
+    templatePath: './utils/emailTemplates/otpEmailConfirm.ejs',
+    subject: 'Confirm Your Email Address for QUICKPAYUS',
   },
   emailSuccessCreation: {
-    templatePath: "./utils/emailTemplates/emailSuccessCreation.ejs",
-    subject: "Welcome to QUICKPAYUS!",
+    templatePath: './utils/emailTemplates/emailSuccessCreation.ejs',
+    subject: 'Welcome to QUICKPAYUS!',
   },
   otpResetPassword: {
     templatePath: "./utils/emailTemplates/otpResetPassword.ejs",
@@ -166,6 +176,5 @@ const emailTemplates = {
   },
 };
 
-exports.emailTemplates = emailTemplates;
-exports.sendEmail = sendEmail;
-exports.sendWarningEmail = sendWarningEmail;
+export { emailTemplates, sendEmail, sendWarningEmail };
+
