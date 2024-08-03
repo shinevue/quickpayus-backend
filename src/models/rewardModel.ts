@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import config from "../config/constants";
 
-interface IReward extends mongoose.Document {
+export interface IReward extends mongoose.Document {
   userId: mongoose.Schema.Types.ObjectId;
   status: string;
   rankId: mongoose.Schema.Types.ObjectId | null;

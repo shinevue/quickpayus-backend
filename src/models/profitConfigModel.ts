@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 // Define an interface for the ProfitConfig document
-interface IProfitConfig extends Document {
+export interface IProfitConfig extends Document {
   userId: string; // String type for userId
   profit: mongoose.Schema.Types.Mixed; // Mixed type for profit
 }
