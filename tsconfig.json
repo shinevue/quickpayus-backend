@@ -3,29 +3,11 @@
     "module": "commonjs",
     "outDir": "./dist",
     "rootDir": "./src",
-    "target": "ES2020",
-    "esModuleInterop": true,
+    "target": "es6",
     "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    // Process & infer types from .js files.
-    "allowJs": false,
-    // Enable strictNullChecks & noImplicitAny.
-    "strictNullChecks": true,
-    "noImplicitAny": true,
-    "strictFunctionTypes": false,
-    "noImplicitThis": false,
-    // Search under node_modules for non-relative imports.
-    "moduleResolution": "node",
-    // Import .json files
-    "resolveJsonModule": true,
-    "sourceMap": true,
-    "baseUrl": ".",
-    "paths": {
-      "*": ["node_modules/*", "src/types/*"]
-    }
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": [".templates"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
 }
