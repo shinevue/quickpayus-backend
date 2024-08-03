@@ -1,9 +1,10 @@
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 const ErrorHandler = require("../utils/errorHandler");
 const Reward = require("../models/rewardModel");
-const { STATUS } = require("../config/constants");
-const Rank = require("../models/rankModel");
+const { STATUS, NOTIFICATION_TYPES } = require("../config/constants");
+const User = require("../models/userModel");
 const RankCtrl = require("../controllers/ranksController");
+const notificationService = require("../services/notificationService")
 const { ObjectId } = require("mongodb");
 exports.get = catchAsyncErrors(async (req, res, next) => {
   const { type, page = 1 } = req?.query || {};
@@ -60,6 +61,8 @@ exports.create = async (userId, rankInfo, isClaimed) => {
 
       const { rewardFrom, rewardTo, requiredSalesFrom, requiredSalesTo } =
         rankInfo.rank;
+
+      //calc reward
       const amount = rewardAmount(
         rewardFrom,
         rewardTo,
@@ -67,6 +70,24 @@ exports.create = async (userId, rankInfo, isClaimed) => {
         requiredSalesTo,
         rankInfo.sumOfLast30DaysSales
       );
+
+      if (amount) {
+        //update user reward balance
+
+        await User.findByIdAndUpdate(userId, { $inc: { rewardBalance: amount } });
+        const message = `${amount} has been successfully rewarded.`;
+
+        //create notification
+        await notificationService.create({
+          userId,
+          title: "~Reward~",
+          type: NOTIFICATION_TYPES.ACTIVITY,
+          message,
+        });
+
+      }
+
+      //create reward
       const reward = new Reward({
         userId,
         rankId,
@@ -85,7 +106,7 @@ exports.create = async (userId, rankInfo, isClaimed) => {
       return await reward.save();
     }
   } catch (error) {
-    return null;
+    throw error;
   }
 };
 
