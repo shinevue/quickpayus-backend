@@ -1,9 +1,10 @@
-const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
-const User = require("../../models/userModel");
-const ErrorHandler = require("../../utils/errorHandler");
+import catchAsyncErrors from "../../middlewares/catchAsyncErrors";
+import User, { IUser } from "../../models/userModel"; // Adjust the import based on your User model
+import ErrorHandler from "../../utils/errorHandler";
+import { Request, Response, NextFunction } from "express";
 
-exports.create = catchAsyncErrors(async (req, res, next) => {
-  let referralId = req.user.id;
+export const create = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const referralId = req.user.id;
   const primaryColorsList = [
     "#007AFF",
     "#34C759",
@@ -26,8 +27,8 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
     "#F5EAFB",
     "#EBEBFA",
   ];
+  
   const randomIndex = Math.floor(Math.random() * primaryColorsList.length);
-
   const userInfo = req.body;
 
   const updateInfo = {
@@ -40,22 +41,19 @@ exports.create = catchAsyncErrors(async (req, res, next) => {
   const user = new User({
     ...updateInfo,
     avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)`,
+    referralId,
   });
-  user.referralId = referralId;
 
-  user
-    .save()
-    .then((result) => {
-      res.json({ success: true, message: "User Created", data: result });
-    })
-    .catch((e) => {
-      res.json({ success: false, message: "User Create failed", error: e });
-    });
+  try {
+    const result = await user.save();
+    res.json({ success: true, message: "User Created", data: result });
+  } catch (e) {
+    res.json({ success: false, message: "User Create failed", error: e });
+  }
 });
 
-exports.edit = catchAsyncErrors(async (req, res, next) => {
+export const edit = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
   const userID = req.params.id;
-
   const userInfo = req.body;
 
   const updateInfo = {
@@ -65,8 +63,7 @@ exports.edit = catchAsyncErrors(async (req, res, next) => {
     termsAndConditions: true,
   };
 
-  const user = await User.findByIdAndUpdate(userID, updateInfo);
-
+  const user = await User.findByIdAndUpdate(userID, updateInfo, { new: true });
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
@@ -74,18 +71,16 @@ exports.edit = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
-  const { page = 1 } = req?.query || {};
-
-  const pageSize = process.env.RECORDS_PER_PAGE || 15;
-
-  const total = await this.countDocuments({});
+export const getAllUser = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const { page = 1 } = req.query as { page?: number };
+  const pageSize = Number(process.env.RECORDS_PER_PAGE) || 15;
+  const total = await countDocuments({});
 
   if (!total) {
-    return next(new ErrorHandler("No User found"));
+    return next(new ErrorHandler("No User found", 404));
   }
 
-  const data = await this.paginate(
+  const data = await paginate(
     { role: { $ne: "user" } },
     { page, pageSize }
   );
@@ -94,14 +89,13 @@ exports.getAllUser = catchAsyncErrors(async (req, res, next) => {
     success: true,
     total,
     totalPages: Math.ceil(total / pageSize),
-    data: data.filter((user) => user.username !== req.user.username),
+    data: data.filter((user: IUser) => user.username !== req.user.username),
   });
 });
 
-exports.remove = catchAsyncErrors(async (req, res, next) => {
-  let id = req.params.id;
-  console.log(id);
-  const deleted = await this.deleteOne({ _id: id });
+export const remove = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+  const id = req.params.id;
+  const deleted = await deleteOne({ _id: id });
 
   if (deleted?.deletedCount) {
     return res.json({
@@ -117,7 +111,7 @@ exports.remove = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.paginate = async (query, options) => {
+export const paginate = async (query: any, options: { page: number; pageSize: number }) => {
   const { page, pageSize } = options || {};
   const skip = (page - 1) * pageSize;
   return await User.find(query)
@@ -126,10 +120,10 @@ exports.paginate = async (query, options) => {
     .limit(pageSize);
 };
 
-exports.countDocuments = async (query) => {
+export const countDocuments = async (query: any) => {
   return await User.countDocuments(query);
 };
 
-exports.deleteOne = async (query) => {
+export const deleteOne = async (query: any) => {
   return await User.deleteOne(query);
 };
