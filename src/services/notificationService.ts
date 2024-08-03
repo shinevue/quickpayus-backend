@@ -15,6 +15,7 @@ interface Payload {
   createdAt?: Date;
   type?: string;
   adminCreated?: boolean;
+  link?: string;
   // Add other fields according to your Notification model
 }
 
@@ -48,7 +49,6 @@ export const countDocuments = async (
   query: Record<string, any>,
 ): Promise<number> => {
   return await Notification.countDocuments(query);
-  
 };
 export const create = async (payload: Payload): Promise<Payload> => {
   const notification = new Notification(payload);

@@ -3,7 +3,7 @@ import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 import Reward, { IReward } from '../../models/rewardModel'; // Adjust the import based on your Reward model
 import User from '../../models/userModel'; // Adjust the import based on your User model
 import ErrorHandler from '../../utils/errorHandler';
-import {create} from '../../services/notificationService';
+import { create } from '../../services/notificationService';
 import { Request, Response, NextFunction } from 'express';
 import config from '../../config/constants';
 
