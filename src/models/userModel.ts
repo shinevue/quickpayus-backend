@@ -1,11 +1,67 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
-const crypto = require("crypto");
-const jwt = require("jsonwebtoken");
-const { STATUS, DOCUMENT_TYPES } = require("../config/constants");
-const HELPER = require("../helpers");
+import mongoose, { Schema } from 'mongoose';
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
+import config from '../config/constants';
+import { randomUUID } from '../helpers';
 
-const kycSchema = new mongoose.Schema(
+interface IKyc {
+  dateOfBirth?: Date;
+  gender?: 'Male' | 'Female' | 'Other';
+  addressLine: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  occupation?: string;
+  status?: keyof typeof config.STATUS;
+  reason?: string;
+  adminId?: mongoose.Schema.Types.ObjectId;
+  documentType: keyof typeof config.DOCUMENT_TYPES;
+  images?: { name: string }[];
+  documents?: { name: string }[];
+}
+
+interface IUser {
+  isModified: any;
+  uuid?: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  countryCode?: string;
+  phoneNumber: string;
+  referralId?: mongoose.Schema.Types.ObjectId;
+  password: string;
+  termsAndConditions: boolean;
+  investmentLevel?: string;
+  investmentSubLevel?: string;
+  kyc?: IKyc;
+  profitBalance?: number;
+  referralCreditBalance?: number;
+  depositBalance?: number;
+  rewardBalance?: number;
+  isActive?: boolean;
+  isEnableMFA?: boolean;
+  alertNotifications?: boolean;
+  emailNotifications?: boolean;
+  role?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpire?: Date;
+  isDeleted?: number;
+  isDeletedAt?: Date;
+  avatarBg?: string;
+  browser?: string;
+  os?: string;
+  backupCodes?: string[];
+  securityQuestion: {
+    answer: string;
+    question: number;
+  };
+}
+
+const kycSchema = new Schema<IKyc>(
   {
     // identification: [
     //   {
@@ -20,7 +76,7 @@ const kycSchema = new mongoose.Schema(
     dateOfBirth: { type: Date },
     gender: {
       type: String,
-      enum: ["Male", "Female", "Other"],
+      enum: ['Male', 'Female', 'Other'],
     },
     addressLine: {
       type: String,
@@ -45,17 +101,17 @@ const kycSchema = new mongoose.Schema(
     occupation: { type: String },
     status: {
       type: String,
-      enum: Object.values(STATUS),
-      default: STATUS.PENDING,
+      enum: Object.values(config.STATUS),
+      default: config.STATUS.PENDING,
     },
     reason: { type: String, trim: true, minlength: 5, maxlength: 500 },
     adminId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     documentType: {
       type: String,
-      enum: Object.values(DOCUMENT_TYPES),
+      enum: Object.values(config.DOCUMENT_TYPES),
       required: true,
     },
     images: [
@@ -69,9 +125,10 @@ const kycSchema = new mongoose.Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
-const userSchema = new mongoose.Schema(
+
+const userSchema = new Schema<IUser>(
   {
     uuid: {
       type: String,
@@ -81,14 +138,14 @@ const userSchema = new mongoose.Schema(
     lastName: { type: String, required: true, trim: true },
     username: {
       type: String,
-      required: [true, "Username is required."],
+      required: [true, 'Username is required.'],
       unique: true,
       lowercase: true,
       trim: true,
     },
     email: {
       type: String,
-      required: [true, "Email is required."],
+      required: [true, 'Email is required.'],
       unique: true,
       trim: true,
       lowercase: true,
@@ -99,30 +156,30 @@ const userSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      required: [true, "Phone Number is required."],
+      required: [true, 'Phone Number is required.'],
     },
     referralId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
     },
     password: {
       type: String,
-      required: [true, "Password is required."],
+      required: [true, 'Password is required.'],
       select: false,
     },
     termsAndConditions: {
       type: Boolean,
-      required: [true, "Please Accept Our Terms And Conditions."],
+      required: [true, 'Please Accept Our Terms And Conditions.'],
     },
     investmentLevel: {
       type: String,
       required: false,
-      default: "A",
+      default: 'A',
     },
     investmentSubLevel: {
       type: String,
       required: false,
-      default: "1",
+      default: '1',
     },
     kyc: { type: kycSchema },
     profitBalance: {
@@ -150,7 +207,7 @@ const userSchema = new mongoose.Schema(
     isEnableMFA: { type: Boolean, default: true },
     alertNotifications: { type: Boolean, default: false },
     emailNotifications: { type: Boolean, default: false },
-    role: { type: String, default: "user" },
+    role: { type: String, default: 'user' },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     isDeleted: { type: Number, default: 0 },
@@ -176,14 +233,14 @@ const userSchema = new mongoose.Schema(
       require: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-const virtual = userSchema.virtual("id");
+const virtual = userSchema.virtual('id');
 virtual.get(function () {
   return this._id;
 });
-userSchema.set("toJSON", {
+userSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,
   transform: function (doc, ret) {
@@ -191,23 +248,27 @@ userSchema.set("toJSON", {
   },
 });
 
-userSchema.pre("save", async function (next) {
+userSchema.pre<IUser>('save', async function (next) {
   this.isDeletedAt = new Date();
-  if (!this.isModified("password")) return next();
+  if (!this.isModified('password')) return next();
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    this.uuid = HELPER.randomUUID();
+    this.uuid = randomUUID();
     return next();
   } catch (error) {
     return next(error);
   }
 });
 
-userSchema.methods.comparePassword = async function (candidatePassword) {
+userSchema.methods.comparePassword = async function (
+  candidatePassword: string,
+) {
   return bcrypt.compare(candidatePassword, this.password);
 };
-userSchema.methods.compareField = async function (fieldData) {
+userSchema.methods.compareField = async function (fieldData: {
+  [key: string]: any;
+}) {
   const [key, value] = Object.entries(fieldData)[0];
   return this[key] === value;
 };
@@ -217,17 +278,17 @@ userSchema.methods.getJWTToken = function () {
   });
 };
 userSchema.methods.setResetPasswordToken = function () {
-  const resetToken = crypto.randomBytes(20).toString("hex");
+  const resetToken = crypto.randomBytes(20).toString('hex');
   this.resetPasswordToken = crypto
-    .createHash("sha256")
+    .createHash('sha256')
     .update(resetToken)
-    .digest("hex");
+    .digest('hex');
   this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
   return resetToken;
 };
 
 userSchema.methods.generateBackupCodes = function () {
-  const codes = [];
+  const codes: string[] = [];
   for (let i = 0; i < 10; i++) {
     codes.push(Math.random().toString(36).substring(2, 15));
     this.backupCodes.push(bcrypt.hashSync(codes[i], 10));
@@ -240,6 +301,6 @@ userSchema.index({ email: 1 });
 userSchema.index({ uuid: 1 });
 userSchema.index({ username: 1 });
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model<IUser>('User', userSchema);
 
-module.exports = User;
+export default User;
