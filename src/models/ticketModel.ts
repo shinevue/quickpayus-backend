@@ -1,6 +1,15 @@
-const mongoose = require("mongoose");
+import mongoose, { Schema, Document } from "mongoose";
 
-const ticketSchema = new mongoose.Schema(
+interface ITicket extends Document {
+  userId: mongoose.Schema.Types.ObjectId;
+  subject: string;
+  description: string;
+  uploadedUrl: string;
+  status: "PENDING" | "RESOLVED";
+  priority: "LOW" | "MEDIUM" | "HIGH";
+}
+
+const ticketSchema: Schema<ITicket> = new Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -19,18 +28,18 @@ const ticketSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["PENDING", "RESOLVED"],
-      default: "PENDING"
+      default: "PENDING",
     },
     priority: {
       type: String,
       enum: ["LOW", "MEDIUM", "HIGH"],
-      default: "MEDIUM"
-    }
+      default: "MEDIUM",
+    },
   },
   { timestamps: true }
 );
 
-ticketSchema.pre("save", async function (next) {
+ticketSchema.pre<ITicket>("save", async function (next) {
   try {
     next();
   } catch (error) {
@@ -39,5 +48,5 @@ ticketSchema.pre("save", async function (next) {
   }
 });
 
-const Ticket = mongoose.model("ticket", ticketSchema);
-module.exports = Ticket;
+const Ticket = mongoose.model<ITicket>("Ticket", ticketSchema);
+export default Ticket;
