@@ -1,9 +1,24 @@
-const connectDB = require("../config/db");
-const Program = require("../models/programModel");
-const Rank = require("../models/rankModel");
+import connectDB from '../config/db';
+import Program, { IProgram } from '../models/ProgramModel';
+import Rank, { RankInterface } from '../models/rankModel';
+
 connectDB();
 
-const mergedLevels = {
+interface ILevel {
+  level: number;
+  investment?: number;
+  profitPercentFrom?: number;
+  profitPercentTo?: number;
+  creditPercentage: number;
+  directReferralsRequired: number;
+  maxDepth: number;
+}
+
+interface IMergedLevels {
+  [key: string]: ILevel[];
+}
+
+const mergedLevels: IMergedLevels = {
   A: [
     {
       level: 1,
@@ -366,9 +381,9 @@ const mergedLevels = {
   ],
 };
 
-const rankSeeder = [
+const rankSeeder: RankInterface[] = [
   {
-    title: "Leader 1",
+    title: 'Leader 1',
     rewardFrom: 300,
     rewardTo: 500,
     requiredSalesFrom: 10000,
@@ -377,7 +392,7 @@ const rankSeeder = [
     directReferralsRequired: 25,
   },
   {
-    title: "Leader 2",
+    title: 'Leader 2',
     rewardFrom: 750,
     rewardTo: 1500,
     requiredSalesFrom: 30000,
@@ -386,16 +401,16 @@ const rankSeeder = [
     directReferralsRequired: 25,
   },
   {
-    title: "Leader 3",
+    title: 'Leader 3',
     rewardFrom: 2000,
     rewardTo: 2500,
     requiredSalesFrom: 750000,
-    requiredSalesTo: 100000,
+    requiredSalesTo: 1000000,
     weeklyMeetings: 4,
     directReferralsRequired: 50,
   },
   {
-    title: "Leader 4",
+    title: 'Leader 4',
     rewardFrom: 3000,
     rewardTo: 7500,
     requiredSalesFrom: 150000,
@@ -404,7 +419,7 @@ const rankSeeder = [
     directReferralsRequired: 50,
   },
   {
-    title: "Leader 5",
+    title: 'Leader 5',
     rewardFrom: 10000,
     rewardTo: 20000,
     requiredSalesFrom: 500000,
@@ -414,40 +429,33 @@ const rankSeeder = [
   },
 ];
 
-async function seedLevels(levels) {
+async function seedLevels(levels: IMergedLevels): Promise<void> {
   try {
     await Program.deleteMany({});
-
     for (const key of Object.keys(levels)) {
-      // Create a new Program instance with the levels data
-      // const data = levels[key];
-      // for (const d of data) {
-      //   d.level = Number(d.level) + 1;
-      // }
-      // levels[key] = data;
       const program = new Program({ level: key, data: levels[key] });
-      // Save the program to the database
       await program.save();
     }
-    console.log("Program seed data saved");
+    console.log('Program seed data saved');
   } catch (error) {
+    console.error('Error seeding levels:', error);
     throw error;
   }
 }
 
-async function seedRanks(levels) {
+async function seedRanks(levels: RankInterface[]): Promise<void> {
   try {
     await Rank.deleteMany({});
-
-    for (const key of Object.keys(levels)) {
-      const rank = new Rank({ ...levels[key] });
-      await rank.save();
+    for (const rank of levels) {
+      const rankInstance = new Rank(rank);
+      await rankInstance.save();
     }
-    console.log("Rank seed data saved");
+    console.log('Rank seed data saved');
   } catch (error) {
+    console.error('Error seeding ranks:', error);
     throw error;
   }
 }
 
-seedLevels(mergedLevels);
-seedRanks(rankSeeder);
+seedLevels(mergedLevels).catch(console.error);
+seedRanks(rankSeeder).catch(console.error);

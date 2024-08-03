@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface RankInterface extends Document {
+export interface RankInterface extends Document {
   title: string;
   rewardFrom: number;
   rewardTo: number;

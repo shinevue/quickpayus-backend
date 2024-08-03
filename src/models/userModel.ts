@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { ObjectId, Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
@@ -6,6 +6,7 @@ import config from '../config/constants';
 import { randomUUID } from '../helpers';
 
 interface IKyc {
+  _id: ObjectId;
   dateOfBirth?: Date;
   gender?: 'Male' | 'Female' | 'Other';
   addressLine: string;
@@ -23,7 +24,7 @@ interface IKyc {
   documents?: { name: string }[];
 }
 
-interface IUser {
+export interface IUser {
   isModified: any;
   uuid?: string;
   firstName: string;
