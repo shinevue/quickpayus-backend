@@ -14,8 +14,10 @@
   "license": "ISC",
   "dependencies": {
     "@elastic/elasticsearch": "^8.14.0",
+    "@types/ejs": "^3.1.5",
     "@types/mongoose": "^5.11.97",
     "@types/multer": "^1.4.11",
+    "@types/nodemailer": "^6.4.15",
     "@types/winston": "^2.4.4",
     "axios": "^1.6.3",
     "bcrypt": "^5.1.1",

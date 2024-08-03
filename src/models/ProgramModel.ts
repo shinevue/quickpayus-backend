@@ -11,7 +11,7 @@ interface IChild extends Document {
 }
 
 // Define an interface for the Program schema
-interface IProgram extends Document {
+export interface IProgram extends Document {
   level: string; // Required field
   data: IChild[]; // Array of child fields
 }
