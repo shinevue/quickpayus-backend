@@ -1,14 +1,12 @@
-const config = require("../../config/config");
-const ErrorHandler = require("../../utils/errorHandler");
-const catchAsyncErrors = require("../../middlewares/catchAsyncErrors");
+import config from '../../config/config';
+import ErrorHandler from '../../utils/errorHandler';
+import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 
-const Receiver = require("../../models/receiverAddressModel");
-const { isValidAddress } = require("../../utils/trc20Validator");
-const notificationService = require("../../services/notificationService");
+import Receiver from '../../models/receiverAddressModel';
+import { isValidAddress } from '../../utils/trc20Validator';
+import { create } from '../../services/notificationService';
 
-const {
-  NOTIFICATION_TYPES,
-} = require("../../config/constants");
+import configConstants from '../../config/constants';
 
 exports.getAllReceiver = catchAsyncErrors(async (req, res, next) => {
   const data = await Receiver.find({}).sort({ createdAt: -1 });
@@ -27,23 +25,23 @@ exports.getAllReceiver = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.addReceiver = catchAsyncErrors(async (req, res, next) => {
-  const newReceiver = new Receiver({ ...req.body, adminId: req.user.username });
   const { username } = req.user;
+  const newReceiver = new Receiver({ ...req.body, adminId: username });
 
   if (isValidAddress(req.body.newAddress))
     newReceiver
       .save()
       .then((receiver) => {
-        notificationService.create({
+        create({
           userId: username,
-          title: "RECEIVER ADDRESS CHANGE",
-          type: NOTIFICATION_TYPES.ACTIVITY,
+          title: 'RECEIVER ADDRESS CHANGE',
+          type: configConstants.NOTIFICATION_TYPES.ACTIVITY,
           message: `Receiver address changed to ${req.body.newAddress}`,
-          adminCreated: true
+          adminCreated: true,
         });
         res.json({
           success: true,
-          msg: "Receiver created successfully:",
+          msg: 'Receiver created successfully:',
           receiver: receiver,
         });
       })
@@ -56,7 +54,7 @@ exports.addReceiver = catchAsyncErrors(async (req, res, next) => {
   else {
     res.json({
       success: false,
-      msg: "Address validation failed.",
+      msg: 'Address validation failed.',
     });
   }
 });
@@ -73,7 +71,7 @@ exports.defaultReceiver = catchAsyncErrors(async (req, res, next) => {
   newReceiver
     .save()
     .then(() => {
-      console.log("--- Admin Receiver address created successfully ---");
+      console.log('--- Admin Receiver address created successfully ---');
     })
     .catch(() => {
       console.log("--- Can't create Admin Receiver address ---");
