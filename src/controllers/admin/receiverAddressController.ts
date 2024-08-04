@@ -8,7 +8,7 @@ import { create } from '../../services/notificationService';
 
 import configConstants from '../../config/constants';
 
-exports.getAllReceiver = catchAsyncErrors(async (req, res, next) => {
+export const getAllReceiver = catchAsyncErrors(async (req, res, next) => {
   const data = await Receiver.find({}).sort({ createdAt: -1 });
 
   if (!data?.length) {
@@ -24,7 +24,7 @@ exports.getAllReceiver = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-exports.addReceiver = catchAsyncErrors(async (req, res, next) => {
+export const addReceiver = catchAsyncErrors(async (req, res, next) => {
   const { username } = req.user;
   const newReceiver = new Receiver({ ...req.body, adminId: username });
 
@@ -59,7 +59,7 @@ exports.addReceiver = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-exports.defaultReceiver = catchAsyncErrors(async (req, res, next) => {
+export const defaultReceiver = catchAsyncErrors(async (req, res, next) => {
   const count = await Receiver.find();
   if (count.length) {
     console.log("--- Can't create Admin Receiver address ---");

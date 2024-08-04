@@ -358,7 +358,7 @@ export const updateStatusOfReward = catchAsyncErrors(
   },
 );
 
-/* exports.getUsersWithBalance = async (page, pageSize, query) => {
+/* export const getUsersWithBalance = async (page, pageSize, query) => {
   try {
     console.log(TRANSACTION_TYPES.DEPOSIT, config.STATUS.APPROVED);
     const usersTotalBalance = await User.aggregate([

@@ -25,7 +25,7 @@ interface BalanceQuery {
   transactionType?: string;
 }
 
-exports.kycUpsert = catchAsyncErrors(
+export const kycUpsert = catchAsyncErrors(
   async (req: UserRequest, res: Response, next: NextFunction) => {
     const userID = req.user.id;
     let user = await User.findById(userID);
@@ -113,7 +113,7 @@ exports.kycUpsert = catchAsyncErrors(
   },
 );
 
-exports.updateProfile = catchAsyncErrors(
+export const updateProfile = catchAsyncErrors(
   async (req: UserRequest, res: Response, next: NextFunction) => {
     const userID = req.user.id;
     const { password, ...data } = req.body;
@@ -155,7 +155,7 @@ exports.updateProfile = catchAsyncErrors(
   },
 );
 
-exports.enable2FA = catchAsyncErrors(
+export const enable2FA = catchAsyncErrors(
   async (req: UserRequest, res: Response, next: NextFunction) => {
     const userID = req.user.id;
     const user = await User.findById(userID);
@@ -189,7 +189,7 @@ exports.enable2FA = catchAsyncErrors(
   },
 );
 
-exports.balanceByType = async (query: BalanceQuery) => {
+export const balanceByType = async (query: BalanceQuery) => {
   let balance = 0;
   let key: string | null = null;
 
@@ -247,7 +247,7 @@ exports.balanceByType = async (query: BalanceQuery) => {
   return { key, balance };
 };
 
-exports.getUser = catchAsyncErrors(
+export const getUser = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const uuid = req?.params?.uuid;
     const data = await User.findOne({ uuid });
@@ -263,7 +263,7 @@ exports.getUser = catchAsyncErrors(
   },
 );
 
-exports.getAllUser = catchAsyncErrors(
+export const getAllUser = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const keyword = req.params.key;
     const users = await User.find({
