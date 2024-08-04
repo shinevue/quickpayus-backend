@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "Quickpayus API",
-      script: "index.js",
+      script: "dist/index.js",
       ignore_watch: [
         // List files/directories to ignore for watching
         "node_modules/",

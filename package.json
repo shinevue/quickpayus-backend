@@ -2,12 +2,13 @@
   "name": "quickpayus",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.ts",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "pm2 start ecosystem.config.js",
     "dev": "pm2 start ecosystem.config.js --env development",
+    "build": "tsc",
     "cronjob": "node cronjobs/dailyprofits.js",
     "mock-mail": "node test/mock-mail.js"
   },
