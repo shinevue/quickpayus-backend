@@ -1,9 +1,9 @@
-const connectDB = require("../config/db.js");
-const User = require("../models/userModel.js");
-const HELPER = require("../helpers");
-const { fakerEN: faker } = require("@faker-js/faker");
+import connectDB from "../config/db.js";
+import User from "../models/userModel.js";
+import HELPER from "../helpers";
+import { fakerEN as faker } from "@faker-js/faker";
 
-const ProfitConfig = require("../models/profitConfigModel.js");
+import ProfitConfig from "../models/profitConfigModel.js";
 
 connectDB();
 

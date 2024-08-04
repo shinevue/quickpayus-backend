@@ -1,14 +1,14 @@
-const connectDB = require('../config/db.js');
-const User = require('../models/userModel');
-const ProfitConfig = require('../models/profitConfigModel');
-const HELPER = require('../helpers');
-const transactionCtlr = require('../controllers/transactionController');
-const notificationService = require('../services/notificationService');
-const {
+import connectDB from '../config/db.js';
+import User from '../models/userModel';
+import ProfitConfig from '../models/profitConfigModel';
+import HELPER from '../helpers';
+import transactionCtlr from '../controllers/transactionController';
+import notificationService from '../services/notificationService';
+import {
   TRANSACTION_TYPES,
   NOTIFICATION_TYPES,
   STATUS,
-} = require('../config/constants.js');
+} from '../config/constants.js';
 
 const main = async (page, pageSize) => {
   try {
@@ -19,7 +19,7 @@ const main = async (page, pageSize) => {
 
     if (!profitConfig?.length) {
       console.error(
-        `Profit config not found for today, stopped executing the job!`
+        `Profit config not found for today, stopped executing the job!`,
       );
       process.exit(0);
     }
@@ -71,7 +71,7 @@ const main = async (page, pageSize) => {
 
       const appliedPercentage = HELPER.applyPercentage(
         equityBalance,
-        percentage
+        percentage,
       );
 
       const updatedProfitBalance = profitBalance + appliedPercentage ?? 0;
@@ -81,11 +81,11 @@ const main = async (page, pageSize) => {
         referralCreditBalance,
         depositBalance,
         appliedPercentage,
-        updatedProfitBalance
+        updatedProfitBalance,
       );
 
       console.log(
-        `------- Updating user with percentage (${percentage}) profit (${username}) - ${updatedProfitBalance}-------`
+        `------- Updating user with percentage (${percentage}) profit (${username}) - ${updatedProfitBalance}-------`,
       );
 
       if (!updatedProfitBalance) continue;
@@ -126,6 +126,9 @@ const main = async (page, pageSize) => {
   // process.exit(0);
 };
 
+import { Worker, Queue } from 'bullmq';
+import IORedis from 'ioredis';
+
 async function applyNormal() {
   console.time('TOTAL_TIME_TOOK');
   await main(1, 5000);
@@ -133,9 +136,7 @@ async function applyNormal() {
 }
 function applyCronJob() {
   const jobNames = [];
-  const { Worker, Queue } = require('bullmq');
 
-  const IORedis = require('ioredis');
   const connection = new IORedis({ maxRetriesPerRequest: null });
 
   const queue = new Queue('myQueue', { connection });
@@ -185,7 +186,7 @@ function applyCronJob() {
           console.log(
             `Total processing time for ${10} workers is: ${
               (latestEndTime - earliestStartTime) / 1000
-            } seconds`
+            } seconds`,
           );
 
           earliestStartTime = Infinity;
@@ -193,7 +194,7 @@ function applyCronJob() {
           completionCounter = 0;
         }
       },
-      { connection }
+      { connection },
     );
     worker.on('failed', (job, err) => {
       console.error(`${job.name} failed with error:`, err);
@@ -223,7 +224,7 @@ function applyCronJob() {
             pattern: '0 3-6 * * Mon-Fri',
             endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
           },
-        }
+        },
       );
     }
   }

@@ -1,4 +1,4 @@
-const { sendEmail, emailTemplates } = require("../utils/sendEmail");
+import { sendEmail, emailTemplates } from "../utils/sendEmail";
 
 sendEmail({
     email: 'chris.cso1011@gmail.com',

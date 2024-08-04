@@ -1,4 +1,4 @@
-const { Notification } = require("../models/notificationModel");
+import { Notification } from "../models/notificationModel";
 
 exports.paginate = async (userId, options) => {
   const { page, pageSize } = options || {};
