@@ -1,10 +1,37 @@
-const connectDB = require("../config/db");
-const User = require("../models/userModel");
-const { faker } = require("@faker-js/faker");
+import connectDB from "../config/db";
+import User from "../models/userModel";
+import { faker } from "@faker-js/faker";
 
 connectDB();
 
-const levels = {
+interface UserDummy {
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
+  countryCode: string;
+  phoneNumber: number;
+  createdAt: Date;
+  depositBalance: number;
+  rewardBalance: number;
+  creditBalance: number;
+  profitBalance: number;
+  referralId: string;
+  password: string;
+  investmentLevel: string;
+  investmentSubLevel: string;
+  termsAndConditions: boolean;
+  // Uncomment and define the KYC interface if needed
+  // kyc?: {
+  //   identification: Array<{
+  //     documentType: string;
+  //     documentName: string;
+  //   }>;
+  //   status: string;
+  // };
+}
+
+const levels: { [key: number]: string } = {
   1: "A",
   2: "B",
   3: "C",
@@ -12,7 +39,7 @@ const levels = {
   5: "E",
 };
 
-const generateDummyUser = () => {
+const generateDummyUser = (): UserDummy => {
   const level = levels[faker.number.int({ min: 1, max: 5 })];
   return {
     firstName: faker.person.firstName(),
@@ -32,32 +59,32 @@ const generateDummyUser = () => {
     investmentLevel: level,
     investmentSubLevel: level + faker.number.int({ min: 1, max: 5 }),
     termsAndConditions: true,
+    // Uncomment and define the KYC object if needed
     // kyc: {
-    // identification: [
-    //   {
-    //     documentType: faker.lorem.word(), // Placeholder, replace with appropriate type
-    //     documentName: `${faker.person.firstName()} ${faker.person.lastName()} ${faker.lorem.word()}`,
-    //   },
-    // ],
-    // status: "APPROVED",
-    // },`
+    //   identification: [
+    //     {
+    //       documentType: faker.lorem.word(), // Placeholder, replace with appropriate type
+    //       documentName: `${faker.person.firstName()} ${faker.person.lastName()} ${faker.lorem.word()}`,
+    //     },
+    //   ],
+    //   status: "APPROVED",
+    // },
   };
 };
 
-const seedDummyUsers = async () => {
+const seedDummyUsers = async (): Promise<void> => {
   console.time("TOTAL_TIME");
   try {
     for (let i = 0; i < 20; i++) {
-      //console.log(`Inserting row - ${i}`);
       const user = new User(generateDummyUser());
       await user.save();
     }
-
     console.log("User dummy seed data saved");
   } catch (error) {
+    console.error("Error seeding dummy users:", error);
     throw error;
   }
   console.timeEnd("TOTAL_TIME");
-}
+};
 
 seedDummyUsers();
