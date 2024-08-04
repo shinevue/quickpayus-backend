@@ -1,4 +1,4 @@
-import express from 'require';
+import express from 'express';
 import { isAuthenticatedUser, authorizeRole } from '../../middlewares/auth';
 
 import {
@@ -6,14 +6,14 @@ import {
   get,
   remove,
   removeAll,
-} from '../../controllers/announcementController';
+} from '../../controllers/admin/notificationsController';
 const router = express.Router();
 
 router
   .route('/')
   .post(isAuthenticatedUser, authorizeRole, create)
-  .get(isAuthenticatedUser, authorizeRole, get)
-  .delete(isAuthenticatedUser, authorizeRole, remove);
+  .get(isAuthenticatedUser, authorizeRole, get);
+router.route('/:id').delete(isAuthenticatedUser, authorizeRole, remove);
 
 router
   .route('/removeall')

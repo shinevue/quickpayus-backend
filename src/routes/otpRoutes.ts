@@ -1,4 +1,4 @@
-import express from 'require';
+import express from 'express';
 import { isAuthenticatedUser } from '../middlewares/auth';
 import otpCtlr from '../controllers/otpController';
 const router = express.Router();
