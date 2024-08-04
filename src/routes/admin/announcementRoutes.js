@@ -1,25 +1,22 @@
-const express = require("express");
-const {
-  isAuthenticatedUser,
-  authorizeRole,
-} = require("../../middlewares/auth");
+import express from 'require';
+import { isAuthenticatedUser, authorizeRole } from '../../middlewares/auth';
 
-const {
+import {
   create,
   get,
   remove,
   removeAll,
-} = require("../../controllers/announcementController");
+} from '../../controllers/announcementController';
 const router = express.Router();
 
 router
-  .route("/")
+  .route('/')
   .post(isAuthenticatedUser, authorizeRole, create)
   .get(isAuthenticatedUser, authorizeRole, get)
   .delete(isAuthenticatedUser, authorizeRole, remove);
 
 router
-  .route("/removeall")
+  .route('/removeall')
   .delete(isAuthenticatedUser, authorizeRole, removeAll);
 
 module.exports = router;

@@ -1,30 +1,27 @@
-const express = require("express");
-const {
-  isAuthenticatedUser,
-  authorizeRole,
-} = require("../../middlewares/auth");
-const {
+import express from 'require';
+import { isAuthenticatedUser, authorizeRole } from '../../middlewares/auth';
+import {
   create,
   get,
   updateRole,
   remove,
   getPermission,
-} = require("../../controllers/admin/roleController");
+} from '../../controllers/admin/roleController';
 
 const router = express.Router();
 
 router
-  .route("/")
+  .route('/')
   .post(isAuthenticatedUser, authorizeRole, create)
   .get(isAuthenticatedUser, authorizeRole, get);
 
 router
-  .route("/:id")
+  .route('/:id')
   .put(isAuthenticatedUser, authorizeRole, updateRole)
   .delete(isAuthenticatedUser, authorizeRole, remove);
 
 router
-  .route("/permission")
+  .route('/permission')
   .get(isAuthenticatedUser, authorizeRole, getPermission);
 
 module.exports = router;

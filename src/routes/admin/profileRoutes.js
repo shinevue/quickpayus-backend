@@ -1,24 +1,24 @@
-const express = require("express");
-const {
+import express from 'require';
+import {
   isAuthenticatedUser,
   authorizeRole,
-} = require("../../middlewares/auth");
-const {
+} from '../../middlewares/auth';
+import {
   create,
   getAllUser,
   edit,
   remove,
-} = require("../../controllers/admin/profileController");
+} from '../../controllers/admin/profileController';
 
 const router = express.Router();
 
 router
-  .route("/")
+  .route('/')
   .post(isAuthenticatedUser, authorizeRole, create)
   .get(isAuthenticatedUser, authorizeRole, getAllUser);
 
 router
-  .route("/:id")
+  .route('/:id')
   .put(isAuthenticatedUser, authorizeRole, edit)
   .delete(isAuthenticatedUser, authorizeRole, remove);
 

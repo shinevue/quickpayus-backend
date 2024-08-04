@@ -1,15 +1,16 @@
-const express = require("express");
-const {
+import express from 'require';
+import {
   isAuthenticatedUser,
   authorizeRole,
-} = require("../../middlewares/auth");
-const { get, update } = require("../../controllers/admin/transactionController");
+} from '../../middlewares/auth';
+import {
+  get,
+  update,
+} from '../../controllers/admin/transactionController';
 
 const router = express.Router();
-router.route("/").get(isAuthenticatedUser, authorizeRole, get);
+router.route('/').get(isAuthenticatedUser, authorizeRole, get);
 
-router
-  .route("/status/update")
-  .post(isAuthenticatedUser, authorizeRole, update);
+router.route('/status/update').post(isAuthenticatedUser, authorizeRole, update);
 
 module.exports = router;

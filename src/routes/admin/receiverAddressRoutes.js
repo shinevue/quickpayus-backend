@@ -1,17 +1,14 @@
-const express = require("express");
-const {
-  isAuthenticatedUser,
-  authorizeRole,
-} = require("../../middlewares/auth");
-const {
+import express from 'require';
+import { isAuthenticatedUser, authorizeRole } from '../../middlewares/auth';
+import {
   getAllReceiver,
   addReceiver,
-} = require("../../controllers/admin/receiverAddressController");
+} from '../../controllers/admin/receiverAddressController';
 
 const router = express.Router();
 
 router
-  .route("/")
+  .route('/')
   .get(isAuthenticatedUser, authorizeRole, getAllReceiver)
   .post(isAuthenticatedUser, authorizeRole, addReceiver);
 

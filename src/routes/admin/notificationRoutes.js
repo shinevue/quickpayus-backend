@@ -1,25 +1,25 @@
-const express = require("express");
-const {
+import express from 'require';
+import {
   isAuthenticatedUser,
   authorizeRole,
-} = require("../../middlewares/auth");
+} from '../../middlewares/auth';
 
-const {
+import {
   create,
   get,
   remove,
   removeAll,
-} = require("../../controllers/admin/notificationsController");
+} from '../../controllers/admin/notificationsController';
 const router = express.Router();
 
 router
-  .route("/")
+  .route('/')
   .post(isAuthenticatedUser, authorizeRole, create)
   .get(isAuthenticatedUser, authorizeRole, get);
-router.route("/:id").delete(isAuthenticatedUser, authorizeRole, remove);
+router.route('/:id').delete(isAuthenticatedUser, authorizeRole, remove);
 
 router
-  .route("/removeall")
+  .route('/removeall')
   .delete(isAuthenticatedUser, authorizeRole, removeAll);
 
 module.exports = router;

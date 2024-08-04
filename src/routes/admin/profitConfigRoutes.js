@@ -1,17 +1,17 @@
-const express = require("express");
+import express from 'require';
 const router = express.Router();
-const {
+import {
   isAuthenticatedUser,
   authorizeRole,
-} = require("../../middlewares/auth");
+} from '../../middlewares/auth';
 
-const {
+import {
   get,
   upsert,
-} = require("../../controllers/admin/profitConfigController");
+} from '../../controllers/admin/profitConfigController';
 
 router
-  .route("/")
+  .route('/')
   .get(isAuthenticatedUser, authorizeRole, get)
   .post(isAuthenticatedUser, authorizeRole, upsert);
 

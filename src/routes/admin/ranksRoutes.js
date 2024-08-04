@@ -1,9 +1,6 @@
-const express = require("express");
-const {
-  isAuthenticatedUser,
-  authorizeRole,
-} = require("../../middlewares/auth");
-const { get, update } = require("../../controllers/admin/ranksController");
+import express from 'require';
+import { isAuthenticatedUser, authorizeRole } from '../../middlewares/auth';
+import { get, update } from '../../controllers/admin/ranksController';
 
 const router = express.Router();
 
@@ -14,7 +11,7 @@ const router = express.Router();
  */
 
 router
-  .route("/")
+  .route('/')
   .get(isAuthenticatedUser, authorizeRole, get)
   .put(isAuthenticatedUser, authorizeRole, update);
 
