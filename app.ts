@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet'; // Security middleware
@@ -6,17 +6,15 @@ import rateLimit from 'express-rate-limit'; // Rate limiting middleware
 import morgan from 'morgan';
 import path from 'path';
 import cors from 'cors';
-import errorMiddleware from './src/utils/errorHandler.ts';
+import errorMiddleware from './src/utils/errorHandler'; // Adjusted import for TypeScript
 
 const app = express();
 
-const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT || 3000000;
-
-const MAX_BAN_TIME_MS = process.env.MAX_BAN_TIME_MS || 1 * 60 * 1000;
+const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT ? parseInt(process.env.MAX_API_RATE_LIMIT) : 3000000;
+const MAX_BAN_TIME_MS = process.env.MAX_BAN_TIME_MS ? parseInt(process.env.MAX_BAN_TIME_MS) : 1 * 60 * 1000;
 
 app.enable('trust proxy');
 app.set('trust proxy', 1);
-
 app.use(morgan('combined'));
 
 const userRateLimiter = rateLimit({
@@ -43,36 +41,35 @@ app.use(
   }),
 );
 
-//route Imports
-import authRoutes from './src/routes/authRoutes.ts';
-import adminUserRoutes from './src/routes/admin/usersRoutes.ts';
+// Route Imports
+import authRoutes from './src/routes/authRoutes';
+import adminUserRoutes from './src/routes/admin/usersRoutes';
 import profileRoutes from './src/routes/admin/profileRoutes';
-import adminRoleRoutes from './src/routes/admin/roleRoutes.ts';
-import adminReceiverAddress from './src/routes/admin/receiverAddressRoutes.ts';
+import adminRoleRoutes from './src/routes/admin/roleRoutes';
+import adminReceiverAddress from './src/routes/admin/receiverAddressRoutes';
 import adminTransactionRoutes from './src/routes/admin/transactionRoutes';
-import notificationRoutes from './src/routes/notificationRoutes.ts';
-import programRoutes from './src/routes/programRoutes.ts';
+import notificationRoutes from './src/routes/notificationRoutes';
+import programRoutes from './src/routes/programRoutes';
 import ranksRoutes from './src/routes/admin/ranksRoutes';
 import adminProfitConfigRoutes from './src/routes/admin/profitConfigRoutes';
 import transactionRoutes from './src/routes/transactionRoutes';
-import referralRoutes from './src/routes/referralRoutes.ts';
-import userRoutes from './src/routes/userRoutes.ts';
-import analyticsRoutes from './src/routes/analyticsRoutes.ts';
+import referralRoutes from './src/routes/referralRoutes';
+import userRoutes from './src/routes/userRoutes';
+import analyticsRoutes from './src/routes/analyticsRoutes';
 import adminAnalyticsRoutes from './src/routes/admin/analyticsRoutes';
 import adminAnnouncementRoutes from './src/routes/admin/announcementRoutes';
-import adminNotificationRoutes from './src/routes/admin/notificationRoutes.ts';
+import adminNotificationRoutes from './src/routes/admin/notificationRoutes';
 import announcementRoutes from './src/routes/announcementRoutes';
-import rankRoutes from './src/routes/rankRoutes.ts';
-import otpRoutes from './src/routes/otpRoutes.ts';
-import rewardRoutes from './src/routes/rewardRoutes.ts';
-import supportRoutes from './src/routes/supportRoutes.ts';
+import rankRoutes from './src/routes/rankRoutes';
+import otpRoutes from './src/routes/otpRoutes';
+import rewardRoutes from './src/routes/rewardRoutes';
+import supportRoutes from './src/routes/supportRoutes';
 
-// import {checkDeletedUser} from "./src/controllers/authController";    // import check deleted user inspect path
-
-// import {seedDummyUsers} from "./src/seeder/users";
+// Uncomment if needed
+// import { checkDeletedUser } from "./src/controllers/authController";
+// import { seedDummyUsers } from "./src/seeder/users";
 
 const BASE_ROUTE = '/api/v1';
-
 app.use(`${BASE_ROUTE}/auth`, authRoutes);
 app.use(`${BASE_ROUTE}/user`, userRoutes);
 app.use(`${BASE_ROUTE}/notifications`, notificationRoutes);
@@ -96,16 +93,14 @@ app.use(`${BASE_ROUTE}/otp`, otpRoutes);
 app.use(`${BASE_ROUTE}/reward`, rewardRoutes);
 app.use(`${BASE_ROUTE}/support`, supportRoutes);
 
-//  Check deleted status and remove finally part.
+// Uncomment if needed
 // checkDeletedUser();
-
-// Make seed user's profile data
 // seedDummyUsers();
 
 app.set('view engine', 'ejs');
 app.set('views', './utils/emailTemplates');
 
-app.get('/email', async (req, res) => {
+app.get('/email', async (req: Request, res: Response) => {
   res.render('emailConfirm', {
     title: 'EJS Components Example',
     content: 'This is the content of the main page.',
@@ -114,13 +109,14 @@ app.get('/email', async (req, res) => {
 
 app.use(
   '/uploads',
-  (req, res, next) => {
+  (req: Request, res: Response, next: NextFunction) => {
     res.header('Access-Control-Allow-Origin', '*'); // or specify your origin
     next();
   },
   express.static(path.join(__dirname, 'uploads')),
 );
 
-// errorMidelware
+// Error Middleware
 app.use(errorMiddleware);
-module.exports = app;
+
+export default app; // Changed to ES module export

@@ -59,7 +59,7 @@ export const addReceiver = catchAsyncErrors(async (req, res, next) => {
   }
 });
 
-export const defaultReceiver = catchAsyncErrors(async (req, res, next) => {
+export const defaultReceiver = async () => {
   const count = await Receiver.find();
   if (count.length) {
     console.log("--- Can't create Admin Receiver address ---");
@@ -76,4 +76,4 @@ export const defaultReceiver = catchAsyncErrors(async (req, res, next) => {
     .catch(() => {
       console.log("--- Can't create Admin Receiver address ---");
     });
-});
+};
