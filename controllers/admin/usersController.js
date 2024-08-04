@@ -82,7 +82,7 @@ exports.get = catchAsyncErrors(async (req, res, next) => {
     data.map(async (d) => {
       const directCount = await referralCtrl.directReferralsCount({ referralId: d._id });
       const indirectCount = await referralCtrl.indirectReferralsCount({ referralId: d._id }, 8);
-      const referredBy = data.find(user => user?._id?.toString() === d?.referralId?.toString());
+      const referredBy = await User.findById(new ObjectId(d?.referralId));
 
       return {
         ...d.toObject(),
