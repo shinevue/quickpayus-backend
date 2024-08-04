@@ -24,4 +24,4 @@ router.route('/update/kyc').post(
   kycUpsert,
 );
 
-module.exports = router;
+export default router;

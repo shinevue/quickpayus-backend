@@ -33,4 +33,4 @@ router
   .post('/security_question', isAuthenticatedUser, checkSecurityQuestion)
   .post('/backupcode', isAuthenticatedUser, checkBackupCode);
 
-module.exports = router;
+export default router;

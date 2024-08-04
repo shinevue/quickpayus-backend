@@ -8,4 +8,4 @@ router
   .post(isAuthenticatedUser, transactionCtlr.create);
 router.route('/all/:key').get(isAuthenticatedUser, transactionCtlr.getAllTrans);
 router.route('/receiver').get(isAuthenticatedUser, transactionCtlr.getAddress);
-module.exports = router;
+export default router;

@@ -19,4 +19,4 @@ router
   .route('/removeall')
   .delete(isAuthenticatedUser, authorizeRole, removeAll);
 
-module.exports = router;
+export default router;

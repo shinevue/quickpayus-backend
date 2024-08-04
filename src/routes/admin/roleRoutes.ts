@@ -24,4 +24,4 @@ router
   .route('/permission')
   .get(isAuthenticatedUser, authorizeRole, getPermission);
 
-module.exports = router;
+export default router;

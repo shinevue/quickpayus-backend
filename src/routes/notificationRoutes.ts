@@ -19,4 +19,4 @@ router
   .put(isAuthenticatedUser, updateRead)
   .delete(isAuthenticatedUser, deleteOne);
 
-module.exports = router;
+export default router;

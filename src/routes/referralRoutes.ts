@@ -10,4 +10,4 @@ const router = express.Router();
 router.route('/').get(isAuthenticatedUser, referrals);
 router.route('/parents').get(isAuthenticatedUser, getParentReferrers);
 
-module.exports = router;
+export default router;

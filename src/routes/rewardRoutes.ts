@@ -8,4 +8,4 @@ router.route('/').get(isAuthenticatedUser, get);
 
 router.route('/claim-reward').post(isAuthenticatedUser, claimReward);
 
-module.exports = router;
+export default router;

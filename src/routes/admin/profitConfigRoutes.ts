@@ -9,4 +9,4 @@ router
   .get(isAuthenticatedUser, authorizeRole, get)
   .post(isAuthenticatedUser, authorizeRole, upsert);
 
-module.exports = router;
+export default router;

@@ -19,4 +19,4 @@ router
   .put(isAuthenticatedUser, authorizeRole, edit)
   .delete(isAuthenticatedUser, authorizeRole, remove);
 
-module.exports = router;
+export default router;

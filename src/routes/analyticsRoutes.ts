@@ -1,13 +1,13 @@
-import express from "express";
-import { isAuthenticatedUser, authorizeRole } from "../middlewares/auth";
+import express from 'express';
+import { isAuthenticatedUser, authorizeRole } from '../middlewares/auth';
 
 import {
   counts,
   getBalanceInformation,
-} from "../controllers/analyticsController";
+} from '../controllers/analyticsController';
 const router = express.Router();
 
-router.route("/counts").get(isAuthenticatedUser, counts);
+router.route('/counts').get(isAuthenticatedUser, counts);
 
 /**
  * to get information for chart in dashbaord
@@ -16,7 +16,7 @@ router.route("/counts").get(isAuthenticatedUser, counts);
  *
  */
 router
-  .route("/:balanceframe/:timeframe")
+  .route('/:balanceframe/:timeframe')
   .get(isAuthenticatedUser, getBalanceInformation);
 
-module.exports = router;
+export default router;

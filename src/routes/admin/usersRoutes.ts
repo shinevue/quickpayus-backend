@@ -36,4 +36,4 @@ router.route('/:id').get(isAuthenticatedUser, authorizeRole, getUser);
 
 router.put('/suspend/:id', isAuthenticatedUser, authorizeRole, suspendUser);
 
-module.exports = router;
+export default router;

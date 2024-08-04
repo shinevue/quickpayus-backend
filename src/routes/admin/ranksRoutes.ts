@@ -15,4 +15,4 @@ router
   .get(isAuthenticatedUser, authorizeRole, get)
   .put(isAuthenticatedUser, authorizeRole, update);
 
-module.exports = router;
+export default router;

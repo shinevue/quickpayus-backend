@@ -12,4 +12,4 @@ router
 router.route('/send').post(isAuthenticatedUser, otpCtlr.send);
 router.route('/confirm').post(otpCtlr.confirm); // send otp code after sign up immediatley.
 
-module.exports = router;
+export default router;

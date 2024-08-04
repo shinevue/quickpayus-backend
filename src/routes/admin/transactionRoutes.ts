@@ -7,4 +7,4 @@ router.route('/').get(isAuthenticatedUser, authorizeRole, get);
 
 router.route('/status/update').post(isAuthenticatedUser, authorizeRole, update);
 
-module.exports = router;
+export default router;

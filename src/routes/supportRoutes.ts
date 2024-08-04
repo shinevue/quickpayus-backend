@@ -26,4 +26,4 @@ router
 router
   .route('/ticket/reply')
   .post(isAuthenticatedUser, authorizeRole, saveTicketReply);
-module.exports = router;
+export default router;

@@ -5,4 +5,4 @@ import { counts } from '../../controllers/admin/analyticsController';
 const router = express.Router();
 router.route('/counts').get(isAuthenticatedUser, authorizeRole, counts);
 
-module.exports = router;
+export default router;

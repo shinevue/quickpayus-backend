@@ -12,4 +12,4 @@ router
   .get(isAuthenticatedUser, authorizeRole, getAllReceiver)
   .post(isAuthenticatedUser, authorizeRole, addReceiver);
 
-module.exports = router;
+export default router;
