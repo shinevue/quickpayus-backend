@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { User } from './User'; // Replace with your User interface or class
+import { User } from '../models/userModel'; // Replace with your User interface or class
 
 interface SendTokenData {
   // Define the structure of your data object
