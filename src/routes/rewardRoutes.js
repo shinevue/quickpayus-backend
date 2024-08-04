@@ -1,11 +1,11 @@
-const express = require("express");
-const { isAuthenticatedUser, authorizeRole } = require("../middlewares/auth");
+import express from 'require';
+import { isAuthenticatedUser, authorizeRole } from '../middlewares/auth';
 
-const { get, claimReward } = require("../controllers/rewardsController");
+import { get, claimReward } from '../controllers/rewardsController';
 const router = express.Router();
 
-router.route("/").get(isAuthenticatedUser, get);
+router.route('/').get(isAuthenticatedUser, get);
 
-router.route("/claim-reward").post(isAuthenticatedUser, claimReward);
+router.route('/claim-reward').post(isAuthenticatedUser, claimReward);
 
 module.exports = router;

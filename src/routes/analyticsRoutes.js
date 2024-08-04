@@ -1,10 +1,10 @@
-const express = require("express");
-const { isAuthenticatedUser, authorizeRole } = require("../middlewares/auth");
+import express from "express";
+import { isAuthenticatedUser, authorizeRole } from "../middlewares/auth";
 
-const {
+import {
   counts,
   getBalanceInformation,
-} = require("../controllers/analyticsController");
+} from "../controllers/analyticsController";
 const router = express.Router();
 
 router.route("/counts").get(isAuthenticatedUser, counts);

@@ -1,13 +1,13 @@
-const express = require("express");
-const { isAuthenticatedUser, authorizeRole } = require("../middlewares/auth");
+import express from 'require';
+import { isAuthenticatedUser, authorizeRole } from '../middlewares/auth';
 
-const {
+import {
   referrals,
   getParentReferrers,
-} = require("../controllers/referralsController");
+} from '../controllers/referralsController';
 const router = express.Router();
 
-router.route("/").get(isAuthenticatedUser, referrals);
-router.route("/parents").get(isAuthenticatedUser, getParentReferrers);
+router.route('/').get(isAuthenticatedUser, referrals);
+router.route('/parents').get(isAuthenticatedUser, getParentReferrers);
 
 module.exports = router;
