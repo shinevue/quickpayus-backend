@@ -1,9 +1,9 @@
-const dotenv = require("dotenv");
-const app = require("./app.js");
+import dotenv from 'dotenv';
+import app from './app.js';
 
-const connectDB = require("./src/config/db.js");
+import connectDB from './src/config/db.js';
 //Handling uncaught exception
-process.on("uncaughtException", (err) => {
+process.on('uncaughtException', (err) => {
   console.log(`Error ${err.message}`);
   console.log(`Shutting down server due to Uncaught Rejection`);
   process.exit(1);
@@ -11,7 +11,7 @@ process.on("uncaughtException", (err) => {
 //config
 dotenv.config();
 
-const receiverAddressCtr = require("./src/controllers/admin/receiverAddressController")
+import receiverAddressCtr from './src/controllers/admin/receiverAddressController';
 receiverAddressCtr.defaultReceiver();
 
 const server = app.listen(process.env.PORT, async () => {
@@ -19,7 +19,7 @@ const server = app.listen(process.env.PORT, async () => {
 });
 connectDB();
 // unhandled Promise Rejection
-process.on("unhandledRejection", (err) => {
+process.on('unhandledRejection', (err) => {
   console.log(`Error ${err.message}`);
   console.log(`Shutting down server due to Unhandled Rejection`);
   server.close(() => {
