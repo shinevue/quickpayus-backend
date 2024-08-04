@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface RankInterface extends Document {
+export interface IRank extends Document {
   title: string;
   rewardFrom: number;
   rewardTo: number;
@@ -10,7 +10,7 @@ export interface RankInterface extends Document {
   directReferralsRequired: number;
 }
 
-const RankSchema: Schema<RankInterface> = new Schema({
+const RankSchema: Schema<IRank> = new Schema({
   title: { type: String, required: true },
   rewardFrom: { type: Number, required: true },
   rewardTo: { type: Number, required: true },
@@ -20,6 +20,6 @@ const RankSchema: Schema<RankInterface> = new Schema({
   directReferralsRequired: { type: Number, required: true },
 });
 
-const Rank = mongoose.model<RankInterface>("rank", RankSchema);
+const Rank = mongoose.model<IRank>("rank", RankSchema);
 
 export default Rank;
