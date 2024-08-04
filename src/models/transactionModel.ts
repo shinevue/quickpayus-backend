@@ -121,6 +121,8 @@ export interface ITransaction extends mongoose.Document {
   senderAddress: string;
   uuid: string;
   profit: mongoose.Schema.Types.Mixed;
+  createdAt: Date;
+  updatedAt: Date;
   detuctFees: () => void;
 }
 

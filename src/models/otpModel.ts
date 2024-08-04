@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 import crypto from "crypto";
 
 // Define an interface for the OTP document
-interface IOTP extends Document {
+export interface IOTP extends Document {
   userId: mongoose.Types.ObjectId; // Use ObjectId type for userId
   code?: string; // Optional field
   createdAt?: Date; // Optional field
