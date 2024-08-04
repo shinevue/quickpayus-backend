@@ -44,28 +44,28 @@ app.use(
 );
 
 //route Imports
-import authRoutes from './src/routes/authRoutes';
+import authRoutes from './src/routes/authRoutes.ts';
 import adminUserRoutes from './src/routes/admin/usersRoutes.ts';
 import profileRoutes from './src/routes/admin/profileRoutes';
 import adminRoleRoutes from './src/routes/admin/roleRoutes.ts';
 import adminReceiverAddress from './src/routes/admin/receiverAddressRoutes.ts';
 import adminTransactionRoutes from './src/routes/admin/transactionRoutes';
-import notificationRoutes from './src/routes/notificationRoutes';
-import programRoutes from './src/routes/programRoutes';
+import notificationRoutes from './src/routes/notificationRoutes.ts';
+import programRoutes from './src/routes/programRoutes.ts';
 import ranksRoutes from './src/routes/admin/ranksRoutes';
 import adminProfitConfigRoutes from './src/routes/admin/profitConfigRoutes';
 import transactionRoutes from './src/routes/transactionRoutes';
-import referralRoutes from './src/routes/referralRoutes';
-import userRoutes from './src/routes/userRoutes';
-import analyticsRoutes from './src/routes/analyticsRoutes';
+import referralRoutes from './src/routes/referralRoutes.ts';
+import userRoutes from './src/routes/userRoutes.ts';
+import analyticsRoutes from './src/routes/analyticsRoutes.ts';
 import adminAnalyticsRoutes from './src/routes/admin/analyticsRoutes';
 import adminAnnouncementRoutes from './src/routes/admin/announcementRoutes';
 import adminNotificationRoutes from './src/routes/admin/notificationRoutes.ts';
 import announcementRoutes from './src/routes/announcementRoutes';
-import rankRoutes from './src/routes/rankRoutes';
-import otpRoutes from './src/routes/otpRoutes';
-import rewardRoutes from './src/routes/rewardRoutes';
-import supportRoutes from './src/routes/supportRoutes';
+import rankRoutes from './src/routes/rankRoutes.ts';
+import otpRoutes from './src/routes/otpRoutes.ts';
+import rewardRoutes from './src/routes/rewardRoutes.ts';
+import supportRoutes from './src/routes/supportRoutes.ts';
 
 // import {checkDeletedUser} from "./src/controllers/authController";    // import check deleted user inspect path
 
