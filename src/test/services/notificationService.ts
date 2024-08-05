@@ -21,9 +21,7 @@ export const countDocuments = async (
   return await Notification.countDocuments(query);
 };
 
-export const create = async (
-  payload: Record<string, any>,
-): Promise<Notification> => {
+export const create = async (payload: Record<string, any>): Promise<any> => {
   const notification = new Notification(payload);
   return await notification.save();
 };

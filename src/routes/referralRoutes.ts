@@ -1,13 +1,10 @@
 import express from 'express';
 import { isAuthenticatedUser, authorizeRole } from '../middlewares/auth';
 
-import {
-  referrals,
-  getParentReferrers,
-} from '../controllers/referralsController';
+import referralCtlr from '../controllers/referralsController';
 const router = express.Router();
 
-router.route('/').get(isAuthenticatedUser, referrals);
-router.route('/parents').get(isAuthenticatedUser, getParentReferrers);
+router.route('/').get(isAuthenticatedUser, referralCtlr.referrals);
+router.route('/parents').get(isAuthenticatedUser, referralCtlr.getParentReferrers);
 
 export default router;

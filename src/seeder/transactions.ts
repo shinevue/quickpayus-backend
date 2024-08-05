@@ -11,7 +11,7 @@ connectDB();
 async function seedTransactions(): Promise<void> {
   try {
     await Transaction.deleteMany({});
-    const users: IUser[] = await User.find({});
+    const users: any[] = await User.find({});
 
     for (let i = 1; i < users.length; i++) {
       let date = moment().startOf('year');

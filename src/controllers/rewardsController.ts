@@ -43,7 +43,7 @@ const claimReward = catchAsyncErrors(
       return next(new ErrorHandler('The rank period has not started.', 400));
     }
 
-    if (!rankInfo.rank.hasOwnProperty('_id')) {
+    if (rankInfo.rank && !rankInfo.rank.hasOwnProperty('_id')) {
       return next(
         new ErrorHandler('The rank level has not been reached.', 400),
       );
@@ -52,24 +52,21 @@ const claimReward = catchAsyncErrors(
     const result = await create(userId, rankInfo, true);
 
     if (result) {
-      res.status(200).json({
-        success: true,
-        data: {
-          ...result,
-          title: rankInfo.rank.title,
-        },
-      });
+      if (rankInfo && rankInfo.rank)
+        res.status(200).json({
+          success: true,
+          data: {
+            ...result,
+            title: rankInfo.rank?.title,
+          },
+        });
     } else {
       next(new ErrorHandler('Server error(claim)', 500));
     }
   },
 );
 
-const create = async (
-  userId: ObjectId,
-  rankInfo: any,
-  isClaimed: boolean,
-) => {
+const create = async (userId: ObjectId, rankInfo: any, isClaimed: boolean) => {
   try {
     if (rankInfo.rank && Object.keys(rankInfo.rank).length) {
       const rankId = rankInfo.rank._id;

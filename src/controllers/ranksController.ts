@@ -124,7 +124,7 @@ const getUserRankInfo = async (id: string | ObjectId) => {
     directReferralsCount: counts,
     indirectReferralsCount: inDirectCounts,
     sumOfLast30DaysSales: sales,
-    rank: rank ? rank : {},
+    rank: rank,
   };
 };
 
