@@ -6,6 +6,8 @@ interface IFeedback extends Document {
   fbCnt?: string; // Optional field
   uploadedUrl?: string; // Optional field
   rating: number; // Required field
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 // Define the feedback schema

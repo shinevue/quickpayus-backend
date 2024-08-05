@@ -10,13 +10,14 @@ interface PaginationOptions {
 interface Payload {
   // Define the structure of the payload as needed
   // For example:
-  title: string;
-  message: string;
+  title?: string;
+  message?: string;
   userId?: string | ObjectId;
   createdAt?: Date;
   type?: string;
   adminCreated?: boolean;
   link?: string;
+  isRead?: boolean;
   // Add other fields according to your Notification model
 }
 

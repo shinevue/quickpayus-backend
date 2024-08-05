@@ -7,6 +7,8 @@ interface ITicket extends Document {
   uploadedUrl: string;
   status: "PENDING" | "RESOLVED";
   priority: "LOW" | "MEDIUM" | "HIGH";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const ticketSchema: Schema<ITicket> = new Schema(
@@ -42,7 +44,7 @@ const ticketSchema: Schema<ITicket> = new Schema(
 ticketSchema.pre<ITicket>("save", async function (next) {
   try {
     next();
-  } catch (error) {
+  } catch (error: any) {
     // Handle any errors that might occur during the pre-save operation
     next(error);
   }

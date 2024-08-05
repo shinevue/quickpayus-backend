@@ -1,11 +1,5 @@
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
-import {
-  countDocuments,
-  paginateQuery,
-  deleteMany,
-  update,
-  deleteOne,
-} from '../services/notificationService';
+import notificationService from '../services/notificationService';
 import { Request, Response, NextFunction } from 'express';
 // import { ErrorHandler } from "../utils/errorHandler"; // Assuming ErrorHandler is used somewhere
 
@@ -35,7 +29,7 @@ interface DeleteOneRequest extends Request {
 }
 
 export const get = catchAsyncErrors(
-  async (req: GetNotificationsRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { page = '1', isRead = 'false' } = req.query;
     const pageSize = parseInt(process.env.RECORDS_PER_PAGE || '15', 10);
     const { username, id } = req.user || {};
@@ -80,29 +74,29 @@ export const get = catchAsyncErrors(
   },
 );
 
-export const updateMany = catchAsyncErrors(
-  async (req: Request, res: Response) => {
-    const { id, username } = req.user as User;
+// export const updateMany = catchAsyncErrors(
+//   async (req: Request, res: Response) => {
+//     const { id, username } = req.user as User;
 
-    await notificationService.updateMany(
-      {
-        $or: [
-          { userId: username, isRead: false },
-          { adminCreated: true },
-          { userId: id, isRead: false },
-        ],
-      },
-      { isRead: true },
-    );
+//     await notificationService.updateMany(
+//       {
+//         $or: [
+//           { userId: username, isRead: false },
+//           { adminCreated: true },
+//           { userId: id, isRead: false },
+//         ],
+//       },
+//       { isRead: true },
+//     );
 
-    return res.json({
-      success: true,
-    });
-  },
-);
+//     return res.json({
+//       success: true,
+//     });
+//   },
+// );
 
 export const deleteMany = catchAsyncErrors(
-  async (req: Request, res: Response) => {
+  async (req: any, res: Response) => {
     const { id, username } = req.user as User;
 
     await notificationService.deleteMany({
@@ -120,7 +114,7 @@ export const deleteMany = catchAsyncErrors(
 );
 
 export const updateRead = catchAsyncErrors(
-  async (req: UpdateReadRequest, res: Response) => {
+  async (req: any, res: Response) => {
     const { id } = req.params;
 
     await notificationService.update(id, { isRead: true });
@@ -132,7 +126,7 @@ export const updateRead = catchAsyncErrors(
 );
 
 export const deleteOne = catchAsyncErrors(
-  async (req: DeleteOneRequest, res: Response) => {
+  async (req: any, res: Response) => {
     const { id } = req.params;
 
     await notificationService.deleteOne(id);

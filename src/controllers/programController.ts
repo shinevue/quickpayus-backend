@@ -17,7 +17,7 @@ interface ILevelQuery {
   sublevel: string;
 }
 
-export const get = catchAsyncErrors(
+const get = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const programs: IProgram[] = await Program.find({});
     if (!programs?.length) {
@@ -33,7 +33,7 @@ export const get = catchAsyncErrors(
   },
 );
 
-export const update = catchAsyncErrors(
+const update = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const programs: IProgramData[] = req.body.program;
     await Program.deleteMany({});
@@ -45,7 +45,7 @@ export const update = catchAsyncErrors(
   },
 );
 
-export const findByInvestment = async (
+const findByInvestment = async (
   investment: number,
 ): Promise<{ level: string; data: IProgramData | {} } | null> => {
   const program = await Program.findOne(
@@ -62,14 +62,14 @@ export const findByInvestment = async (
   const { level, data } = program;
   const selectedData = data
     .reverse()
-    .find((item: IProgramData) => item?.investment <= investment);
+    .find((item: any) => item?.investment <= investment);
 
   return { level, data: selectedData || {} };
 };
 
-export const findByLevels = async (
+const findByLevels = async (
   query: ILevelQuery,
-): Promise<{ level: string; data: IProgramData | undefined } | null> => {
+): Promise<{ level: string; data: any } | null> => {
   const program = await Program.findOne(
     {
       level: String(query?.level),
@@ -81,16 +81,27 @@ export const findByLevels = async (
 
   const { level, data } = program;
   const selectedData = data.find(
-    (item: IProgramData) => item?.level === String(query?.sublevel),
+    (item: any) => item?.level === String(query?.sublevel),
   );
 
   return { level, data: selectedData };
 };
 
-export const find = async (query: any): Promise<IProgram[]> => {
+const find = async (query: any): Promise<IProgram[]> => {
   return await Program.find(query);
 };
 
-export const findOne = async (query: any): Promise<IProgram | null> => {
+const findOne = async (query: any): Promise<IProgram | null> => {
   return await Program.findOne(query);
 };
+
+const programCtlr = {
+  get: get,
+  update: update,
+  findByInvestment: findByInvestment,
+  findByLevels: findByLevels,
+  find: find,
+  findOne: findOne,
+};
+
+export default programCtlr;

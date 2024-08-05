@@ -4,38 +4,38 @@ import Ticket from '../models/ticketModel';
 import User from '../models/userModel';
 import fs from 'fs';
 import path from 'path';
-import { create } from '../services/notificationService';
+import notificationService from '../services/notificationService';
 import config from '../config/constants';
 import { Request, Response, NextFunction } from 'express';
 
-interface FeedbackRequest extends Request {
-  body: {
-    feedback: string;
-    rating: number;
-  };
-  user: {
-    id: string;
-  };
-  file?: {
-    filename: string;
-    mimetype: string;
-  };
-}
+// interface FeedbackRequest extends Request {
+//   body: {
+//     feedback: string;
+//     rating: number;
+//   };
+//   user: {
+//     id: string;
+//   };
+//   file?: {
+//     filename: string;
+//     mimetype: string;
+//   };
+// }
 
-interface TicketRequest extends Request {
-  body: {
-    priority: string;
-    subject: string;
-    description: string;
-  };
-  user: {
-    id: string;
-  };
-  file?: {
-    filename: string;
-    mimetype: string;
-  };
-}
+// interface TicketRequest extends Request {
+//   body: {
+//     priority: string;
+//     subject: string;
+//     description: string;
+//   };
+//   user: {
+//     id: string;
+//   };
+//   file?: {
+//     filename: string;
+//     mimetype: string;
+//   };
+// }
 
 interface GetFeedbackRequest extends Request {
   query: {
@@ -65,7 +65,7 @@ interface SaveTicketReplyRequest extends Request {
 }
 
 export const createFeedback = catchAsyncErrors(
-  async (req: FeedbackRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { feedback, rating } = req.body;
     const { id } = req.user;
 
@@ -110,7 +110,7 @@ export const createFeedback = catchAsyncErrors(
 );
 
 export const createTicket = catchAsyncErrors(
-  async (req: TicketRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { priority, subject, description } = req.body;
     const { id } = req.user;
 
@@ -249,7 +249,7 @@ export const getTicket = catchAsyncErrors(
       description: ticket.description,
       status: ticket.status,
       priority: ticket.priority,
-      createdBy: ticket.userId.username,
+      createdBy: ticket.userId,
       image: ticket.uploadedUrl,
       createdAt: ticket.createdAt,
     }));
@@ -275,15 +275,6 @@ export const saveTicketReply = catchAsyncErrors(
       return;
     }
 
-    const user = await User.findOne({ username });
-    if (!user) {
-      res.send({
-        success: false,
-        message: 'User not found',
-      });
-      return;
-    }
-
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) {
       res.send({
@@ -293,8 +284,17 @@ export const saveTicketReply = catchAsyncErrors(
       return;
     }
 
-    await create({
-      userId: user._id,
+    const user = await User.findOne({ username });
+    if (!user) {
+      res.send({
+        success: false,
+        message: 'User not found',
+      });
+      return;
+    }
+
+    await notificationService.create({
+      userId: username,
       title,
       type: config.NOTIFICATION_TYPES.IMPORTANT,
       message: `YOUR TICKET(${ticket.subject}) has been resolved. ${content}`,
