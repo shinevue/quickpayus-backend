@@ -230,7 +230,7 @@ export const deleteUser = catchAsyncErrors(
 
 export const forgotPassword = catchAsyncErrors(
   async (req: ForgotPasswordRequest, res: Response, next: NextFunction) => {
-    const user:any = await User.findOne({ email: req.body.email });
+    const user: any = await User.findOne({ email: req.body.email });
     if (!user) {
       return next(new ErrorHandler('User not found', 404));
     }

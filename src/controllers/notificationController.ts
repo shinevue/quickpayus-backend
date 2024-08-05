@@ -45,12 +45,12 @@ export const get = catchAsyncErrors(
     const total = await notificationService.countDocuments(query);
     console.log(total);
 
-    if (isRead === 'false') {
-      return res.json({
-        success: true,
-        total,
-      });
-    }
+    // if (isRead === 'false') {
+    //   return res.json({
+    //     success: true,
+    //     total,
+    //   });
+    // }
 
     if (!total) {
       return res.json({

@@ -58,8 +58,6 @@ export const counts = catchAsyncErrors(
       topOS: await getTopOS(),
     };
 
-    console.log(userDemographics);
-
     res.status(200).json({
       userMetrics,
       kycMetrics,
