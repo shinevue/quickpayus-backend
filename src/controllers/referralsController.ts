@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 import config from '../config/constants';
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 
-export const getDirectReferrals = async (
+const getDirectReferrals = async (
   query: any,
   options?: { page?: number; pageSize?: number; sortBy?: string },
 ) => {
@@ -15,15 +15,23 @@ export const getDirectReferrals = async (
     .sort({ [sortBy]: -1 })
     .skip(skip)
     .limit(pageSize)
-    .select(config.DEFAULT_REFERRAL_FIELDS);
+    .select({
+      investmentLevel: 1,
+      username: 1,
+      firstName: 1,
+      lastName: 1,
+      depositBalance: 1,
+      createdAt: 1,
+      investmentSubLevel: 1,
+    });
 };
 
-export const directReferralsCount = async (query: any): Promise<number> => {
+const directReferralsCount = async (query: any): Promise<number> => {
   const result = (await User.countDocuments(query)) || 0;
   return result;
 };
 
-export const getIndirectReferrals = async (
+const getIndirectReferrals = async (
   query: any,
   options?: {
     page?: number;
@@ -153,7 +161,7 @@ export const getIndirectReferrals = async (
   ]);
 };
 
-export const indirectReferralsCount = async (query: any, depth: number) => {
+const indirectReferralsCount = async (query: any, depth: number) => {
   const { referralId, ...otherQueryParams } = query;
   const result = await User.aggregate([
     {
@@ -202,15 +210,15 @@ export const indirectReferralsCount = async (query: any, depth: number) => {
   return count;
 };
 
-export const referrals = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+const referrals = catchAsyncErrors(
+  async (req: any, res: Response, next: NextFunction) => {
     const userId = new ObjectId(req?.user?.id) || null;
     let referrals: any[] = [],
       total = 0,
       pageSize = Number(process.env.RECORDS_PER_PAGE) || 15;
 
     if (!userId) {
-      return next(new ErrorHandler('No user found'), 404);
+      return next(new ErrorHandler('No user found', 404));
     }
 
     const { type, page, level } = req?.query || {};
@@ -265,7 +273,7 @@ export const referrals = catchAsyncErrors(
   },
 );
 
-export const getAllReferrals = async (query: any, depth: number) => {
+const getAllReferrals = async (query: any, depth: number) => {
   let indirectReferrals: any[] = [];
   try {
     indirectReferrals = await User.aggregate([
@@ -345,7 +353,7 @@ export const getAllReferrals = async (query: any, depth: number) => {
   return indirectReferrals;
 };
 
-export const parentReferrers = async (query: any) => {
+const parentReferrers = async (query: any) => {
   const referrers =
     (await User.aggregate([
       {
@@ -411,7 +419,7 @@ export const parentReferrers = async (query: any) => {
   return referrers?.length ? referrers[0]?.parents : [];
 };
 
-export const getParentReferrers = async (req: Request, res: Response) => {
+const getParentReferrers = async (req: any, res: Response) => {
   const query = {
     _id: new ObjectId(req?.user?.id),
     isActive: true,
@@ -431,3 +439,16 @@ export const getParentReferrers = async (req: Request, res: Response) => {
     data,
   });
 };
+
+const referralCtlr = {
+  getDirectReferrals,
+  directReferralsCount,
+  getIndirectReferrals,
+  indirectReferralsCount,
+  referrals,
+  getAllReferrals,
+  parentReferrers,
+  getParentReferrers,
+};
+
+export default referralCtlr;

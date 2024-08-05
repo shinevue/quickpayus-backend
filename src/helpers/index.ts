@@ -4,7 +4,7 @@ import momentTZ from 'moment-timezone';
 
 momentTZ().tz('Asia/Karachi');
 
-function checkRankPeriod(joining: Date): boolean {
+function checkRankPeriod(joining: any): boolean {
   return (
     moment.duration(moment().diff(joining)).asSeconds() > 30 * 24 * 60 * 60
   );
@@ -62,7 +62,7 @@ const endOfToday = (): string => {
 
 const randomUUID = crypto.randomUUID;
 
-export {
+const HELPERS = {
   applyPercentage,
   firstDayOfLastMonth,
   lastDayOfLastMonth,
@@ -75,3 +75,5 @@ export {
   endOfToday,
   checkRankPeriod,
 };
+
+export default HELPERS;

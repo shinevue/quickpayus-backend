@@ -3,23 +3,19 @@ import Reward, { IReward } from '../models/rewardModel'; // Adjust the import ba
 import Rank, { IRank } from '../models/rankModel'; // Adjust the import based on your Rank model
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 import ErrorHandler from '../utils/errorHandler';
-import {
-  getAllReferrals,
-  directReferralsCount,
-  indirectReferralsCount,
-} from './referralsController';
+import referralCtlr from './referralsController';
 import { ObjectId } from 'mongodb';
 import { firstDepositeDate, userSalesByQuery } from './transactionController';
-import { minusDaysFromDate, checkRankPeriod } from '../helpers';
+import HELPERS from '../helpers';
 import { create as rewardCtlrCreate } from '../controllers/rewardsController';
 import moment from 'moment';
 
 export const rank = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { id } = req?.user || {};
     const result = await getUserRankInfo(id);
     if (result) {
-      if (checkRankPeriod(result.joiningDate)) {
+      if (HELPERS.checkRankPeriod(result.joiningDate)) {
         await rewardCtlrCreate(id, result, false);
       }
     }
@@ -38,7 +34,7 @@ export const find = async (query: any): Promise<IRank[]> => {
   return await Rank.find(query);
 };
 
-export const getUserRankInfo = async (id: string) => {
+export const getUserRankInfo = async (id: string | ObjectId) => {
   const userId = new ObjectId(id);
 
   // Joining day of this period
@@ -55,7 +51,7 @@ export const getUserRankInfo = async (id: string) => {
     joiningDate = new Date(lastPeriodReward?.createdAt);
   } else {
     const referrals =
-      (await getAllReferrals(
+      (await referralCtlr.getAllReferrals(
         {
           referralId: userId,
           isActive: true,
@@ -91,10 +87,10 @@ export const getUserRankInfo = async (id: string) => {
     },
   };
 
-  let counts = await directReferralsCount(query);
+  let counts = await referralCtlr.directReferralsCount(query);
   if (!lastReward) counts += 1;
 
-  let inDirectCounts = await indirectReferralsCount(query, 8);
+  let inDirectCounts = await referralCtlr.indirectReferralsCount(query, 8);
 
   // Total sales of user in this period
   const depositQuery = {
@@ -125,3 +121,12 @@ export const getUserRankInfo = async (id: string) => {
     rank: rank ? rank.toObject() : {},
   };
 };
+
+const RankCtrl = {
+  rank,
+  findOne,
+  find,
+  getUserRankInfo,
+};
+
+export default RankCtrl;

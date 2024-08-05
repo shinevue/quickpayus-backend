@@ -8,7 +8,7 @@ import RankCtrl from './ranksController';
 import { ObjectId } from 'mongodb';
 
 export const get = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { type, page = 1 } = req.query as { type?: string; page?: number };
     const userId = req.user.id;
     const pageSize = Number(process.env.RECORDS_PER_PAGE) || 15;
@@ -35,7 +35,7 @@ export const get = catchAsyncErrors(
 );
 
 export const claimReward = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const userId = new ObjectId(req.user.id);
     const rankInfo = await RankCtrl.getUserRankInfo(userId);
 
@@ -123,3 +123,10 @@ function rewardAmount(
     rewardMin
   );
 }
+const rewardCtlr = {
+  get,
+  claimReward,
+  create,
+};
+
+export default rewardCtlr;
