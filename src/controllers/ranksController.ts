@@ -5,18 +5,18 @@ import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 import ErrorHandler from '../utils/errorHandler';
 import referralCtlr from './referralsController';
 import { ObjectId } from 'mongodb';
-import { firstDepositeDate, userSalesByQuery } from './transactionController';
+import transactionCtlr from './transactionController';
 import HELPERS from '../helpers';
-import { create as rewardCtlrCreate } from '../controllers/rewardsController';
+import rewardCtlr from '../controllers/rewardsController';
 import moment from 'moment';
 
-export const rank = catchAsyncErrors(
+const rank = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { id } = req?.user || {};
     const result = await getUserRankInfo(id);
     if (result) {
       if (HELPERS.checkRankPeriod(result.joiningDate)) {
-        await rewardCtlrCreate(id, result, false);
+        await rewardCtlr.create(id, result, false);
       }
     }
     res.send({
@@ -26,15 +26,15 @@ export const rank = catchAsyncErrors(
   },
 );
 
-export const findOne = async (query: any): Promise<IRank | null> => {
+const findOne = async (query: any): Promise<IRank | null> => {
   return await Rank.findOne(query);
 };
 
-export const find = async (query: any): Promise<IRank[]> => {
+const find = async (query: any): Promise<IRank[]> => {
   return await Rank.find(query);
 };
 
-export const getUserRankInfo = async (id: string | ObjectId) => {
+const getUserRankInfo = async (id: string | ObjectId) => {
   const userId = new ObjectId(id);
 
   // Joining day of this period
@@ -60,11 +60,14 @@ export const getUserRankInfo = async (id: string | ObjectId) => {
       )) || [];
 
     for (const referral of referrals) {
-      const firstDepositDate = await firstDepositeDate(referral._id);
-      if (!joiningDate) joiningDate = firstDepositDate;
-      else if (moment(joiningDate).isAfter(firstDepositDate)) {
-        joiningDate = firstDepositDate;
-      }
+      const firstDepositDate = await transactionCtlr.firstDepositeDate(
+        referral._id,
+      );
+      if (firstDepositDate)
+        if (!joiningDate) joiningDate = new Date(firstDepositDate);
+        else if (moment(joiningDate).isAfter(firstDepositDate)) {
+          joiningDate = new Date(firstDepositDate);
+        }
     }
   }
 
@@ -99,7 +102,10 @@ export const getUserRankInfo = async (id: string | ObjectId) => {
     },
   };
 
-  const sales = await userSalesByQuery(userId, depositQuery);
+  const sales = await transactionCtlr.userSalesByQuery(
+    typeof id === "string" ? id : "",
+    depositQuery,
+  );
 
   // Rank of this user
   const rankQuery = {
@@ -118,7 +124,7 @@ export const getUserRankInfo = async (id: string | ObjectId) => {
     directReferralsCount: counts,
     indirectReferralsCount: inDirectCounts,
     sumOfLast30DaysSales: sales,
-    rank: rank ? rank.toObject() : {},
+    rank: rank ? rank : {},
   };
 };
 

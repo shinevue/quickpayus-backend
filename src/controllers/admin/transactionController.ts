@@ -1,4 +1,4 @@
-import mongoose, { Document, Model } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 import Transaction from '../../models/transactionModel';
 import User from '../../models/userModel';
@@ -7,11 +7,12 @@ import { sendEmail } from '../../utils/sendEmail';
 import programCtlr from '../programController';
 import referralCtlr from '../referralsController';
 import userCtlr from '../userController';
-import { create } from '../../services/notificationService';
-import { applyPercentage } from '../../helpers/index';
+import notificationService from '../../services/notificationService';
+import HEPLERS from '../../helpers/index';
 import { ObjectId } from 'mongodb';
 import config from '../../config/constants';
 import { Request, Response, NextFunction } from 'express';
+import { IProgram } from '../../models/ProgramModel';
 
 // Define the structure of a transaction document
 interface ITransaction extends Document {
@@ -82,7 +83,7 @@ export const get = catchAsyncErrors(
 );
 
 export const update = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { status, transactionId, reason } =
       req.body as IUpdateTransactionBody;
     const authId = req.user?.id;
@@ -116,7 +117,7 @@ export const update = catchAsyncErrors(
       withdrawalType,
     } = transaction;
 
-    if (config.STATUS?.includes(config.STATUS.REJECTED)) {
+    if (Object.values(config.STATUS).includes(config.STATUS.REJECTED)) {
       if (!reason) {
         return next(
           new ErrorHandler(
@@ -142,7 +143,7 @@ export const update = catchAsyncErrors(
       }
 
       let message = `Unfortunately, your ${transactionType.toLowerCase()} of $${originalAmount} has been ${config.STATUS.REJECTED.toLowerCase()}. If you have any questions, please contact support. ${uuid}`;
-      create({
+      notificationService.create({
         userId,
         title: config.NOTIFICATION_TYPES.ACTIVITY,
         type: config.NOTIFICATION_TYPES.ACTIVITY,
@@ -162,7 +163,6 @@ export const update = catchAsyncErrors(
 
     let keyToUpdate = null;
     let balance = 0;
-    let program;
     const userUpdate: any = {};
     let message = `The ${transactionType.toLowerCase()} of $${originalAmount} has been successfully processed and ${config.STATUS.PENDING.toLowerCase()}. Please note, a ${
       config.DEFAULT_FEE_AMOUNT
@@ -178,11 +178,11 @@ export const update = catchAsyncErrors(
       userUpdate.$set = {
         [keyToUpdate]: balance,
       };
-      program = await programCtlr.findByInvestment(
+      const program = await programCtlr.findByInvestment(
         originalAmount + balanceResponse?.balance,
       );
       userUpdate.investmentLevel = program?.level || null;
-      userUpdate.investmentSubLevel = program?.data?.level || null;
+      // userUpdate.investmentSubLevel = program?.data?.level || null;
     } else if (transactionType.includes(config.TRANSACTION_TYPES.WITHDRAWAL)) {
       const balanceResponse = await userCtlr.balanceByType({
         userId,
@@ -194,9 +194,9 @@ export const update = catchAsyncErrors(
       }% fee has been deducted. ${uuid}`;
       switch (withdrawalType) {
         case config.WITHDRAWAL_TYPES.DEPOSIT:
-          program = await programCtlr.findByInvestment(balance);
+          const program = await programCtlr.findByInvestment(balance);
           userUpdate.investmentLevel = program?.level || null;
-          userUpdate.investmentSubLevel = program?.data?.level || null;
+          // userUpdate.investmentSubLevel = program?.data?.level || null;
           break;
       }
     }
@@ -206,7 +206,7 @@ export const update = catchAsyncErrors(
       await updateCreditToParents(user, transactionType, balance);
     }
 
-    create({
+    notificationService.create({
       userId,
       title: config.NOTIFICATION_TYPES.ACTIVITY,
       type: config.NOTIFICATION_TYPES.ACTIVITY,
@@ -243,7 +243,7 @@ export const updateCreditToParents = async (
     });
     if (!program?.data?.creditPercentage) continue;
 
-    const appliedCreditPercentage = applyPercentage(
+    const appliedCreditPercentage = HEPLERS.applyPercentage(
       amount,
       program?.data?.creditPercentage,
     );
@@ -255,7 +255,7 @@ export const updateCreditToParents = async (
     };
     const parentId = new ObjectId(parent?._id);
     await User.findByIdAndUpdate(parentId, userUpdate);
-    await create({
+    notificationService.create({
       userId: parent?._id,
       title: config.NOTIFICATION_TYPES.ACTIVITY,
       type: config.NOTIFICATION_TYPES.ACTIVITY,

@@ -15,7 +15,7 @@ import HELPERS from '../helpers';
 import config from '../config/constants';
 import Receiver from '../models/receiverAddressModel';
 
-export const get = catchAsyncErrors(
+const get = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { id, role } = req?.user || {};
     const pageSize = Number(process.env.RECORDS_PER_PAGE) || 30;
@@ -86,7 +86,7 @@ export const get = catchAsyncErrors(
   },
 );
 
-export const getAddress = catchAsyncErrors(
+const getAddress = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const data = await Receiver.find().sort({ createdAt: -1 }).limit(1);
     console.log('data: ', data[0]);
@@ -97,7 +97,7 @@ export const getAddress = catchAsyncErrors(
   },
 );
 
-export const create = catchAsyncErrors(
+const create = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const {
       amount,
@@ -252,11 +252,11 @@ export const create = catchAsyncErrors(
   },
 );
 
-export const find = async (query: any) => {
+const find = async (query: any) => {
   return Transaction.find(query);
 };
 
-export const userSum = async (query: any, key: string) => {
+const userSum = async (query: any, key: string) => {
   const result = await Transaction.aggregate([
     {
       $match: query,
@@ -273,16 +273,16 @@ export const userSum = async (query: any, key: string) => {
   return 0;
 };
 
-export const save = async (payload: any) => {
+const save = async (payload: any) => {
   const transaction = new Transaction(payload);
   return await transaction.save();
 };
 
-export const findOne = async (query: any) => {
+const findOne = async (query: any) => {
   return await Transaction.findOne(query);
 };
 
-export const paginate = async (
+const paginate = async (
   query: any,
   options: { page: number; pageSize: number },
 ) => {
@@ -294,14 +294,11 @@ export const paginate = async (
     .limit(pageSize);
 };
 
-export const countDocuments = async (query: any) => {
+const countDocuments = async (query: any) => {
   return await Transaction.countDocuments(query);
 };
 
-export const userDepositlBalanceByQuery = async (
-  userId: string,
-  query = {},
-) => {
+const userDepositlBalanceByQuery = async (userId: string, query = {}) => {
   if (!userId) return 0;
 
   const depositQuery = {
@@ -337,7 +334,7 @@ export const userDepositlBalanceByQuery = async (
   return depositResult - withdrawResult;
 };
 
-export const userProfitBalanceByQuery = async (userId: string, query = {}) => {
+const userProfitBalanceByQuery = async (userId: string, query = {}) => {
   if (!userId) return 0;
 
   const profitQuery = {
@@ -372,10 +369,7 @@ export const userProfitBalanceByQuery = async (userId: string, query = {}) => {
   return profitResult - withdrawResult;
 };
 
-export const userCreditBalanceByQuery = async (
-  userId: string,
-  moreQuery = {},
-) => {
+const userCreditBalanceByQuery = async (userId: string, moreQuery = {}) => {
   if (!userId) return 0;
 
   const user = await User.findOne({ _id: userId });
@@ -426,21 +420,21 @@ export const userCreditBalanceByQuery = async (
   return creditBalance;
 };
 
-export const userEquityBalanceByQuery = async (userid: string, query = {}) => {
+const userEquityBalanceByQuery = async (userid: string, query = {}) => {
   return (
     (await userCreditBalanceByQuery(userid, query)) +
     (await userDepositlBalanceByQuery(userid, query))
   );
 };
 
-export const userAccountBalanceByQuery = async (userid: string, query = {}) => {
+const userAccountBalanceByQuery = async (userid: string, query = {}) => {
   return (
     (await userProfitBalanceByQuery(userid, query)) +
     (await userDepositlBalanceByQuery(userid, query))
   );
 };
 
-export const userRewardBalanceByQuery = async (userid: string, query = {}) => {
+const userRewardBalanceByQuery = async (userid: string, query = {}) => {
   const rewardQuery = {
     userId: userid,
     status: {
@@ -466,7 +460,7 @@ export const userRewardBalanceByQuery = async (userid: string, query = {}) => {
 };
 
 // getting data for sales analytic chart
-export const getAllTrans = async (req: any, res: Response) => {
+const getAllTrans = async (req: any, res: Response) => {
   const { id } = req.user;
   const userId = id;
   const query = {
@@ -587,10 +581,7 @@ const padZero = (num: number) => {
  * @param {object} moreQuery more info to get sales
  * @returns {Promise<Number>} sales volume of user
  */
-export const userSalesByQuery = async (
-  userId: string | ObjectId,
-  moreQuery = {},
-) => {
+const userSalesByQuery = async (userId: string | ObjectId, moreQuery: any) => {
   if (!userId) return 0;
 
   const user = await User.findOne({ _id: userId });
@@ -615,7 +606,7 @@ export const userSalesByQuery = async (
   return sales;
 };
 
-export const firstDepositeDate = async (userid: string) => {
+const firstDepositeDate = async (userid: string) => {
   const transaction = await Transaction.findOne({
     userId: userid,
     status: config.STATUS.APPROVED,

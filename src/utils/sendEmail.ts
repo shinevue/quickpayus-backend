@@ -23,7 +23,7 @@ const sendEmail = async (options: EmailOptions, otp?: string): Promise<void> => 
       },
     });
 
-    const mailOptions: nodemailer.MailOptions = {
+    const mailOptions: any = {
       from: 'timons128@outlook.com',
       to: options.email,
       subject: options.subject,
@@ -63,7 +63,7 @@ const sendWarningEmail = async (options: EmailOptions): Promise<void> => {
       },
     });
 
-    const mailOptions: nodemailer.MailOptions = {
+    const mailOptions: any = {
       from: 'timons128@outlook.com',
       to: options.email,
       subject: options.subject,
@@ -89,7 +89,7 @@ const sendWarningEmail = async (options: EmailOptions): Promise<void> => {
   }
 };
 
-const emailTemplates: Record<string, EmailOptions> = {
+const emailTemplates: Record<string, any> = {
   otpEmailConfirm: {
     templatePath: './utils/emailTemplates/otpEmailConfirm.ejs',
     subject: 'Confirm Your Email Address for QUICKPAYUS',
