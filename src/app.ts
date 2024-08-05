@@ -6,12 +6,16 @@ import rateLimit from 'express-rate-limit'; // Rate limiting middleware
 import morgan from 'morgan';
 import path from 'path';
 import cors from 'cors';
-import errorMiddleware from './src/utils/errorHandler'; // Adjusted import for TypeScript
+import errorMiddleware from './middlewares/errorMiddleware '; // Adjusted import for TypeScript
 
 const app = express();
 
-const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT ? parseInt(process.env.MAX_API_RATE_LIMIT) : 3000000;
-const MAX_BAN_TIME_MS = process.env.MAX_BAN_TIME_MS ? parseInt(process.env.MAX_BAN_TIME_MS) : 1 * 60 * 1000;
+const MAX_API_RATE_LIMIT = process.env.MAX_API_RATE_LIMIT
+  ? parseInt(process.env.MAX_API_RATE_LIMIT)
+  : 3000000;
+const MAX_BAN_TIME_MS = process.env.MAX_BAN_TIME_MS
+  ? parseInt(process.env.MAX_BAN_TIME_MS)
+  : 1 * 60 * 1000;
 
 app.enable('trust proxy');
 app.set('trust proxy', 1);
@@ -42,28 +46,28 @@ app.use(
 );
 
 // Route Imports
-import authRoutes from './src/routes/authRoutes';
-import adminUserRoutes from './src/routes/admin/usersRoutes';
-import profileRoutes from './src/routes/admin/profileRoutes';
-import adminRoleRoutes from './src/routes/admin/roleRoutes';
-import adminReceiverAddress from './src/routes/admin/receiverAddressRoutes';
-import adminTransactionRoutes from './src/routes/admin/transactionRoutes';
-import notificationRoutes from './src/routes/notificationRoutes';
-import programRoutes from './src/routes/programRoutes';
-import ranksRoutes from './src/routes/admin/ranksRoutes';
-import adminProfitConfigRoutes from './src/routes/admin/profitConfigRoutes';
-import transactionRoutes from './src/routes/transactionRoutes';
-import referralRoutes from './src/routes/referralRoutes';
-import userRoutes from './src/routes/userRoutes';
-import analyticsRoutes from './src/routes/analyticsRoutes';
-import adminAnalyticsRoutes from './src/routes/admin/analyticsRoutes';
-import adminAnnouncementRoutes from './src/routes/admin/announcementRoutes';
-import adminNotificationRoutes from './src/routes/admin/notificationRoutes';
-import announcementRoutes from './src/routes/announcementRoutes';
-import rankRoutes from './src/routes/rankRoutes';
-import otpRoutes from './src/routes/otpRoutes';
-import rewardRoutes from './src/routes/rewardRoutes';
-import supportRoutes from './src/routes/supportRoutes';
+import authRoutes from './routes/authRoutes';
+import adminUserRoutes from './routes/admin/usersRoutes';
+import profileRoutes from './routes/admin/profileRoutes';
+import adminRoleRoutes from './routes/admin/roleRoutes';
+import adminReceiverAddress from './routes/admin/receiverAddressRoutes';
+import adminTransactionRoutes from './routes/admin/transactionRoutes';
+import notificationRoutes from './routes/notificationRoutes';
+import programRoutes from './routes/programRoutes';
+import ranksRoutes from './routes/admin/ranksRoutes';
+import adminProfitConfigRoutes from './routes/admin/profitConfigRoutes';
+import transactionRoutes from './routes/transactionRoutes';
+import referralRoutes from './routes/referralRoutes';
+import userRoutes from './routes/userRoutes';
+import analyticsRoutes from './routes/analyticsRoutes';
+import adminAnalyticsRoutes from './routes/admin/analyticsRoutes';
+import adminAnnouncementRoutes from './routes/admin/announcementRoutes';
+import adminNotificationRoutes from './routes/admin/notificationRoutes';
+import announcementRoutes from './routes/announcementRoutes';
+import rankRoutes from './routes/rankRoutes';
+import otpRoutes from './routes/otpRoutes';
+import rewardRoutes from './routes/rewardRoutes';
+import supportRoutes from './routes/supportRoutes';
 
 // Uncomment if needed
 // import { checkDeletedUser } from "./src/controllers/authController";

@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
-import app from './app.ts';
+import app from './app.js';
 
-import connectDB from './src/config/db.ts';
+import connectDB from './config/db.js';
 //Handling uncaught exception
 process.on('uncaughtException', (err) => {
   console.log(`Error ${err.message}`);
@@ -11,7 +11,7 @@ process.on('uncaughtException', (err) => {
 //config
 dotenv.config();
 
-import { defaultReceiver } from './src/controllers/admin/receiverAddressController.ts';
+import { defaultReceiver } from './controllers/admin/receiverAddressController.js';
 defaultReceiver();
 
 const server = app.listen(process.env.PORT, async () => {
