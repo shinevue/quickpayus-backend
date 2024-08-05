@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import config from '../config/constants';
-import { randomUUID } from '../helpers';
+import HELPERS from '../helpers';
 
 interface IKyc {
   _id: ObjectId;
@@ -25,6 +25,7 @@ interface IKyc {
 }
 
 export interface IUser {
+  _id?: ObjectId;
   isModified: any;
   uuid?: string;
   firstName: string;
@@ -255,9 +256,9 @@ userSchema.pre<IUser>('save', async function (next) {
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    this.uuid = randomUUID();
+    this.uuid = HELPERS.randomUUID();
     return next();
-  } catch (error) {
+  } catch (error: any) {
     return next(error);
   }
 });
@@ -274,7 +275,7 @@ userSchema.methods.compareField = async function (fieldData: {
   return this[key] === value;
 };
 userSchema.methods.getJWTToken = function () {
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET || "secret", {
     expiresIn: process.env.JWT_EXPIRE,
   });
 };

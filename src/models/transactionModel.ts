@@ -21,10 +21,8 @@ const transactionsSchema = new mongoose.Schema(
       type: String,
       enum: Object.values(config.STATUS),
       default: config.STATUS.PENDING,
-      required: true,
     },
     amount: {
-      required: true,
       type: Number,
       min: 0,
       default: 0,
@@ -33,7 +31,6 @@ const transactionsSchema = new mongoose.Schema(
       type: Number,
       min: 0,
       default: 0,
-      required: true,
     },
     feesAmount: {
       type: Number,
@@ -109,20 +106,20 @@ const Transaction = mongoose.model<ITransaction>("transactions", transactionsSch
 
 export interface ITransaction extends mongoose.Document {
   userId: mongoose.Schema.Types.ObjectId;
-  adminId: mongoose.Schema.Types.ObjectId;
-  reason: string;
+  adminId?: mongoose.Schema.Types.ObjectId;
+  reason?: string;
   status: string;
   amount: number;
   originalAmount: number;
-  feesAmount: number;
+  feesAmount?: number;
   transactionType: string;
-  withdrawalType: string;
-  receiverAddress: string;
-  senderAddress: string;
-  uuid: string;
-  profit: mongoose.Schema.Types.Mixed;
-  createdAt: Date;
-  updatedAt: Date;
+  withdrawalType?: string;
+  receiverAddress?: string;
+  senderAddress?: string;
+  uuid?: string;
+  profit?: mongoose.Schema.Types.Mixed;
+  createdAt: string;
+  updatedAt: string;
   detuctFees: () => void;
 }
 

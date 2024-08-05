@@ -1,22 +1,22 @@
+import { ObjectId } from 'mongoose';
 import { Request, Response, NextFunction } from 'express';
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
-import { findOne as programCtlrFindOne } from './programController';
+import programCtlr from './programController';
 import userCtlr from './userController';
 import referralCtlr from './referralsController';
-import rewardCtlr from './rewardsController';
-import Reward, { IReward } from '../models/rewardModel'; // Adjust the import based on your Reward model
+// import rewardCtlr from './rewardsController';
+import Reward from '../models/rewardModel'; // , { IReward }
 import Transaction, { ITransaction } from '../models/transactionModel'; // Adjust the import based on your Transaction model
-import { create as createNotification } from '../services/notificationService';
-import User, { IUser } from '../models/userModel'; // Adjust the import based on your User model
+import notificationService from '../services/notificationService';
+import User from '../models/userModel'; // , { IUser }
 import ErrorHandler from '../utils/errorHandler';
 import { isValidAddress } from '../utils/trc20Validator';
-import { applyPercentage } from '../helpers';
+import HELPERS from '../helpers';
 import config from '../config/constants';
-import { ObjectId } from 'mongodb';
 import Receiver from '../models/receiverAddressModel';
 
 export const get = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { id, role } = req?.user || {};
     const pageSize = Number(process.env.RECORDS_PER_PAGE) || 30;
     const q = req?.query || {};
@@ -44,7 +44,7 @@ export const get = catchAsyncErrors(
     }
 
     if (!role?.includes('admin')) {
-      query.userId = new ObjectId(id);
+      query.userId = new id();
     }
 
     const currentDate = new Date();
@@ -98,18 +98,24 @@ export const getAddress = catchAsyncErrors(
 );
 
 export const create = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const {
       amount,
       receiverAddress,
       senderAddress,
       transactionType,
       withdrawalType,
+    }: {
+      amount: number;
+      receiverAddress: string;
+      senderAddress: string;
+      transactionType: string;
+      withdrawalType: string;
     } = req.body || {};
 
-    const { kyc, id } = req?.user || {};
+    const { kyc, id }: { kyc: any; id: ObjectId } = req?.user || {};
 
-    if (!config.TRANSACTION_TYPES[transactionType]) {
+    if (!(transactionType in config.TRANSACTION_TYPES)) {
       return next(
         new ErrorHandler(
           'The transaction type does not seem to be recognised by our system.',
@@ -130,7 +136,15 @@ export const create = catchAsyncErrors(
       );
     }
 
-    const payload: ITransaction = {
+    const payload: {
+      amount: number;
+      userId: ObjectId;
+      receiverAddress: string;
+      senderAddress: string;
+      transactionType: string;
+      withdrawalType: string;
+      uuid: string;
+    } = {
       amount,
       userId: id,
       receiverAddress,
@@ -174,7 +188,7 @@ export const create = catchAsyncErrors(
             ),
           );
         }
-        if (!config.WITHDRAWAL_TYPES[withdrawalType]) {
+        if (!(withdrawalType in config.WITHDRAWAL_TYPES)) {
           return next(
             new ErrorHandler(
               'The withdrawal type does not seem to be recognised by our system.',
@@ -198,13 +212,14 @@ export const create = catchAsyncErrors(
         }
 
         const finalAmount = balance - amount;
-        await User.findByIdAndUpdate(id, { $set: { [key]: finalAmount } });
+        if (key)
+          await User.findByIdAndUpdate(id, { $set: { [key]: finalAmount } });
         break;
 
       case config.TRANSACTION_TYPES.DEPOSIT:
-        const program = await programCtlrFindOne(
+        const program = await programCtlr.findOne(
           { 'data.investment': Number(amount) },
-          { 'data.investment': 1, _id: 0 },
+          // { 'data.investment': 1, _id: 0 },
         );
 
         if (!program) {
@@ -219,7 +234,7 @@ export const create = catchAsyncErrors(
     }
 
     const transaction = await save(payload);
-    await createNotification({
+    await notificationService.create({
       userId: id,
       title: 'DEPOSIT SUCCESSFULLY!',
       type: config.NOTIFICATION_TYPES.ACTIVITY,
@@ -258,7 +273,7 @@ export const userSum = async (query: any, key: string) => {
   return 0;
 };
 
-export const save = async (payload: ITransaction) => {
+export const save = async (payload: any) => {
   const transaction = new Transaction(payload);
   return await transaction.save();
 };
@@ -290,7 +305,7 @@ export const userDepositlBalanceByQuery = async (
   if (!userId) return 0;
 
   const depositQuery = {
-    userId: new ObjectId(userId),
+    userId: userId,
     status: {
       $in: [config.STATUS.APPROVED],
     },
@@ -303,7 +318,7 @@ export const userDepositlBalanceByQuery = async (
   const depositResult = (await userSum(depositQuery, '$amount')) ?? 0;
 
   const withdrawalQuery = {
-    userId: new ObjectId(userId),
+    userId: userId,
     status: {
       $in: [config.STATUS.APPROVED, config.STATUS.PENDING],
     },
@@ -326,7 +341,7 @@ export const userProfitBalanceByQuery = async (userId: string, query = {}) => {
   if (!userId) return 0;
 
   const profitQuery = {
-    userId: new ObjectId(userId),
+    userId: userId,
     status: {
       $in: [config.STATUS.APPROVED],
     },
@@ -337,7 +352,7 @@ export const userProfitBalanceByQuery = async (userId: string, query = {}) => {
   };
 
   const withdrawalQuery = {
-    userId: new ObjectId(userId),
+    userId: userId,
     status: {
       $in: [config.STATUS.APPROVED, config.STATUS.PENDING],
     },
@@ -366,7 +381,7 @@ export const userCreditBalanceByQuery = async (
   const user = await User.findOne({ _id: userId });
   if (!user) return 0;
 
-  const program = await programCtlrFindOne({
+  const program = await programCtlr.findOne({
     level: user?.investmentLevel,
   });
 
@@ -400,7 +415,7 @@ export const userCreditBalanceByQuery = async (
 
     if (!subProgram) continue;
 
-    const appliedPercentage = applyPercentage(
+    const appliedPercentage = HELPERS.applyPercentage(
       sumOfAmount,
       Number(subProgram?.creditPercentage),
     );
@@ -451,9 +466,9 @@ export const userRewardBalanceByQuery = async (userid: string, query = {}) => {
 };
 
 // getting data for sales analytic chart
-export const getAllTrans = async (req: Request, res: Response) => {
+export const getAllTrans = async (req: any, res: Response) => {
   const { id } = req.user;
-  const userId = new ObjectId(id);
+  const userId = id;
   const query = {
     referralId: userId,
     isActive: true,
@@ -572,7 +587,10 @@ const padZero = (num: number) => {
  * @param {object} moreQuery more info to get sales
  * @returns {Promise<Number>} sales volume of user
  */
-export const userSalesByQuery = async (userId: string, moreQuery = {}) => {
+export const userSalesByQuery = async (
+  userId: string | ObjectId,
+  moreQuery = {},
+) => {
   if (!userId) return 0;
 
   const user = await User.findOne({ _id: userId });

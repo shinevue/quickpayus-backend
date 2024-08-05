@@ -11,7 +11,7 @@ import {
 } from '../utils/sendEmail';
 
 export const create = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { email, id } = req.user || {};
     const otpModel: IOTP = new OTP({ userId: id, ip: req.logEntry.ip_address });
     await otpModel.save();
@@ -43,7 +43,7 @@ export const create = catchAsyncErrors(
 );
 
 export const send = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { email, id } = req.user || {};
     const otpModel: IOTP = new OTP({ userId: id });
     await otpModel.save();
@@ -52,8 +52,8 @@ export const send = catchAsyncErrors(
     console.log('otp controller ____++++ warning message');
 
     await sendWarningEmail({
-      email: email,
       ...emailTemplates.otpEmailConfirm,
+      email: email,
     });
 
     res.json({ success: true, message: 'Confirm sent successfully on email' });
@@ -61,7 +61,7 @@ export const send = catchAsyncErrors(
 );
 
 export const verify = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { otp } = req.body || {};
     const { id } = req.user || {};
 
@@ -101,14 +101,14 @@ export const confirm = catchAsyncErrors(
       return next(new ErrorHandler('User not found.', 404));
     }
 
-    const otpModel: IOTP = new OTP({ userId: user.id });
+    const otpModel: IOTP = new OTP({ userId: user?._id });
     await otpModel.save();
     const otp = otpModel?.code?.toString();
 
     await sendEmail(
       {
-        email: data,
         ...emailTemplates.otpEmailConfirm,
+        email: data,
       },
       otp,
     );
