@@ -1,6 +1,6 @@
 import connectDB from '../config/db';
 import User from '../models/userModel';
-import { randomUUID } from '../helpers/index';
+import HELPERS from '../helpers';
 import { fakerEN as faker } from '@faker-js/faker';
 // import ProfitConfig from '../models/profitConfigModel';
 
@@ -10,7 +10,7 @@ async function insertUsers(num: number): Promise<void> {
   try {
     for (let i = 0; i < num; i++) {
       const newUser = new User({
-        uuid: randomUUID(),
+        uuid: HELPERS.randomUUID(),
         firstName: faker.person.firstName(),
         lastName: faker.person.lastName(),
         username: `${faker.internet.userName()}${i}`,

@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 import config from '../config/constants';
 // import programCtlr from "./programController";
 // import referralCtlr from "./referralsController";
-import { userCreditBalanceByQuery } from './transactionController';
+import transactionCtlr from './transactionController';
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 import { Request, Response, NextFunction } from 'express';
 
@@ -53,13 +53,13 @@ export const getBalanceInformation = catchAsyncErrors(
 
     switch (balanceframe) {
       case config.ANALYTICS_TYPE.CREDIT:
-        userBalanceFunction = userCreditBalanceByQuery;
+        userBalanceFunction = transactionCtlr.userCreditBalanceByQuery;
         break;
       case config.ANALYTICS_TYPE.PROFIT:
-        userBalanceFunction = userCreditBalanceByQuery;
+        userBalanceFunction = transactionCtlr.userCreditBalanceByQuery;
         break;
       case config.ANALYTICS_TYPE.REWARD:
-        userBalanceFunction = userCreditBalanceByQuery;
+        userBalanceFunction = transactionCtlr.userCreditBalanceByQuery;
         break;
       default:
         return next(new Error('Invalid balance frame'));

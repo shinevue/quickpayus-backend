@@ -13,7 +13,7 @@ async function seedRanks(): Promise<void> {
   try {
     await Rank.deleteMany({});
     const users: IUser[] = await User.find({});
-    const ranks: IRank[] = await Rank.find({});
+    const ranks: any[] = await Rank.find({});
 
     for (let i = 1; i < users.length; i++) {
       let date = moment().startOf('year');

@@ -6,7 +6,6 @@ import config from '../config/constants';
 import HELPERS from '../helpers';
 
 interface IKyc {
-  _id: ObjectId;
   dateOfBirth?: Date;
   gender?: 'Male' | 'Female' | 'Other';
   addressLine: string;
