@@ -2,7 +2,7 @@ import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 import verifyCaptcha from '../utils/recaptchaVerifier';
 import User from '../models/userModel';
 import ErrorHandler from '../utils/errorHandler';
-import sendToken from '../utils/jwtToken';
+import sendToken from '../utils/jWTToken';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { sendEmail, emailTemplates } from '../utils/sendEmail';
@@ -103,15 +103,13 @@ interface CheckBackupCodeRequest extends Request {
   };
 }
 
-export const checkAuth = catchAsyncErrors(
-  async (req: Request, res: Response) => {
-    if (req.user) {
-      res.json(req.user);
-    } else {
-      res.sendStatus(401);
-    }
-  },
-);
+export const checkAuth = catchAsyncErrors(async (req: any, res: Response) => {
+  if (req.user) {
+    res.json(req.user);
+  } else {
+    res.sendStatus(401);
+  }
+});
 
 export const createUser = catchAsyncErrors(
   async (req: CreateUserRequest, res: Response, next: NextFunction) => {
@@ -126,7 +124,7 @@ export const createUser = catchAsyncErrors(
     if (!answer) {
       return next(new ErrorHandler('Answer is required', 400));
     }
-    if (question < 0) {
+    if (question && question < 0) {
       return next(new ErrorHandler('Question is required', 400));
     }
 
@@ -154,7 +152,7 @@ export const createUser = catchAsyncErrors(
     ];
 
     const randomIndex = Math.floor(Math.random() * primaryColorsList.length);
-    const user = new User({
+    const user: any = new User({
       ...req.body,
       securityQuestion: { answer, question },
       avatarBg: `linear-gradient(180deg, ${primaryColorsList[randomIndex]} 0%, ${secondaryColorsList[randomIndex]} 150%)`,
@@ -178,7 +176,7 @@ export const signin = catchAsyncErrors(
       );
     }
 
-    const user = await User.findOne({
+    const user: any = await User.findOne({
       $or: [{ email }, { username: email }],
       isActive: true,
     }).select('+password');
@@ -210,7 +208,7 @@ export const signout = catchAsyncErrors(async (req: Request, res: Response) => {
 export const deleteUser = catchAsyncErrors(
   async (req: DeleteUserRequest, res: Response, next: NextFunction) => {
     const { pwd, userId, check } = req.body;
-    const user = await User.findById(userId).select('+password');
+    const user: any = await User.findById(userId).select('+password');
 
     const isPasswordMatched = await user.comparePassword(pwd);
     if (check) {
@@ -232,7 +230,7 @@ export const deleteUser = catchAsyncErrors(
 
 export const forgotPassword = catchAsyncErrors(
   async (req: ForgotPasswordRequest, res: Response, next: NextFunction) => {
-    const user = await User.findOne({ email: req.body.email });
+    const user:any = await User.findOne({ email: req.body.email });
     if (!user) {
       return next(new ErrorHandler('User not found', 404));
     }
@@ -250,17 +248,17 @@ export const forgotPassword = catchAsyncErrors(
         message: resetPasswordUrl,
       });
       res.json({ success: true, message: 'SUCCESS' });
-    } catch (error) {
+    } catch (error: any) {
       user.resetPasswordToken = undefined;
       user.resetPasswordExpire = undefined;
       await user.save({ validateBeforeSave: false });
-      return next(new ErrorHandler(error.message, 500));
+      return next(new ErrorHandler(error, 500));
     }
   },
 );
 
 export const resetPassword = catchAsyncErrors(
-  async (req: ResetPasswordRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { password, confirmPassword } = req.body;
     const resetPasswordToken = crypto
       .createHash('sha256')
@@ -297,11 +295,11 @@ export const resetPassword = catchAsyncErrors(
 );
 
 export const changePassword = catchAsyncErrors(
-  async (req: ChangePasswordRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { id } = req.user || {};
     const { oldPassword, password } = req.body || {};
 
-    const user = await User.findById(id).select('+password');
+    const user: any = await User.findById(id).select('+password');
     if (!user) {
       return next(
         new ErrorHandler(
@@ -390,11 +388,11 @@ export const usernameToName = catchAsyncErrors(
 );
 
 export const deactivateAccount = catchAsyncErrors(
-  async (req: DeactivateAccountRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { id } = req.user || {};
     const { password } = req.body || {};
 
-    const user = await User.findById(id).select('+password');
+    const user: any = await User.findById(id).select('+password');
     if (!user) {
       return next(
         new ErrorHandler(
@@ -436,10 +434,12 @@ export const checkDeletedUser = async () => {
 };
 
 export const checkRole = catchAsyncErrors(
-  async (req: CheckRoleRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { username, password, email } = req.body;
 
-    const user = await User.findOne({ username, email }).select('+password');
+    const user: any = await User.findOne({ username, email }).select(
+      '+password',
+    );
     if (!user) {
       return next(new ErrorHandler('User not found', 400));
     }
@@ -458,11 +458,7 @@ export const checkRole = catchAsyncErrors(
 );
 
 export const checkSecurityQuestion = catchAsyncErrors(
-  async (
-    req: CheckSecurityQuestionRequest,
-    res: Response,
-    next: NextFunction,
-  ) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { question, answer } = req.body;
     const user = req.user;
 
@@ -484,7 +480,7 @@ export const checkSecurityQuestion = catchAsyncErrors(
 );
 
 export const checkBackupCode = catchAsyncErrors(
-  async (req: CheckBackupCodeRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { backupCode } = req.body;
     const user = req.user;
 

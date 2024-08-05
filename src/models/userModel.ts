@@ -249,7 +249,7 @@ userSchema.set('toJSON', {
   },
 });
 
-userSchema.pre<IUser>('save', async function (next) {
+userSchema.pre<any>('save', async function (next) {
   this.isDeletedAt = new Date();
   if (!this.isModified('password')) return next();
   try {

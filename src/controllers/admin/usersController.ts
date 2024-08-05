@@ -6,7 +6,8 @@ import User, { IUser } from '../../models/userModel'; // Adjust the import based
 import ErrorHandler from '../../utils/errorHandler';
 import referralCtrl from '../referralsController';
 import config from '../../config/constants';
-import { create } from '../../services/notificationService';
+import notificationService from '../../services/notificationService';
+import { ObjectId } from 'mongodb';
 // import sendEmail from '../../utils/sendEmail'; // Uncomment if needed
 
 export const get = catchAsyncErrors(
@@ -90,7 +91,7 @@ export const get = catchAsyncErrors(
         (user) => user?._id?.toString() === d?.referralId?.toString(),
       );
       return {
-        ...d.toObject(),
+        ...d,
         referredBy: referredBy?.username,
         directCount,
         indirectCount,
@@ -157,7 +158,7 @@ export const getUser = catchAsyncErrors(
 );
 
 export const updateKyc = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { status, reason, uuid } = req.body || {};
     const adminId = req.user.id;
     let user: IUser | null;
@@ -194,7 +195,7 @@ export const updateKyc = catchAsyncErrors(
       notificationMsg = `Canceled KYC Verification: "Your KYC verification has been canceled. Please wait and it can take a long.`;
     }
 
-    create({
+    notificationService.create({
       userId: user.username,
       title: 'KYC updated',
       message: notificationMsg,
@@ -215,7 +216,7 @@ export const updateStatus = catchAsyncErrors(
     const userUpdate: any = { isActive };
 
     if (!isActive && !reason) {
-      return next(new ErrorHandler('Please provide a reason!'));
+      return next(new ErrorHandler('Please provide a reason!', 400));
     }
 
     if (!isActive) {
@@ -249,7 +250,7 @@ export const claimedRewards = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const { page = 1, status } = req.query || {};
     const pageSize = Number(process.env.RECORDS_PER_PAGE) || 15;
-    const skip = (page - 1) * pageSize;
+    const skip = (Number(page) - 1) * pageSize;
 
     const query: any = {
       status: config.STATUS.PENDING,
@@ -266,7 +267,7 @@ export const claimedRewards = catchAsyncErrors(
       const user = await User.findOne({ _id: reward?.userId });
       if (!user) continue;
 
-      const rank = await Rank.findOne({ _id: new ObjectId(reward?.rankId) });
+      const rank = await Rank.findOne({ _id: reward?.rankId });
       if (!rank) continue;
 
       merged.push({ rank, reward, user });
@@ -289,7 +290,7 @@ export const claimedRewards = catchAsyncErrors(
 );
 
 export const updateStatusOfReward = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { status, rewardId, amount, reason } = req.body || {};
     const adminId = req.user?.id;
 

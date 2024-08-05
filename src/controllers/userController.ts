@@ -1,11 +1,12 @@
 import config from '../config/constants';
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
-import User from '../models/userModel';
+import User, { IUser } from '../models/userModel';
 import ErrorHandler from '../utils/errorHandler';
 import path from 'path';
 import fs from 'fs/promises';
-import { create } from '../services/notificationService';
+import notificationService from '../services/notificationService';
 import { Request, Response, NextFunction } from 'express';
+import { ObjectId } from 'mongoose';
 
 interface UserRequest extends Request {
   user: {
@@ -20,104 +21,110 @@ interface KYCData {
 }
 
 interface BalanceQuery {
-  userId?: string;
+  userId?: string | ObjectId;
   withdrawalType?: string;
   transactionType?: string;
 }
 
 export const kycUpsert = catchAsyncErrors(
-  async (req: UserRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const userID = req.user.id;
     let user = await User.findById(userID);
+    if (user) {
+      if (req.files && Object.keys(req.files).length > 0) {
+        if (user.kyc && user.kyc.images) {
+          // Delete previous image files
+          await Promise.all(
+            user.kyc.images.map(async (file) => {
+              const filePath = path.join(
+                __dirname,
+                `../uploads/kyc/${user?.username}`,
+                file.name,
+              );
+              try {
+                await fs.unlink(filePath);
+              } catch (err) {
+                console.error(`Error deleting file ${filePath}: ${err}`);
+              }
+            }),
+          );
+        }
 
-    if (req.files && Object.keys(req.files).length > 0) {
-      if (user.kyc && user.kyc.images) {
-        // Delete previous image files
-        await Promise.all(
-          user.kyc.images.map(async (file) => {
-            const filePath = path.join(
-              __dirname,
-              `../uploads/kyc/${user.username}`,
-              file.name,
-            );
-            try {
-              await fs.unlink(filePath);
-            } catch (err) {
-              console.error(`Error deleting file ${filePath}: ${err.message}`);
-            }
+        if (user.kyc && user.kyc.documents) {
+          // Delete previous document files
+          await Promise.all(
+            user.kyc.documents.map(async (file) => {
+              const filePath = path.join(
+                __dirname,
+                `../uploads/kyc/${user?.username}`,
+                file.name,
+              );
+              try {
+                await fs.unlink(filePath);
+              } catch (err) {
+                console.error(`Error deleting file ${filePath}: ${err}`);
+              }
+            }),
+          );
+        }
+
+        const imageFiles = req.files.images || [];
+        const documentFiles = req.files.documents || [];
+
+        // Ensure the user's KYC directory exists
+        const userDir = path.join(__dirname, `../uploads/kyc/${user.username}`);
+        await fs.mkdir(userDir, { recursive: true });
+
+        req.body.images = await Promise.all(
+          imageFiles.map(async (file: any) => {
+            const destPath = path.join(userDir, file.filename);
+            await fs.rename(file.path, destPath);
+            return { name: file.filename };
+          }),
+        );
+
+        req.body.documents = await Promise.all(
+          documentFiles.map(async (file: any) => {
+            const destPath = path.join(userDir, file.filename);
+            await fs.rename(file.path, destPath);
+            return { name: file.filename };
           }),
         );
       }
 
-      if (user.kyc && user.kyc.documents) {
-        // Delete previous document files
-        await Promise.all(
-          user.kyc.documents.map(async (file) => {
-            const filePath = path.join(
-              __dirname,
-              `../uploads/kyc/${user.username}`,
-              file.name,
-            );
-            try {
-              await fs.unlink(filePath);
-            } catch (err) {
-              console.error(`Error deleting file ${filePath}: ${err.message}`);
-            }
-          }),
-        );
-      }
-
-      const imageFiles = req.files.images || [];
-      const documentFiles = req.files.documents || [];
-
-      // Ensure the user's KYC directory exists
-      const userDir = path.join(__dirname, `../uploads/kyc/${user.username}`);
-      await fs.mkdir(userDir, { recursive: true });
-
-      req.body.images = await Promise.all(
-        imageFiles.map(async (file) => {
-          const destPath = path.join(userDir, file.filename);
-          await fs.rename(file.path, destPath);
-          return { name: file.filename };
-        }),
+      user = await User.findByIdAndUpdate(
+        userID,
+        { kyc: { ...req.body } },
+        { new: true },
       );
 
-      req.body.documents = await Promise.all(
-        documentFiles.map(async (file) => {
-          const destPath = path.join(userDir, file.filename);
-          await fs.rename(file.path, destPath);
-          return { name: file.filename };
-        }),
-      );
+      notificationService.create({
+        userId: user?.username,
+        title: 'KYC updated',
+        message:
+          'Your KYC verification has been submitted. Please allow up to 72 hours for approval.',
+        type: config.NOTIFICATION_TYPES.IMPORTANT,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: 'KYC updated successfully',
+        data: user,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
     }
-
-    user = await User.findByIdAndUpdate(
-      userID,
-      { kyc: { ...req.body } },
-      { new: true },
-    );
-
-    create({
-      userId: user.username,
-      title: 'KYC updated',
-      message:
-        'Your KYC verification has been submitted. Please allow up to 72 hours for approval.',
-      type: config.NOTIFICATION_TYPES.IMPORTANT,
-    });
-
-    res.status(200).json({
-      success: true,
-      message: 'KYC updated successfully',
-      data: user,
-    });
   },
 );
 
 export const updateProfile = catchAsyncErrors(
-  async (req: UserRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const userID = req.user.id;
     const { password, ...data } = req.body;
-    const user = await User.findById(userID).select('+password');
+    const user: any = await User.findById(userID).select('+password');
 
     if (!user) {
       return next(
@@ -156,7 +163,7 @@ export const updateProfile = catchAsyncErrors(
 );
 
 export const enable2FA = catchAsyncErrors(
-  async (req: UserRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const userID = req.user.id;
     const user = await User.findById(userID);
 
@@ -191,7 +198,7 @@ export const enable2FA = catchAsyncErrors(
 
 export const balanceByType = async (query: BalanceQuery) => {
   let balance = 0;
-  let key: string | null = null;
+  let key: string = '';
 
   if (!query?.userId) {
     switch (query?.withdrawalType) {
@@ -210,38 +217,42 @@ export const balanceByType = async (query: BalanceQuery) => {
 
   const user = await User.findById(query?.userId);
 
-  switch (query?.withdrawalType) {
-    case config.WITHDRAWAL_TYPES.DEPOSIT:
-      key = 'depositBalance';
-      balance = user[key] ?? 0;
-      break;
-    case config.WITHDRAWAL_TYPES.PROFIT:
-      key = 'profitBalance';
-      balance = user[key] ?? 0;
-      break;
-    case config.WITHDRAWAL_TYPES.REWARD:
-      key = 'rewardBalance';
-      balance = user[key] ?? 0;
-      break;
-  }
+  if (user) {
+    switch (query?.withdrawalType) {
+      case config.WITHDRAWAL_TYPES.DEPOSIT:
+        key = 'depositBalance';
+        balance = user[key as keyof IUser] ?? 0;
+        break;
+      case config.WITHDRAWAL_TYPES.PROFIT:
+        key = 'profitBalance';
+        balance = user[key as keyof IUser] ?? 0;
+        break;
+      case config.WITHDRAWAL_TYPES.REWARD:
+        key = 'rewardBalance';
+        balance = user[key as keyof IUser] ?? 0;
+        break;
+      default:
+        throw new Error('Invalid withdrawal type');
+    }
 
-  switch (query?.transactionType) {
-    case config.TRANSACTION_TYPES.DEPOSIT:
-      key = 'depositBalance';
-      balance = user[key] ?? 0;
-      break;
-    case config.TRANSACTION_TYPES.PROFIT:
-      key = 'profitBalance';
-      balance = user[key] ?? 0;
-      break;
-    case config.TRANSACTION_TYPES.REFERRAL_CREDIT:
-      key = 'creditBalance';
-      balance = user[key] ?? 0;
-      break;
-    case config.TRANSACTION_TYPES.REWARD:
-      key = 'rewardBalance';
-      balance = user[key] ?? 0;
-      break;
+    switch (query?.transactionType) {
+      case config.TRANSACTION_TYPES.DEPOSIT:
+        key = 'depositBalance';
+        balance = user[key as keyof IUser] ?? 0;
+        break;
+      case config.TRANSACTION_TYPES.PROFIT:
+        key = 'profitBalance';
+        balance = user[key as keyof IUser] ?? 0;
+        break;
+      case config.TRANSACTION_TYPES.REFERRAL_CREDIT:
+        key = 'creditBalance';
+        balance = user[key as keyof IUser] ?? 0;
+        break;
+      case config.TRANSACTION_TYPES.REWARD:
+        key = 'rewardBalance';
+        balance = user[key as keyof IUser] ?? 0;
+        break;
+    }
   }
 
   return { key, balance };
@@ -276,3 +287,14 @@ export const getAllUser = catchAsyncErrors(
     res.json({ users });
   },
 );
+
+const userCtlr = {
+  kycUpsert,
+  updateProfile,
+  enable2FA,
+  balanceByType,
+  getUser,
+  getAllUser,
+};
+
+export default userCtlr;
