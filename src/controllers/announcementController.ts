@@ -30,7 +30,7 @@ interface PaginateOptions {
   pageSize: number;
 }
 
-export const create = catchAsyncErrors(async (req: CreateAnnouncementRequest, res: Response, next: NextFunction) => {
+export const create = catchAsyncErrors(async (req: any, res: Response, next: NextFunction) => {
   if (!req.body) {
     return next(new ErrorHandler("No request body found", 404));
   }

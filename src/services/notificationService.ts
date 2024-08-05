@@ -66,7 +66,7 @@ const update = async (
 
 const updateMany = async (
   userId: string,
-  payload: Payload,
+  payload: any,
 ): Promise<{ modifiedCount: number }> => {
   return await Notification.updateMany({ userId }, payload);
 };

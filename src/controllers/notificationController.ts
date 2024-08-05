@@ -74,65 +74,57 @@ export const get = catchAsyncErrors(
   },
 );
 
-// export const updateMany = catchAsyncErrors(
-//   async (req: Request, res: Response) => {
-//     const { id, username } = req.user as User;
+export const updateMany = catchAsyncErrors(async (req: any, res: Response) => {
+  const { id, username } = req.user as User;
 
-//     await notificationService.updateMany(
-//       {
-//         $or: [
-//           { userId: username, isRead: false },
-//           { adminCreated: true },
-//           { userId: id, isRead: false },
-//         ],
-//       },
-//       { isRead: true },
-//     );
-
-//     return res.json({
-//       success: true,
-//     });
-//   },
-// );
-
-export const deleteMany = catchAsyncErrors(
-  async (req: any, res: Response) => {
-    const { id, username } = req.user as User;
-
-    await notificationService.deleteMany({
+  await notificationService.updateMany(
+    id,
+    {
       $or: [
         { userId: username, isRead: false },
         { adminCreated: true },
         { userId: id, isRead: false },
       ],
-    });
+    },
+  );
 
-    return res.json({
-      success: true,
-    });
-  },
-);
+  return res.json({
+    success: true,
+  });
+});
 
-export const updateRead = catchAsyncErrors(
-  async (req: any, res: Response) => {
-    const { id } = req.params;
+export const deleteMany = catchAsyncErrors(async (req: any, res: Response) => {
+  const { id, username } = req.user as User;
 
-    await notificationService.update(id, { isRead: true });
+  await notificationService.deleteMany({
+    $or: [
+      { userId: username, isRead: false },
+      { adminCreated: true },
+      { userId: id, isRead: false },
+    ],
+  });
 
-    return res.json({
-      success: true,
-    });
-  },
-);
+  return res.json({
+    success: true,
+  });
+});
 
-export const deleteOne = catchAsyncErrors(
-  async (req: any, res: Response) => {
-    const { id } = req.params;
+export const updateRead = catchAsyncErrors(async (req: any, res: Response) => {
+  const { id } = req.params;
 
-    await notificationService.deleteOne(id);
+  await notificationService.update(id, { isRead: true });
 
-    return res.json({
-      success: true,
-    });
-  },
-);
+  return res.json({
+    success: true,
+  });
+});
+
+export const deleteOne = catchAsyncErrors(async (req: any, res: Response) => {
+  const { id } = req.params;
+
+  await notificationService.deleteOne(id);
+
+  return res.json({
+    success: true,
+  });
+});

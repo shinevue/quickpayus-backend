@@ -29,7 +29,7 @@ interface BalanceInformation {
 }
 
 export const counts = catchAsyncErrors(
-  async (req: UserRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const user = req.user;
     const defaultResponse: BalanceInformation = {
       accountBalance: user.depositBalance + user.profitBalance,
@@ -44,7 +44,7 @@ export const counts = catchAsyncErrors(
 );
 
 export const getBalanceInformation = catchAsyncErrors(
-  async (req: UserRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const userId = new ObjectId(req.user.id) || null;
     const { balanceframe, timeframe } = req.params;
     const balanceInformation: any[] = []; // Adjust type as necessary

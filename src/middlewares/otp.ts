@@ -1,20 +1,20 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../config/logger';
 
-interface CustomRequest extends Request {
-  user: {
-    id: string;
-  };
-  logEntry?: {
-    timestamp: string;
-    user_id: string;
-    ip_address: string;
-    request_type: string;
-    status: string;
-  };
-}
+// interface CustomRequest extends Request {
+//   user: {
+//     id: string;
+//   };
+//   logEntry?: {
+//     timestamp: string;
+//     user_id: string;
+//     ip_address: string;
+//     request_type: string;
+//     status: string;
+//   };
+// }
 
-const logMiddleware = async (req: CustomRequest, res: Response, next: NextFunction) => {
+const logMiddleware = async (req: any, res: Response, next: NextFunction) => {
   const logEntry = {
     timestamp: new Date().toISOString(),
     user_id: req.user.id,
