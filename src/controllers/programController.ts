@@ -96,12 +96,12 @@ const findOne = async (query: any): Promise<IProgram | null> => {
 };
 
 const programCtlr = {
-  get: get,
-  update: update,
-  findByInvestment: findByInvestment,
-  findByLevels: findByLevels,
-  find: find,
-  findOne: findOne,
+  get,
+  update,
+  findByInvestment,
+  findByLevels,
+  find,
+  findOne,
 };
 
 export default programCtlr;

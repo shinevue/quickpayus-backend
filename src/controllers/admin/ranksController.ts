@@ -1,4 +1,4 @@
-import mongoose, { Document, Model } from 'mongoose';
+import mongoose from 'mongoose';
 import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 import Reward, { IReward } from '../../models/rewardModel'; // Adjust the import based on your Reward model
 import User from '../../models/userModel'; // Adjust the import based on your User model

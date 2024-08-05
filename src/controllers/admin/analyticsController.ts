@@ -4,7 +4,7 @@ import Ticket from '../../models/ticketModel';
 import Transaction from '../../models/transactionModel';
 import config from '../../config/constants';
 // import transactionCtlr from "./transactionController";
-import Rank from '../../models/rankModel';
+// import Rank from '../../models/rankModel';
 import Program from '../../models/ProgramModel';
 import { Request, Response, NextFunction } from 'express';
 

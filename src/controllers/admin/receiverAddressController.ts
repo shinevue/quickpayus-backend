@@ -4,7 +4,7 @@ import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 
 import Receiver from '../../models/receiverAddressModel';
 import { isValidAddress } from '../../utils/trc20Validator';
-import { create } from '../../services/notificationService';
+import notificationService from '../../services/notificationService';
 
 import configConstants from '../../config/constants';
 
@@ -32,7 +32,7 @@ export const addReceiver = catchAsyncErrors(async (req: any, res, next) => {
     newReceiver
       .save()
       .then((receiver) => {
-        create({
+        notificationService.create({
           userId: username,
           title: 'RECEIVER ADDRESS CHANGE',
           type: configConstants.NOTIFICATION_TYPES.ACTIVITY,
