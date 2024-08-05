@@ -1,6 +1,6 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, ObjectId } from "mongoose";
 
-export interface IRank extends Document {
+export interface IRank {
   title: string;
   rewardFrom: number;
   rewardTo: number;

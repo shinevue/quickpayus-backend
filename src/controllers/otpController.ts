@@ -10,7 +10,7 @@ import {
   emailTemplates,
 } from '../utils/sendEmail';
 
-export const create = catchAsyncErrors(
+const create = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { email, id } = req.user || {};
     const otpModel: IOTP = new OTP({ userId: id, ip: req.logEntry.ip_address });
@@ -42,7 +42,7 @@ export const create = catchAsyncErrors(
   },
 );
 
-export const send = catchAsyncErrors(
+const send = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { email, id } = req.user || {};
     const otpModel: IOTP = new OTP({ userId: id });
@@ -60,7 +60,7 @@ export const send = catchAsyncErrors(
   },
 );
 
-export const verify = catchAsyncErrors(
+const verify = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { otp } = req.body || {};
     const { id } = req.user || {};
@@ -92,7 +92,7 @@ export const verify = catchAsyncErrors(
 );
 
 // Confirm mail send
-export const confirm = catchAsyncErrors(
+const confirm = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
     const { data } = req.query as { data: string };
     const user: IUser | null = await User.findOne({ email: data });
@@ -116,3 +116,12 @@ export const confirm = catchAsyncErrors(
     res.json({ success: true, otp, message: 'OTP sent successfully on email' });
   },
 );
+
+const otpCtlr = {
+  create,
+  send,
+  verify,
+  confirm,
+};
+
+export default otpCtlr;

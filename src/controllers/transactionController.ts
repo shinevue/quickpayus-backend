@@ -623,3 +623,25 @@ export const firstDepositeDate = async (userid: string) => {
   });
   return transaction?.updatedAt;
 };
+
+const transactionCtlr = {
+  get,
+  getAddress,
+  create,
+  find,
+  userSum,
+  save,
+  findOne,
+  paginate,
+  countDocuments,
+  userDepositlBalanceByQuery,
+  userProfitBalanceByQuery,
+  userCreditBalanceByQuery,
+  userEquityBalanceByQuery,
+  userAccountBalanceByQuery,
+  userRewardBalanceByQuery,
+  getAllTrans,
+  userSalesByQuery,
+  firstDepositeDate,
+};
+export default transactionCtlr;

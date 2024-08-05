@@ -2,7 +2,6 @@ import express from 'express';
 import { isAuthenticatedUser, authorizeRole } from '../middlewares/auth';
 import {
   updateProfile,
-  claimReward,
   getUser,
   getAllUser,
   kycUpsert,

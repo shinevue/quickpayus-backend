@@ -1,6 +1,6 @@
 import connectDB from '../config/db';
 import Program, { IProgram } from '../models/ProgramModel';
-import Rank, { RankInterface } from '../models/rankModel';
+import Rank, { IRank } from '../models/rankModel';
 
 connectDB();
 
@@ -381,7 +381,7 @@ const mergedLevels: IMergedLevels = {
   ],
 };
 
-const rankSeeder: RankInterface[] = [
+const rankSeeder: IRank[] = [
   {
     title: 'Leader 1',
     rewardFrom: 300,
@@ -443,7 +443,7 @@ async function seedLevels(levels: IMergedLevels): Promise<void> {
   }
 }
 
-async function seedRanks(levels: RankInterface[]): Promise<void> {
+async function seedRanks(levels: IRank[]): Promise<void> {
   try {
     await Rank.deleteMany({});
     for (const rank of levels) {
