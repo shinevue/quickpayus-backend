@@ -1,4 +1,3 @@
-import { totalSumByKey } from './transactionController';
 import mongoose, { Document, Model } from 'mongoose';
 import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 import Transaction from '../../models/transactionModel';

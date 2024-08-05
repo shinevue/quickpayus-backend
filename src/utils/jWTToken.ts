@@ -1,11 +1,11 @@
 import { Response } from 'express';
-import { User } from '../models/userModel'; // Replace with your User interface or class
+// import { User } from '../models/userModel'; // Replace with your User interface or class
 
-interface SendTokenData {
-  // Define the structure of your data object
-}
+// interface SendTokenData {
+//   // Define the structure of your data object
+// }
 
-const sendToken = (user: User, statusCode: number, res: Response, data: SendTokenData) => {
+const sendToken = (user: any, statusCode: number, res: Response, data: any) => {
   const token = user.getJWTToken();
 
   //option for cookie

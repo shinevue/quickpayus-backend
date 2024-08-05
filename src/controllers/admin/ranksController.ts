@@ -3,7 +3,7 @@ import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 import Reward, { IReward } from '../../models/rewardModel'; // Adjust the import based on your Reward model
 import User from '../../models/userModel'; // Adjust the import based on your User model
 import ErrorHandler from '../../utils/errorHandler';
-import { create } from '../../services/notificationService';
+import notificationService from '../../services/notificationService';
 import { Request, Response, NextFunction } from 'express';
 import config from '../../config/constants';
 
@@ -106,7 +106,7 @@ export const get = catchAsyncErrors(
 );
 
 export const update = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     try {
       const { status, rewardId, reason } = req.body;
       const authId = req.user?.id;
@@ -142,7 +142,7 @@ export const update = catchAsyncErrors(
           isClaimed: false,
           adminId: authId,
         });
-        await create({
+        await notificationService.create({
           userId,
           type: config.NOTIFICATION_TYPES.ACTIVITY,
           message: `Your reward has been rejected for the following reason: ${reason}`,
@@ -159,7 +159,7 @@ export const update = catchAsyncErrors(
       });
       await User.findByIdAndUpdate(userId, { $inc: { rewardBalance: amount } });
       const message = `${amount} has been successfully rewarded.`;
-      await create({
+      await notificationService.create({
         userId,
         type: config.NOTIFICATION_TYPES.ACTIVITY,
         message,

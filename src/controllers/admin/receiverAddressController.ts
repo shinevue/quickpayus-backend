@@ -24,7 +24,7 @@ export const getAllReceiver = catchAsyncErrors(async (req, res, next) => {
   });
 });
 
-export const addReceiver = catchAsyncErrors(async (req, res, next) => {
+export const addReceiver = catchAsyncErrors(async (req: any, res, next) => {
   const { username } = req.user;
   const newReceiver = new Receiver({ ...req.body, adminId: username });
 
