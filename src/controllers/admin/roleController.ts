@@ -21,7 +21,7 @@ export const create = catchAsyncErrors(
     } catch (error) {
       res.json({
         success: false,
-        msg: error.message,
+        msg: error,
       });
     }
   },
@@ -108,7 +108,7 @@ export const removeAll = catchAsyncErrors(
 );
 
 export const getPermission = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     if (req.user.role === 'admin') {
       return res.send({
         success: true,

@@ -5,9 +5,9 @@ import ErrorHandler from '../../utils/errorHandler';
 import { Request, Response, NextFunction } from 'express';
 
 export const create = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     if (!req.body) {
-      return next(new ErrorHandler('No request body found'));
+      return next(new ErrorHandler('No request body found', 404));
     }
 
     const alreadyExist = await notificationService.findOne({
@@ -17,7 +17,7 @@ export const create = catchAsyncErrors(
     if (alreadyExist) {
       return next(
         new ErrorHandler(
-          `Notification already exists with title: ${req.body.title}`,
+          `Notification already exists with title: ${req.body.title}`, 400,
         ),
       );
     }
@@ -44,7 +44,7 @@ export const get = catchAsyncErrors(
     });
 
     if (!total) {
-      return next(new ErrorHandler('No announcements found'));
+      return next(new ErrorHandler('No announcements found', 404));
     }
 
     const data = await notificationService.paginateQuery(

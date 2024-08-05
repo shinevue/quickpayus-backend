@@ -2,10 +2,12 @@ import crypto from 'crypto';
 import moment from 'moment';
 import momentTZ from 'moment-timezone';
 
-momentTZ().tz("Asia/Karachi");
+momentTZ().tz('Asia/Karachi');
 
 function checkRankPeriod(joining: Date): boolean {
-  return moment.duration(moment().diff(joining)).asSeconds() > 30 * 24 * 60 * 60;
+  return (
+    moment.duration(moment().diff(joining)).asSeconds() > 30 * 24 * 60 * 60
+  );
 }
 
 const applyPercentage = (amount: number, percentage: number): number => {
@@ -32,7 +34,7 @@ const currentDate = (): Date => {
 };
 
 const uuid = (): string => {
-  return crypto.randomBytes(24).toString("hex");
+  return crypto.randomBytes(24).toString('hex');
 };
 
 const capitalizeFirstLetter = (str: string): string => {
@@ -51,12 +53,14 @@ String.prototype.capitalizeFirst = function (): string {
 };
 
 const startOfToday = (): string => {
-  return moment().startOf("day").format();
+  return moment().startOf('day').format();
 };
 
 const endOfToday = (): string => {
-  return moment().endOf("day").format();
+  return moment().endOf('day').format();
 };
+
+const randomUUID = crypto.randomUUID;
 
 export {
   applyPercentage,
@@ -65,7 +69,7 @@ export {
   minusDaysFromDate,
   currentDate,
   uuid,
-  crypto.randomUUID as randomUUID,
+  randomUUID,
   capitalizeFirstLetter,
   startOfToday,
   endOfToday,

@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongoose';
 import { Notification } from '../models/notificationModel';
 
 // Define the types for the options parameter
@@ -11,7 +12,7 @@ interface Payload {
   // For example:
   title: string;
   message: string;
-  userId?: string;
+  userId?: string | ObjectId;
   createdAt?: Date;
   type?: string;
   adminCreated?: boolean;
@@ -19,7 +20,7 @@ interface Payload {
   // Add other fields according to your Notification model
 }
 
-export const paginate = async (
+const paginate = async (
   userId: string,
   options?: PaginationOptions,
 ): Promise<Payload[]> => {
@@ -32,7 +33,7 @@ export const paginate = async (
     .limit(pageSize);
 };
 
-export const paginateQuery = async (
+const paginateQuery = async (
   query: Record<string, any>,
   options?: PaginationOptions,
 ): Promise<Payload[]> => {
@@ -45,17 +46,15 @@ export const paginateQuery = async (
     .limit(pageSize);
 };
 
-export const countDocuments = async (
-  query: Record<string, any>,
-): Promise<number> => {
+const countDocuments = async (query: Record<string, any>): Promise<number> => {
   return await Notification.countDocuments(query);
 };
-export const create = async (payload: Payload): Promise<Payload> => {
+const create = async (payload: Payload): Promise<Payload> => {
   const notification = new Notification(payload);
   return await notification.save();
 };
 
-export const update = async (
+const update = async (
   notificationId: string,
   payload: Payload,
 ): Promise<Payload | null> => {
@@ -64,29 +63,42 @@ export const update = async (
   });
 };
 
-export const updateMany = async (
+const updateMany = async (
   userId: string,
   payload: Payload,
 ): Promise<{ modifiedCount: number }> => {
   return await Notification.updateMany({ userId }, payload);
 };
 
-export const deleteMany = async (
+const deleteMany = async (
   query: Record<string, any>,
 ): Promise<{ deletedCount?: number }> => {
   return await Notification.deleteMany(query);
 };
 
-export const find = async (query: Record<string, any>): Promise<Payload[]> => {
+const find = async (query: Record<string, any>): Promise<Payload[]> => {
   return await Notification.find(query);
 };
 
-export const findOne = async (
-  query: Record<string, any>,
-): Promise<Payload | null> => {
+const findOne = async (query: Record<string, any>): Promise<Payload | null> => {
   return await Notification.findOne(query);
 };
 
-export const deleteOne = async (id: string): Promise<Payload | null> => {
+const deleteOne = async (id: string): Promise<any> => {
   return await Notification.findByIdAndDelete(id);
 };
+
+const notificationService = {
+  paginate,
+  paginateQuery,
+  countDocuments,
+  create,
+  update,
+  updateMany,
+  deleteMany,
+  find,
+  findOne,
+  deleteOne,
+};
+
+export default notificationService;

@@ -1,22 +1,17 @@
 import express from 'express';
 import { isAuthenticatedUser, authorizeRole } from '../../middlewares/auth';
-import {
-  create,
-  getAllUser,
-  edit,
-  remove,
-} from '../../controllers/admin/profileController';
+import profileCtrl from '../../controllers/admin/profileController';
 
 const router = express.Router();
 
 router
   .route('/')
-  .post(isAuthenticatedUser, authorizeRole, create)
-  .get(isAuthenticatedUser, authorizeRole, getAllUser);
+  .post(isAuthenticatedUser, authorizeRole, profileCtrl.create)
+  .get(isAuthenticatedUser, authorizeRole, profileCtrl.getAllUser);
 
 router
   .route('/:id')
-  .put(isAuthenticatedUser, authorizeRole, edit)
-  .delete(isAuthenticatedUser, authorizeRole, remove);
+  .put(isAuthenticatedUser, authorizeRole, profileCtrl.edit)
+  .delete(isAuthenticatedUser, authorizeRole, profileCtrl.remove);
 
 export default router;

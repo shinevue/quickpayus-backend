@@ -4,7 +4,7 @@ import ErrorHandler from '../../utils/errorHandler';
 import { Request, Response, NextFunction } from 'express';
 
 export const create = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const referralId = req.user.id;
     const primaryColorsList = [
       '#007AFF',
@@ -78,7 +78,7 @@ export const edit = catchAsyncErrors(
 );
 
 export const getAllUser = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { page = 1 } = req.query as { page?: number };
     const pageSize = Number(process.env.RECORDS_PER_PAGE) || 15;
     const total = await countDocuments({});
@@ -137,3 +137,15 @@ export const countDocuments = async (query: any) => {
 export const deleteOne = async (query: any) => {
   return await User.deleteOne(query);
 };
+
+const profileCtrl = {
+  create,
+  edit,
+  getAllUser,
+  remove,
+  paginate,
+  countDocuments,
+  deleteOne,
+};
+
+export default profileCtrl

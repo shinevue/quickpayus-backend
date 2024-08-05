@@ -31,7 +31,7 @@ export const get = catchAsyncErrors(
 );
 
 export const upsert = catchAsyncErrors(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { username } = req.user;
     const { profit } = req.body || {};
 
