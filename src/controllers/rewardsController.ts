@@ -7,7 +7,7 @@ import Reward, { IReward } from '../models/rewardModel'; // Adjust the import ba
 import RankCtrl from './ranksController';
 import { ObjectId } from 'mongodb';
 
-export const get = catchAsyncErrors(
+const get = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { type, page = 1 } = req.query as { type?: string; page?: number };
     const userId = req.user.id;
@@ -34,7 +34,7 @@ export const get = catchAsyncErrors(
   },
 );
 
-export const claimReward = catchAsyncErrors(
+const claimReward = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const userId = new ObjectId(req.user.id);
     const rankInfo = await RankCtrl.getUserRankInfo(userId);
@@ -65,7 +65,7 @@ export const claimReward = catchAsyncErrors(
   },
 );
 
-export const create = async (
+const create = async (
   userId: ObjectId,
   rankInfo: any,
   isClaimed: boolean,

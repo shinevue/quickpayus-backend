@@ -19,8 +19,8 @@ const server = app.listen(process.env.PORT, async () => {
 });
 connectDB();
 // unhandled Promise Rejection
-process.on('unhandledRejection', (err) => {
-  console.log(`Error ${err.message}`);
+process.on('unhandledRejection', (err: any) => {
+  console.log(`Error ${err}`);
   console.log(`Shutting down server due to Unhandled Rejection`);
   server.close(() => {
     process.exit(1);

@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document, ObjectId } from "mongoose";
 
 export interface IRank {
+  _id: ObjectId;
   title: string;
   rewardFrom: number;
   rewardTo: number;

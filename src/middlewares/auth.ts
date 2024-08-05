@@ -6,7 +6,6 @@ import jwt from "jsonwebtoken";
 import url from 'url';
 import config from "../config/constants";
 import Role from "../models/roleModel";
-import { ObjectId } from "mongodb";
 
 interface DecodedData {
   id: string;
@@ -17,7 +16,7 @@ interface RoleData {
   permissions: string[];
 }
 
-export const isAuthenticatedUser = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+export const isAuthenticatedUser = catchAsyncErrors(async (req: any, res: Response, next: NextFunction) => {
   const { token } = req.headers;
 
   if (!token) {
@@ -45,7 +44,7 @@ export const isAuthenticatedUser = catchAsyncErrors(async (req: Request, res: Re
  * 2. Not signed role
  * 3. Check the allowed Route // able to add info constants.js file
  */
-export const authorizeRole = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
+export const authorizeRole = catchAsyncErrors(async (req: any, res: Response, next: NextFunction) => {
   const { role } = req.user;
 
   // Check if the user role is "user" and return an error if so
