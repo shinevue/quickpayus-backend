@@ -117,7 +117,9 @@ export const update = catchAsyncErrors(
       withdrawalType,
     } = transaction;
 
-    if (Object.values(config.STATUS).includes(config.STATUS.REJECTED)) {
+    if (status.includes(config.STATUS.REJECTED)) {
+      console.log('PASSED');
+
       if (!reason) {
         return next(
           new ErrorHandler(

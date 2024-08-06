@@ -231,8 +231,6 @@ export const balanceByType = async (query: BalanceQuery) => {
         key = 'rewardBalance';
         balance = user[key as keyof IUser] ?? 0;
         break;
-      default:
-        throw new Error('Invalid withdrawal type');
     }
 
     switch (query?.transactionType) {
