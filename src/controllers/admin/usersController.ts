@@ -90,8 +90,12 @@ export const get = catchAsyncErrors(
       const referredBy = data.find(
         (user) => user?._id?.toString() === d?.referralId?.toString(),
       );
-      return {
+
+      const res: any = {
         ...d,
+      };
+      return {
+        ...res?._doc,
         referredBy: referredBy?.username,
         directCount,
         indirectCount,
@@ -99,6 +103,7 @@ export const get = catchAsyncErrors(
     });
 
     const modified = await Promise.all(promises);
+
     const total = await User.countDocuments(query);
 
     res.json({
