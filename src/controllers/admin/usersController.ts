@@ -87,9 +87,7 @@ export const get = catchAsyncErrors(
         { referralId: d._id },
         8,
       );
-      const referredBy = data.find(
-        (user) => user?._id?.toString() === d?.referralId?.toString(),
-      );
+      const referredBy = await User.findById(d?.referralId);
 
       const res: any = {
         ...d,

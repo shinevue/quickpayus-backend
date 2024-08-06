@@ -2,10 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 import ErrorHandler from '../utils/errorHandler';
 import Reward, { IReward } from '../models/rewardModel'; // Adjust the import based on your Reward model
-// import { STATUS } from "../config/constants";
-// import Rank from "../models/rankModel"; // Adjust the import based on your Rank model
+import config from '../config/constants';
 import RankCtrl from './ranksController';
+import notificationService from '../services/notificationService';
 import { ObjectId } from 'mongodb';
+import User, { IUser } from '../models/userModel';
 
 const get = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
@@ -80,6 +81,21 @@ const create = async (userId: ObjectId, rankInfo: any, isClaimed: boolean) => {
         requiredSalesTo,
         rankInfo.sumOfLast30DaysSales,
       );
+
+      if (amount) {
+        const res: IUser | null = await User.findByIdAndUpdate(userId, {
+          $inc: { rewardBalance: amount },
+        });
+        const message = `${amount} has been successfully rewarded.`;
+
+        //create notification
+        await notificationService.create({
+          userId: res?.username,
+          title: '~Reward~',
+          type: config.NOTIFICATION_TYPES.ACTIVITY,
+          message,
+        });
+      }
 
       const reward = new Reward({
         userId,
