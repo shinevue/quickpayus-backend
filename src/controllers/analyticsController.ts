@@ -9,16 +9,6 @@ import transactionCtlr from './transactionController';
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 import { Request, Response, NextFunction } from 'express';
 
-interface UserRequest extends Request {
-  user: {
-    id: string;
-    depositBalance: number;
-    profitBalance: number;
-    referralCreditBalance: number;
-    rewardBalance: number;
-  };
-}
-
 interface BalanceInformation {
   accountBalance: number;
   profitBalance: number;

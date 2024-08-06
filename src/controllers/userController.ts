@@ -8,13 +8,6 @@ import notificationService from '../services/notificationService';
 import { Request, Response, NextFunction } from 'express';
 import { ObjectId } from 'mongoose';
 
-interface UserRequest extends Request {
-  user: {
-    id: string;
-    username: string;
-  };
-}
-
 interface KYCData {
   images?: Array<{ name: string }>;
   documents?: Array<{ name: string }>;

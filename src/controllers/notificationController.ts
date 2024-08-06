@@ -9,7 +9,6 @@ interface User {
 }
 
 interface GetNotificationsRequest extends Request {
-  user: User;
   query: {
     page?: string;
     isRead?: string;

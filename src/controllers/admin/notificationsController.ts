@@ -4,8 +4,17 @@ import notificationService from '../../services/notificationService';
 import ErrorHandler from '../../utils/errorHandler';
 import { Request, Response, NextFunction } from 'express';
 
+interface CreateNotificationRequest {
+  title: string;
+  message: string;
+}
+
 export const create = catchAsyncErrors(
-  async (req: any, res: Response, next: NextFunction) => {
+  async (
+    req: Request<{}, {}, CreateNotificationRequest>,
+    res: Response,
+    next: NextFunction,
+  ) => {
     if (!req.body) {
       return next(new ErrorHandler('No request body found', 404));
     }
@@ -17,14 +26,15 @@ export const create = catchAsyncErrors(
     if (alreadyExist) {
       return next(
         new ErrorHandler(
-          `Notification already exists with title: ${req.body.title}`, 400,
+          `Notification already exists with title: ${req.body.title}`,
+          400,
         ),
       );
     }
 
     const data = await notificationService.create({
       ...req.body,
-      userId: req.user.username,
+      userId: req.user?.username,
     });
 
     return res.json({
@@ -88,6 +98,6 @@ export const removeAll = catchAsyncErrors(
   },
 );
 
-export const deleteOne = async (query: any) => {
+export const deleteOne = async (query: {_id: string}) => {
   return await Notification.deleteOne(query);
 };

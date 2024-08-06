@@ -39,9 +39,9 @@ interface ProgramStatistics {
 }
 
 interface UserDemographics {
-  topCountries: any[];
-  topBrowsers: any[];
-  topOS: any[];
+  topCountries: string[];
+  topBrowsers: string[];
+  topOS: string[];
 }
 
 export const counts = catchAsyncErrors(
@@ -193,7 +193,7 @@ const getProgramStatistics = async (): Promise<ProgramStatistics[]> => {
   });
 };
 
-const getTopCountries = async (): Promise<any[]> => {
+const getTopCountries = async (): Promise<string[]> => {
   const result = await User.aggregate([
     {
       $group: {
@@ -216,7 +216,7 @@ const getTopCountries = async (): Promise<any[]> => {
   return result;
 };
 
-const getTopBrowsers = async (): Promise<any[]> => {
+const getTopBrowsers = async (): Promise<string[]> => {
   const result = await User.aggregate([
     {
       $group: {
@@ -239,7 +239,7 @@ const getTopBrowsers = async (): Promise<any[]> => {
   return result;
 };
 
-const getTopOS = async (): Promise<any[]> => {
+const getTopOS = async (): Promise<string[]> => {
   const result = await User.aggregate([
     {
       $group: {

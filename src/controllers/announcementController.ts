@@ -8,9 +8,6 @@ interface CreateAnnouncementRequest extends Request {
     title: string;
     content: string; // Add other properties as needed
   };
-  user: {
-    username: string;
-  };
 }
 
 interface GetAnnouncementsRequest extends Request {
