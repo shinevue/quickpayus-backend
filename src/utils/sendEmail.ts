@@ -10,7 +10,18 @@ interface EmailOptions {
   templateData?: Record<string, any>;
 }
 
-const sendEmail = async (options: EmailOptions, otp?: string): Promise<void> => {
+interface EmailContent {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+  html?: string;
+}
+
+const sendEmail = async (
+  options: EmailOptions,
+  otp?: string,
+): Promise<void> => {
   try {
     // Create a nodemailer transporter
     const transporter = nodemailer.createTransport({
@@ -23,7 +34,7 @@ const sendEmail = async (options: EmailOptions, otp?: string): Promise<void> => 
       },
     });
 
-    const mailOptions: any = {
+    const mailOptions: EmailContent = {
       from: 'timons128@outlook.com',
       to: options.email,
       subject: options.subject,
@@ -63,7 +74,7 @@ const sendWarningEmail = async (options: EmailOptions): Promise<void> => {
       },
     });
 
-    const mailOptions: any = {
+    const mailOptions: EmailContent = {
       from: 'timons128@outlook.com',
       to: options.email,
       subject: options.subject,
@@ -99,82 +110,81 @@ const emailTemplates: Record<string, any> = {
     subject: 'Welcome to QUICKPAYUS!',
   },
   otpResetPassword: {
-    templatePath: "./utils/emailTemplates/otpResetPassword.ejs",
-    subject: "Reset Your QUICKPAYUS Password",
+    templatePath: './utils/emailTemplates/otpResetPassword.ejs',
+    subject: 'Reset Your QUICKPAYUS Password',
   },
   depositApproved: {
-    templatePath: "./utils/emailTemplates/depositApproved.ejs",
-    subject: "Deposit Confirmation",
+    templatePath: './utils/emailTemplates/depositApproved.ejs',
+    subject: 'Deposit Confirmation',
   },
   depositRejected: {
-    templatePath: "./utils/emailTemplates/depositRejected.ejs",
-    subject: "Deposit Rejection Notification",
+    templatePath: './utils/emailTemplates/depositRejected.ejs',
+    subject: 'Deposit Rejection Notification',
   },
   kycApproved: {
-    templatePath: "./utils/emailTemplates/kycApproved.ejs",
-    subject: "KYC Verification Completed Successfully",
+    templatePath: './utils/emailTemplates/kycApproved.ejs',
+    subject: 'KYC Verification Completed Successfully',
   },
   kycRejected: {
-    templatePath: "./utils/emailTemplates/kycRejected.ejs",
-    subject: "KYC Verification Rejected",
+    templatePath: './utils/emailTemplates/kycRejected.ejs',
+    subject: 'KYC Verification Rejected',
   },
   otpWithdrawConfirm: {
-    templatePath: "./utils/emailTemplates/otpWithdrawConfirm.ejs",
-    subject: "Confirm Your Withdrawal Request",
+    templatePath: './utils/emailTemplates/otpWithdrawConfirm.ejs',
+    subject: 'Confirm Your Withdrawal Request',
   },
   withdrawApproval: {
-    templatePath: "./utils/emailTemplates/withdrawApproval.ejs",
-    subject: "Withdrawal Request Approved",
+    templatePath: './utils/emailTemplates/withdrawApproval.ejs',
+    subject: 'Withdrawal Request Approved',
   },
   withdrawRejected: {
-    templatePath: "./utils/emailTemplates/withdrawRejected.ejs",
-    subject: "Withdrawal Request Rejected",
+    templatePath: './utils/emailTemplates/withdrawRejected.ejs',
+    subject: 'Withdrawal Request Rejected',
   },
   rankRewardsRequest: {
-    templatePath: "./utils/emailTemplates/rankRewardsRequest.ejs",
-    subject: "Request for Rank Rewards Verification",
+    templatePath: './utils/emailTemplates/rankRewardsRequest.ejs',
+    subject: 'Request for Rank Rewards Verification',
   },
   rankRewardsApproved: {
-    templatePath: "./utils/emailTemplates/rankRewardsApproved.ejs",
-    subject: "Rank Rewards Approved",
+    templatePath: './utils/emailTemplates/rankRewardsApproved.ejs',
+    subject: 'Rank Rewards Approved',
   },
   rankRewardsRejected: {
-    templatePath: "./utils/emailTemplates/rankRewardsRejected.ejs",
-    subject: "Rank Rewards Rejection Notification",
+    templatePath: './utils/emailTemplates/rankRewardsRejected.ejs',
+    subject: 'Rank Rewards Rejection Notification',
   },
   rankPromotion: {
-    templatePath: "./utils/emailTemplates/rankPromotion.ejs",
-    subject: "Congratulations on Your Rank Promotion!",
+    templatePath: './utils/emailTemplates/rankPromotion.ejs',
+    subject: 'Congratulations on Your Rank Promotion!',
   },
   rankDemotion: {
-    templatePath: "./utils/emailTemplates/rankDemotion.ejs",
-    subject: "Notification of Rank Demotion",
+    templatePath: './utils/emailTemplates/rankDemotion.ejs',
+    subject: 'Notification of Rank Demotion',
   },
   inactiveAccountRemind: {
-    templatePath: "./utils/emailTemplates/inactiveAccountRemind.ejs",
-    subject: "Action Required: Reactivate Your QUICKPAYUS Account",
+    templatePath: './utils/emailTemplates/inactiveAccountRemind.ejs',
+    subject: 'Action Required: Reactivate Your QUICKPAYUS Account',
   },
   accountCloseConfirm: {
-    templatePath: "./utils/emailTemplates/accountCloseConfirm.ejs",
-    subject: "Account Closure Confirmation",
+    templatePath: './utils/emailTemplates/accountCloseConfirm.ejs',
+    subject: 'Account Closure Confirmation',
   },
   accountSuspension: {
-    templatePath: "./utils/emailTemplates/accountSuspension.ejs",
-    subject: "Account Suspension Notice",
+    templatePath: './utils/emailTemplates/accountSuspension.ejs',
+    subject: 'Account Suspension Notice',
   },
   accountDeleted: {
-    templatePath: "./utils/emailTemplates/accountDeleted.ejs",
-    subject: "Account Deletion Confirmation",
+    templatePath: './utils/emailTemplates/accountDeleted.ejs',
+    subject: 'Account Deletion Confirmation',
   },
   supportHelp: {
-    templatePath: "./utils/emailTemplates/supportHelp.ejs",
+    templatePath: './utils/emailTemplates/supportHelp.ejs',
     subject: "Need Assistance? We're Here to Help!",
   },
   feedback: {
-    templatePath: "./utils/emailTemplates/feedback.ejs",
-    subject: "Share Your Feedback with Us",
+    templatePath: './utils/emailTemplates/feedback.ejs',
+    subject: 'Share Your Feedback with Us',
   },
 };
 
 export { emailTemplates, sendEmail, sendWarningEmail };
-

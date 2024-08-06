@@ -4,7 +4,7 @@ import momentTZ from 'moment-timezone';
 
 momentTZ().tz('Asia/Karachi');
 
-function checkRankPeriod(joining: any): boolean {
+function checkRankPeriod(joining: Date | undefined): boolean {
   return (
     moment.duration(moment().diff(joining)).asSeconds() > 30 * 24 * 60 * 60
   );
