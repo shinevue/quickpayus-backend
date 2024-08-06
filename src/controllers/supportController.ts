@@ -86,7 +86,7 @@ export const createFeedback = catchAsyncErrors(
 
     let uploadedfilename = '';
     if (req.file?.filename) {
-      const oldPath = path.join(__dirname, '../uploads', req.file.filename);
+      const oldPath = path.join(__dirname, '../../uploads', req.file.filename);
       const extension = req.file?.mimetype.split('/')[1];
       fs.renameSync(oldPath, `${oldPath}.${extension}`);
       uploadedfilename = `uploads/${req.file.filename}.${extension}`;
@@ -129,7 +129,7 @@ export const createTicket = catchAsyncErrors(
 
     let uploadedfilename = '';
     if (req.file?.filename) {
-      const oldPath = path.join(__dirname, '../uploads', req.file.filename);
+      const oldPath = path.join(__dirname, '../../uploads', req.file.filename);
       const extension = req.file?.mimetype.split('/')[1];
       fs.renameSync(oldPath, `${oldPath}.${extension}`);
       uploadedfilename = `uploads/${req.file.filename}.${extension}`;
@@ -264,7 +264,7 @@ export const getTicket = catchAsyncErrors(
 );
 
 export const saveTicketReply = catchAsyncErrors(
-  async (req: SaveTicketReplyRequest, res: Response, next: NextFunction) => {
+  async (req: any, res: Response, next: NextFunction) => {
     const { ticketId, username, title, content } = req.body;
 
     if (!title || !content) {
@@ -284,7 +284,7 @@ export const saveTicketReply = catchAsyncErrors(
       return;
     }
 
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username: username?.username });
     if (!user) {
       res.send({
         success: false,
@@ -294,7 +294,7 @@ export const saveTicketReply = catchAsyncErrors(
     }
 
     await notificationService.create({
-      userId: username,
+      userId: username.username,
       title,
       type: config.NOTIFICATION_TYPES.IMPORTANT,
       message: `YOUR TICKET(${ticket.subject}) has been resolved. ${content}`,

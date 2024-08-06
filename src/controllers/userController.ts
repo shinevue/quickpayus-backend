@@ -38,7 +38,7 @@ export const kycUpsert = catchAsyncErrors(
             user.kyc.images.map(async (file) => {
               const filePath = path.join(
                 __dirname,
-                `../uploads/kyc/${user?.username}`,
+                `../../uploads/kyc/${user?.username}`,
                 file.name,
               );
               try {
@@ -56,7 +56,7 @@ export const kycUpsert = catchAsyncErrors(
             user.kyc.documents.map(async (file) => {
               const filePath = path.join(
                 __dirname,
-                `../uploads/kyc/${user?.username}`,
+                `../../uploads/kyc/${user?.username}`,
                 file.name,
               );
               try {
@@ -72,7 +72,7 @@ export const kycUpsert = catchAsyncErrors(
         const documentFiles = req.files.documents || [];
 
         // Ensure the user's KYC directory exists
-        const userDir = path.join(__dirname, `../uploads/kyc/${user.username}`);
+        const userDir = path.join(__dirname, `../../uploads/kyc/${user.username}`);
         await fs.mkdir(userDir, { recursive: true });
 
         req.body.images = await Promise.all(
