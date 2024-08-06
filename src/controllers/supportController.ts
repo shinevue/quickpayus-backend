@@ -8,35 +8,6 @@ import notificationService from '../services/notificationService';
 import config from '../config/constants';
 import { Request, Response, NextFunction } from 'express';
 
-// interface FeedbackRequest extends Request {
-//   body: {
-//     feedback: string;
-//     rating: number;
-//   };
-//   user: {
-//     id: string;
-//   };
-//   file?: {
-//     filename: string;
-//     mimetype: string;
-//   };
-// }
-
-// interface TicketRequest extends Request {
-//   body: {
-//     priority: string;
-//     subject: string;
-//     description: string;
-//   };
-//   user: {
-//     id: string;
-//   };
-//   file?: {
-//     filename: string;
-//     mimetype: string;
-//   };
-// }
-
 interface GetFeedbackRequest extends Request {
   query: {
     page?: string;
@@ -52,15 +23,6 @@ interface GetTicketRequest extends Request {
     pageSize?: string;
     keyword?: string;
     dateRange?: string[];
-  };
-}
-
-interface SaveTicketReplyRequest extends Request {
-  body: {
-    ticketId: string;
-    username: string;
-    title: string;
-    content: string;
   };
 }
 

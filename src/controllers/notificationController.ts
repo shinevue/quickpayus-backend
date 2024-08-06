@@ -8,25 +8,6 @@ interface User {
   id: string;
 }
 
-interface GetNotificationsRequest extends Request {
-  query: {
-    page?: string;
-    isRead?: string;
-  };
-}
-
-interface UpdateReadRequest extends Request {
-  params: {
-    id: string;
-  };
-}
-
-interface DeleteOneRequest extends Request {
-  params: {
-    id: string;
-  };
-}
-
 export const get = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { page = '1', isRead = 'false' } = req.query;

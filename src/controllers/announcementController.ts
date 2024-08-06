@@ -3,13 +3,6 @@ import { Announcements } from "../models/announcementModel";
 import ErrorHandler from "../utils/errorHandler";
 import { Request, Response, NextFunction } from "express";
 
-interface CreateAnnouncementRequest extends Request {
-  body: {
-    title: string;
-    content: string; // Add other properties as needed
-  };
-}
-
 interface GetAnnouncementsRequest extends Request {
   query: {
     page?: string;

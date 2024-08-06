@@ -8,10 +8,6 @@ interface IProgramData {
   // Add other properties as necessary
 }
 
-interface IInvestmentQuery {
-  investment: number;
-}
-
 interface ILevelQuery {
   level: string;
   sublevel: string;
