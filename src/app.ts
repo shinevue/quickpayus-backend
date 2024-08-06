@@ -117,7 +117,7 @@ app.use(
     res.header('Access-Control-Allow-Origin', '*'); // or specify your origin
     next();
   },
-  express.static(path.join(__dirname, 'uploads')),
+  express.static(path.join(__dirname, '../uploads')),
 );
 
 // Error Middleware
