@@ -79,18 +79,8 @@ export const get = catchAsyncErrors(
         let isRead: boolean | undefined = false;
         if (item.action)
           item?.action.map((info) => {
-            console.log(
-              'match: ',
-              info.username,
-              ' === ',
-              req.user.username,
-              ' =? ',
-              info.username === req.user.username,
-            );
-
             if (info.username === req.user.username) isRead = info.isRead;
           });
-        console.log('isRead: ', isRead);
         const res: any = {
           ...item,
         };
