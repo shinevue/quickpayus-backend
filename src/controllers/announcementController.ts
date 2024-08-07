@@ -45,6 +45,29 @@ export const create = catchAsyncErrors(
   },
 );
 
+export const getAll = catchAsyncErrors(
+  async (req: any, res: Response, next: NextFunction) => {
+    const { page = '1' } = req.query || {};
+    const pageSize = parseInt(process.env.RECORDS_PER_PAGE || '15', 10);
+    const { username, id } = req.user;
+
+    const total = await countDocuments({});
+
+    if (!total) {
+      return next(new ErrorHandler('No Announcements found', 404));
+    }
+
+    const data = await paginate({}, { page: parseInt(page, 10), pageSize });
+
+    return res.json({
+      success: true,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+      data,
+    });
+  },
+);
+
 export const get = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { page = '1' } = req.query || {};
