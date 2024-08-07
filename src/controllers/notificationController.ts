@@ -16,9 +16,35 @@ export const get = catchAsyncErrors(
 
     const query = {
       $or: [
-        { userId: username, isRead: isRead === 'true' },
-        { adminCreated: true },
-        { userId: id, isRead: isRead === 'true' },
+        {
+          userId: username,
+          action: {
+            $elemMatch: {
+              isRead: isRead === 'true',
+            },
+          },
+        },
+        {
+          userId: id,
+          action: {
+            $not: {
+              $elemMatch: {
+                isRead: isRead === 'true',
+              },
+            },
+          },
+        },
+        {
+          adminCreated: true,
+          action: {
+            $not: {
+              $elemMatch: {
+                username: username,
+                isDelete: true,
+              },
+            },
+          },
+        },
       ],
     };
 
@@ -57,16 +83,13 @@ export const get = catchAsyncErrors(
 export const updateMany = catchAsyncErrors(async (req: any, res: Response) => {
   const { id, username } = req.user as User;
 
-  await notificationService.updateMany(
-    id,
-    {
-      $or: [
-        { userId: username, isRead: false },
-        { adminCreated: true },
-        { userId: id, isRead: false },
-      ],
-    },
-  );
+  await notificationService.updateMany(id, {
+    $or: [
+      { userId: username, isRead: false },
+      { adminCreated: true },
+      { userId: id, isRead: false },
+    ],
+  });
 
   return res.json({
     success: true,
@@ -100,9 +123,10 @@ export const updateRead = catchAsyncErrors(async (req: any, res: Response) => {
 });
 
 export const deleteOne = catchAsyncErrors(async (req: any, res: Response) => {
+  const { username } = req.user;
   const { id } = req.params;
 
-  await notificationService.deleteOne(id);
+  await notificationService.deleteOne(id, username);
 
   return res.json({
     success: true,
