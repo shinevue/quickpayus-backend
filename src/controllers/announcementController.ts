@@ -1,7 +1,7 @@
-import catchAsyncErrors from "../middlewares/catchAsyncErrors";
-import { Announcements } from "../models/announcementModel";
-import ErrorHandler from "../utils/errorHandler";
-import { Request, Response, NextFunction } from "express";
+import catchAsyncErrors from '../middlewares/catchAsyncErrors';
+import { Announcements } from '../models/announcementModel';
+import ErrorHandler from '../utils/errorHandler';
+import { Request, Response, NextFunction } from 'express';
 
 interface GetAnnouncementsRequest extends Request {
   query: {
@@ -20,41 +20,50 @@ interface PaginateOptions {
   pageSize: number;
 }
 
-export const create = catchAsyncErrors(async (req: any, res: Response, next: NextFunction) => {
-  if (!req.body) {
-    return next(new ErrorHandler("No request body found", 404));
-  }
+export const create = catchAsyncErrors(
+  async (req: any, res: Response, next: NextFunction) => {
+    if (!req.body) {
+      return next(new ErrorHandler('No request body found', 404));
+    }
 
-  const alreadyExist = await findOne({ title: req.body.title });
-  if (alreadyExist) {
-    return next(new ErrorHandler(`Announcement already exists with title: ${req.body.title}`, 403));
-  }
+    const alreadyExist = await findOne({ title: req.body.title });
+    if (alreadyExist) {
+      return next(
+        new ErrorHandler(
+          `Announcement already exists with title: ${req.body.title}`,
+          403,
+        ),
+      );
+    }
 
-  const data = await save({ ...req.body, userId: req.user.username });
-  return res.json({
-    success: true,
-    message: "Announcement created successfully",
-    data,
-  });
-});
+    const data = await save({ ...req.body, userId: req.user.username });
+    return res.json({
+      success: true,
+      message: 'Announcement created successfully',
+      data,
+    });
+  },
+);
 
-export const get = catchAsyncErrors(async (req: GetAnnouncementsRequest, res: Response, next: NextFunction) => {
-  const { page = '1' } = req.query || {};
-  const pageSize = parseInt(process.env.RECORDS_PER_PAGE || '15', 10);
-  const total = await countDocuments({});
+export const get = catchAsyncErrors(
+  async (req: GetAnnouncementsRequest, res: Response, next: NextFunction) => {
+    const { page = '1' } = req.query || {};
+    const pageSize = parseInt(process.env.RECORDS_PER_PAGE || '15', 10);
+    const total = await countDocuments({});
 
-  if (!total) {
-    return next(new ErrorHandler("No Announcements found", 404));
-  }
+    if (!total) {
+      return next(new ErrorHandler('No Announcements found', 404));
+    }
 
-  const data = await paginate({}, { page: parseInt(page, 10), pageSize });
-  return res.json({
-    success: true,
-    total,
-    totalPages: Math.ceil(total / pageSize),
-    data,
-  });
-});
+    const data = await paginate({}, { page: parseInt(page, 10), pageSize });
+    return res.json({
+      success: true,
+      total,
+      totalPages: Math.ceil(total / pageSize),
+      data,
+    });
+  },
+);
 
 export const paginate = async (query: object, options: PaginateOptions) => {
   const { page, pageSize } = options || { page: 1, pageSize: 15 };
@@ -66,37 +75,46 @@ export const paginate = async (query: object, options: PaginateOptions) => {
     .limit(pageSize);
 };
 
-export const remove = catchAsyncErrors(async (req: RemoveAnnouncementRequest, res: Response, next: NextFunction) => {
-  const { id } = req.body || {};
-  const removed = await deleteOne({ _id: id });
+export const remove = catchAsyncErrors(
+  async (req: RemoveAnnouncementRequest, res: Response, next: NextFunction) => {
+    const { id } = req.params || {};
+    const removed = await deleteOne({ _id: id });
 
-  if (removed?.deletedCount) {
+    if (removed?.deletedCount) {
+      return res.json({
+        id,
+        success: true,
+        message: 'Announcement deleted successfully',
+      });
+    }
+
     return res.json({
-      id,
-      success: true,
-      message: "Announcement deleted successfully",
+      success: false,
+      message: 'Announcement not found',
     });
-  }
+  },
+);
+export const readOne = catchAsyncErrors(
+  async (req: RemoveAnnouncementRequest, res: Response, next: NextFunction) => {
+    const { id } = req.params || {};
+  },
+);
 
-  return res.json({
-    success: false,
-    message: "Announcement not found",
-  });
-});
+export const removeAll = catchAsyncErrors(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const removed = await deleteMany({});
 
-export const removeAll = catchAsyncErrors(async (req: Request, res: Response, next: NextFunction) => {
-  const removed = await deleteMany({});
-  
-  if (removed?.deletedCount) {
+    if (removed?.deletedCount) {
+      return res.json({
+        success: true,
+      });
+    }
+
     return res.json({
-      success: true,
+      success: false,
     });
-  }
-
-  return res.json({
-    success: false,
-  });
-});
+  },
+);
 
 export const countDocuments = async (query: object) => {
   return await Announcements.countDocuments(query);
