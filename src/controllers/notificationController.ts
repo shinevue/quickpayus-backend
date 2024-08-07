@@ -17,22 +17,22 @@ export const get = catchAsyncErrors(
     const query = {
       $or: [
         {
+          adminCreated: false,
           userId: username,
-          action: {
-            $elemMatch: {
-              isRead: isRead === 'true',
-            },
-          },
+          // action: {
+          //   $elemMatch: {
+          //     isRead: isRead === 'true',
+          //   },
+          // },
         },
         {
+          adminCreated: false,
           userId: id,
-          action: {
-            $not: {
-              $elemMatch: {
-                isRead: isRead === 'true',
-              },
-            },
-          },
+          // action: {
+          //   $elemMatch: {
+          //     isRead: isRead === 'true',
+          //   },
+          // },
         },
         {
           adminCreated: true,
@@ -114,8 +114,9 @@ export const deleteMany = catchAsyncErrors(async (req: any, res: Response) => {
 
 export const updateRead = catchAsyncErrors(async (req: any, res: Response) => {
   const { id } = req.params;
+  const { username } = req.user;
 
-  await notificationService.update(id, { isRead: true });
+  await notificationService.updateReadOne(id, username);
 
   return res.json({
     success: true,

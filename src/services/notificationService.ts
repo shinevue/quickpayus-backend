@@ -84,27 +84,21 @@ const findOne = async (query: Record<string, any>): Promise<Payload | null> => {
 
 const deleteOne = async (id: string, username: string): Promise<any> => {
   const notification = await Notification.findById(id);
-  if (notification && notification?.action) {
-    console.log(notification.action);
-    const userInfo = notification.action.find(
-      (user) => user.username == username,
-    );
+  if (!notification?.adminCreated)
+    return await Notification.findByIdAndDelete(id);
 
-    console.log('<===========userInfo===========>');
-    console.log(userInfo);
+  if (notification && notification?.action) {
+    const userInfo = notification.action.find(
+      (user) => user.username === username,
+    );
 
     if (userInfo) {
       userInfo.isDelete = true;
       notification.action = notification.action.map((user) => {
-        console.log('<----------------->');
-        console.log(user);
-
-        if (user.username == username) return userInfo;
+        if (user.username === username) return userInfo;
         else return user;
       });
     } else {
-      console.log('============ Damn ==========');
-
       notification?.action?.push({
         username: username,
         isDelete: true,
@@ -116,8 +110,36 @@ const deleteOne = async (id: string, username: string): Promise<any> => {
       isDelete: true,
     });
   }
-  console.log(notification);
+  notification?.save();
+  return notification;
+};
 
+const updateReadOne = async (id: string, username: string): Promise<any> => {
+  const notification = await Notification.findById(id);
+
+  if (notification && notification?.action) {
+    const userInfo = notification.action.find(
+      (user) => user.username === username,
+    );
+
+    if (userInfo) {
+      userInfo.isRead = true;
+      notification.action = notification.action.map((user) => {
+        if (user.username === username) return userInfo;
+        else return user;
+      });
+    } else {
+      notification?.action?.push({
+        username: username,
+        isRead: true,
+      });
+    }
+  } else {
+    notification?.action?.push({
+      username: username,
+      isRead: true,
+    });
+  }
   notification?.save();
   return notification;
 };
@@ -133,6 +155,7 @@ const notificationService = {
   find,
   findOne,
   deleteOne,
+  updateReadOne,
 };
 
 export default notificationService;
