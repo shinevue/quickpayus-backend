@@ -1,13 +1,13 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-interface ActionType {
+export interface ActionType {
   username: string;
-  isDelete: boolean;
-  isRead: boolean;
-  update: Date;
+  isDelete?: boolean;
+  isRead?: boolean;
+  update?: Date;
 }
 
-interface INotification extends Document {
+export interface INotification extends Document {
   userId: string;
   title: string;
   message: string;
@@ -16,6 +16,13 @@ interface INotification extends Document {
   link?: string;
   action?: ActionType[];
 }
+
+const actionSchema: Schema = new Schema({
+  username: { type: String, require: true },
+  isDelete: { type: Boolean, default: false },
+  isRead: { type: Boolean, default: false },
+  update: { type: Date, default: Date.now() },
+});
 
 // Define the notification schema
 const notificationSchema: Schema = new Schema(
@@ -26,16 +33,7 @@ const notificationSchema: Schema = new Schema(
     type: { type: String, default: 'GENERAL' }, // Corrected "GERNERAL" to "GENERAL"
     link: { type: String },
     adminCreated: { type: Boolean, default: false },
-    action: [
-      {
-        user: {
-          username: { type: String, default: '' },
-          isDelete: { type: Boolean, default: false },
-          isRead: { type: Boolean, default: false },
-          update: { type: Date, default: Date.now },
-        },
-      },
-    ],
+    action: [{ type: actionSchema }],
   },
   { timestamps: true },
 );
