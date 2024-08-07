@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongoose';
-import { Notification } from '../models/notificationModel';
+import { ActionType, Notification } from '../models/notificationModel';
 
 // Define the types for the options parameter
 interface PaginationOptions {
@@ -16,6 +16,7 @@ interface Payload {
   adminCreated?: boolean;
   link?: string;
   isRead?: boolean;
+  action?: ActionType[];
 }
 
 const paginate = async (

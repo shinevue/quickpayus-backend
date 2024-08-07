@@ -75,7 +75,28 @@ export const get = catchAsyncErrors(
       success: true,
       total,
       totalPages: Math.ceil(total / pageSize),
-      data,
+      data: data.map((item) => {
+        let isRead: boolean | undefined = false;
+        if (item.action)
+          item?.action.map((info) => {
+            console.log(
+              'match: ',
+              info.username,
+              ' === ',
+              req.user.username,
+              ' =? ',
+              info.username === req.user.username,
+            );
+
+            if (info.username === req.user.username) isRead = info.isRead;
+          });
+        console.log('isRead: ', isRead);
+        const res: any = {
+          ...item,
+        };
+
+        return { ...res?._doc, isRead };
+      }),
     });
   },
 );
