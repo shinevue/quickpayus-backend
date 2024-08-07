@@ -101,29 +101,90 @@ export const paginate = async (query: object, options: PaginateOptions) => {
 };
 
 export const remove = catchAsyncErrors(
-  async (req: RemoveAnnouncementRequest, res: Response, next: NextFunction) => {
-    const { id } = req.params || {};
-    const removed = await deleteOne({ _id: id });
+  async (req: any, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { username } = req.user;
 
-    if (removed?.deletedCount) {
-      return res.json({
-        id,
-        success: true,
-        message: 'Announcement deleted successfully',
-      });
-    }
+    await deleteOne(id, username);
 
     return res.json({
-      success: false,
-      message: 'Announcement not found',
+      success: true,
     });
   },
 );
+
 export const readOne = catchAsyncErrors(
-  async (req: RemoveAnnouncementRequest, res: Response, next: NextFunction) => {
-    const { id } = req.params || {};
+  async (req: any, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { username } = req.user;
+
+    await updateOne(id, username);
+
+    return res.json({
+      success: true,
+    });
   },
 );
+
+const deleteOne = async (id: string, username: string): Promise<any> => {
+  const announcement = await Announcements.findById(id);
+
+  if (announcement && announcement?.action) {
+    const userInfo = announcement.action.find(
+      (user) => user.username === username,
+    );
+
+    if (userInfo) {
+      userInfo.isDelete = true;
+      announcement.action = announcement.action.map((user) => {
+        if (user.username === username) return userInfo;
+        else return user;
+      });
+    } else {
+      announcement?.action?.push({
+        username: username,
+        isDelete: true,
+      });
+    }
+  } else {
+    announcement?.action?.push({
+      username: username,
+      isDelete: true,
+    });
+  }
+  announcement?.save();
+  return announcement;
+};
+
+const updateOne = async (id: string, username: string): Promise<any> => {
+  const announcements = await Announcements.findById(id);
+
+  if (announcements && announcements?.action) {
+    const userInfo = announcements.action.find(
+      (user) => user.username === username,
+    );
+
+    if (userInfo) {
+      userInfo.isRead = true;
+      announcements.action = announcements.action.map((user) => {
+        if (user.username === username) return userInfo;
+        else return user;
+      });
+    } else {
+      announcements?.action?.push({
+        username: username,
+        isRead: true,
+      });
+    }
+  } else {
+    announcements?.action?.push({
+      username: username,
+      isRead: true,
+    });
+  }
+  announcements?.save();
+  return announcements;
+};
 
 export const removeAll = catchAsyncErrors(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -150,8 +211,8 @@ export const save = async (query: object) => {
   return await announcement.save();
 };
 
-export const update = async (notificationId: string, payload: object) => {
-  return await Announcements.findByIdAndUpdate(notificationId, payload);
+export const update = async (announcementsId: string, payload: object) => {
+  return await Announcements.findByIdAndUpdate(announcementsId, payload);
 };
 
 export const updateMany = async (userId: string, payload: object) => {
@@ -168,8 +229,4 @@ export const find = async (query: object) => {
 
 export const findOne = async (query: object) => {
   return await Announcements.findOne(query);
-};
-
-export const deleteOne = async (query: object) => {
-  return await Announcements.deleteOne(query);
 };
