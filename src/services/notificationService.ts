@@ -8,8 +8,6 @@ interface PaginationOptions {
 }
 
 interface Payload {
-  // Define the structure of the payload as needed
-  // For example:
   title?: string;
   message?: string;
   userId?: string | ObjectId;
@@ -18,7 +16,6 @@ interface Payload {
   adminCreated?: boolean;
   link?: string;
   isRead?: boolean;
-  // Add other fields according to your Notification model
 }
 
 const paginate = async (
@@ -85,8 +82,27 @@ const findOne = async (query: Record<string, any>): Promise<Payload | null> => {
   return await Notification.findOne(query);
 };
 
-const deleteOne = async (id: string): Promise<any> => {
-  return await Notification.findByIdAndDelete(id);
+const deleteOne = async (id: string, username: string): Promise<any> => {
+  const notification = await Notification.findById(id);
+  if (notification && notification?.action) {
+    const userInfo = notification.action.find((user) => {
+      user.username == username;
+    });
+    if (userInfo) {
+      userInfo.isDelete = true;
+      notification.action = notification.action.map((user) => {
+        if (user.username === username) return userInfo;
+        else return user;
+      });
+    }
+  } else {
+    notification?.action?.push({
+      username: username,
+      isDelete: true,
+    });
+  }
+  notification?.save();
+  return notification;
 };
 
 const notificationService = {
