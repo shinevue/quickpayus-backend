@@ -85,14 +85,29 @@ const findOne = async (query: Record<string, any>): Promise<Payload | null> => {
 const deleteOne = async (id: string, username: string): Promise<any> => {
   const notification = await Notification.findById(id);
   if (notification && notification?.action) {
-    const userInfo = notification.action.find((user) => {
-      user.username == username;
-    });
+    console.log(notification.action);
+    const userInfo = notification.action.find(
+      (user) => user.username == username,
+    );
+
+    console.log('<===========userInfo===========>');
+    console.log(userInfo);
+
     if (userInfo) {
       userInfo.isDelete = true;
       notification.action = notification.action.map((user) => {
-        if (user.username === username) return userInfo;
+        console.log('<----------------->');
+        console.log(user);
+
+        if (user.username == username) return userInfo;
         else return user;
+      });
+    } else {
+      console.log('============ Damn ==========');
+
+      notification?.action?.push({
+        username: username,
+        isDelete: true,
       });
     }
   } else {
@@ -101,6 +116,8 @@ const deleteOne = async (id: string, username: string): Promise<any> => {
       isDelete: true,
     });
   }
+  console.log(notification);
+
   notification?.save();
   return notification;
 };
