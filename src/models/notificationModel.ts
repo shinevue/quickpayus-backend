@@ -17,7 +17,7 @@ export interface INotification extends Document {
   action?: ActionType[];
 }
 
-const actionSchema: Schema = new Schema({
+export const actionSchema: Schema = new Schema({
   username: { type: String, require: true },
   isDelete: { type: Boolean, default: false },
   isRead: { type: Boolean, default: false },
