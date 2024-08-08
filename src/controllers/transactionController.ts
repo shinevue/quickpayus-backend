@@ -18,7 +18,7 @@ import Receiver from '../models/receiverAddressModel';
 const get = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { id, role } = req?.user || {};
-    const pageSize = Number(process.env.RECORDS_PER_PAGE) || 30;
+    const pageSize = Number(process.env.RECORDS_PER_PAGE) || 15;
     const q = req?.query || {};
     const {
       page = 1,
@@ -44,7 +44,7 @@ const get = catchAsyncErrors(
     }
 
     if (!role?.includes('admin')) {
-      query.userId = new id();
+      query.userId = id;
     }
 
     const currentDate = new Date();
