@@ -7,10 +7,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "pm2 start ecosystem.config.js",
-    "dev": "tsc && pm2 start ecosystem.config.js --env development",
+    "dev": "tsc && pm2 start ecosystem.config.js --env development && node dist/cronjobs/dailyprofits.js",
     "build": "tsc",
-    "cronjob": "node cronjobs/dailyprofits.js",
-    "mock-mail": "node test/mock-mail.js"
+    "cronjob": "node dist/cronjobs/dailyprofits.js",
+    "mock-mail": "node dist/test/mock-mail.js"
   },
   "author": "Quickpayus Team",
   "license": "ISC",
