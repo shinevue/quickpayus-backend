@@ -77,9 +77,9 @@ const getUserRankInfo = async (id: string | ObjectId) => {
   const lastReward: IReward | null = await Reward.findOne({
     userId: userId,
   })
-    .sort({ _id: -1 })
-    .limit(1);
-
+  .sort({ _id: -1 })
+  .limit(1);
+  
   const startdate = new Date(lastReward?.createdAt || joiningDate);
 
   // Count of direct referrals
@@ -103,7 +103,7 @@ const getUserRankInfo = async (id: string | ObjectId) => {
   };
 
   const sales = await transactionCtlr.userSalesByQuery(
-    typeof id === "string" ? id : "",
+    userId,
     depositQuery,
   );
 

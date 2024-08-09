@@ -298,7 +298,7 @@ const countDocuments = async (query: any) => {
   return await Transaction.countDocuments(query);
 };
 
-const userDepositlBalanceByQuery = async (userId: string, query = {}) => {
+const userDepositlBalanceByQuery = async (userId: any, query = {}) => {
   if (!userId) return 0;
 
   const depositQuery = {
@@ -581,7 +581,7 @@ const padZero = (num: number) => {
  * @param {object} moreQuery more info to get sales
  * @returns {Promise<Number>} sales volume of user
  */
-const userSalesByQuery = async (userId: string | ObjectId, moreQuery: any) => {
+const userSalesByQuery = async (userId: any, moreQuery: any) => {
   if (!userId) return 0;
 
   const user = await User.findOne({ _id: userId });

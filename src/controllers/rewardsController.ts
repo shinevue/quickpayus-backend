@@ -44,7 +44,8 @@ const claimReward = catchAsyncErrors(
       return next(new ErrorHandler('The rank period has not started.', 400));
     }
 
-    if (rankInfo.rank && !rankInfo.rank.hasOwnProperty('_id')) {
+
+    if (rankInfo.rank == null) {
       return next(
         new ErrorHandler('The rank level has not been reached.', 400),
       );
@@ -61,6 +62,10 @@ const claimReward = catchAsyncErrors(
             title: rankInfo.rank?.title,
           },
         });
+      res.status(209).json({
+        success: false,
+        data: result,
+      });
     } else {
       next(new ErrorHandler('Server error(claim)', 500));
     }
