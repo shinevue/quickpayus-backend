@@ -1,4 +1,5 @@
-import { ObjectId } from 'mongoose';
+import { ObjectId as ObjectIdType } from 'mongoose';
+import { ObjectId } from 'mongodb';
 import { Request, Response, NextFunction } from 'express';
 import catchAsyncErrors from '../middlewares/catchAsyncErrors';
 import programCtlr from './programController';
@@ -113,7 +114,7 @@ const create = catchAsyncErrors(
       withdrawalType: string;
     } = req.body || {};
 
-    const { kyc, id }: { kyc: any; id: ObjectId } = req?.user || {};
+    const { kyc, id }: { kyc: any; id: ObjectIdType } = req?.user || {};
 
     if (!(transactionType in config.TRANSACTION_TYPES)) {
       return next(
@@ -138,7 +139,7 @@ const create = catchAsyncErrors(
 
     const payload: {
       amount: number;
-      userId: ObjectId;
+      userId: ObjectIdType;
       receiverAddress: string;
       senderAddress: string;
       transactionType: string;
@@ -462,7 +463,7 @@ const userRewardBalanceByQuery = async (userid: string, query = {}) => {
 // getting data for sales analytic chart
 const getAllTrans = async (req: any, res: Response) => {
   const { id } = req.user;
-  const userId = id;
+  const userId = new ObjectId(id);
   const query = {
     referralId: userId,
     isActive: true,
@@ -577,7 +578,7 @@ const padZero = (num: number) => {
 
 /**
  *
- * @param {ObjectId} userId  for which you want to get sales volume
+ * @param {ObjectIdType} userId  for which you want to get sales volume
  * @param {object} moreQuery more info to get sales
  * @returns {Promise<Number>} sales volume of user
  */
