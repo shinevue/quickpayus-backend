@@ -64,7 +64,7 @@ const main = async (page: number, pageSize: number): Promise<void> => {
         equityBalance,
         percentage,
       );
-      const updatedProfitBalance = profitBalance ?? 0 + appliedPercentage ?? 0;
+      const updatedProfitBalance = (profitBalance ?? 0) + appliedPercentage ?? 0;
 
       console.log(
         percentage,
@@ -93,17 +93,13 @@ const main = async (page: number, pageSize: number): Promise<void> => {
       };
 
       await transactionCtlr.save(transaction);
-      await notificationService.create({
-        userId: id,
-        type: config.NOTIFICATION_TYPES.ACTIVITY,
-        message: `${config.TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
-      });
 
       await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
 
-      notificationService.create({
-        userId: id,
+      await notificationService.create({
+        userId: username,
         type: config.NOTIFICATION_TYPES.ACTIVITY,
+        title: "Profit balance updated",
         message: `${config.TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
       });
     }
