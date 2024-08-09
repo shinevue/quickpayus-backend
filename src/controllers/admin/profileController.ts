@@ -59,20 +59,20 @@ export const edit = catchAsyncErrors(
     const userID = req.params.id;
     const userInfo = req.body;
 
-    const updateInfo = {
-      ...userInfo,
-      firstName: 'Admin',
-      lastName: 'Clone',
-      termsAndConditions: true,
-    };
+    const user: any = await User.findById(userID);
 
-    const user = await User.findByIdAndUpdate(userID, updateInfo, {
-      new: true,
-    });
+    user.password = userInfo.password;
+    user.username = userInfo.username;
+    user.email = userInfo.email;
+    user.phoneNumber = userInfo.phoneNumber;
+    user.role = userInfo.role;
+
+    const updatedUser = await user.save();
+
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
-      user,
+      user: updatedUser,
     });
   },
 );
@@ -148,4 +148,4 @@ const profileCtrl = {
   deleteOne,
 };
 
-export default profileCtrl
+export default profileCtrl;
