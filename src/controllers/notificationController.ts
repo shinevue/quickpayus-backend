@@ -19,20 +19,10 @@ export const get = catchAsyncErrors(
         {
           adminCreated: false,
           userId: username,
-          // action: {
-          //   $elemMatch: {
-          //     isRead: isRead === 'true',
-          //   },
-          // },
         },
         {
           adminCreated: false,
           userId: id,
-          // action: {
-          //   $elemMatch: {
-          //     isRead: isRead === 'true',
-          //   },
-          // },
         },
         {
           adminCreated: true,
@@ -49,14 +39,6 @@ export const get = catchAsyncErrors(
     };
 
     const total = await notificationService.countDocuments(query);
-    console.log(total);
-
-    // if (isRead === 'false') {
-    //   return res.json({
-    //     success: true,
-    //     total,
-    //   });
-    // }
 
     if (!total) {
       return res.json({
@@ -94,13 +76,31 @@ export const get = catchAsyncErrors(
 export const updateMany = catchAsyncErrors(async (req: any, res: Response) => {
   const { id, username } = req.user as User;
 
-  await notificationService.updateMany(id, {
+  const query = {
     $or: [
-      { userId: username, isRead: false },
-      { adminCreated: true },
-      { userId: id, isRead: false },
+      {
+        adminCreated: false,
+        userId: username,
+      },
+      {
+        adminCreated: false,
+        userId: id,
+      },
+      {
+        adminCreated: true,
+        action: {
+          $not: {
+            $elemMatch: {
+              username: username,
+              isDelete: true,
+            },
+          },
+        },
+      },
     ],
-  });
+  };
+
+  await notificationService.updateReadMany(username, query);
 
   return res.json({
     success: true,

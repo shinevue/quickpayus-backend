@@ -62,11 +62,18 @@ const update = async (
   });
 };
 
-const updateMany = async (
-  userId: string,
-  payload: any,
-): Promise<{ modifiedCount: number }> => {
-  return await Notification.updateMany({ userId }, payload);
+const updateReadMany = async (username: string, query: any): Promise<any> => {
+  // Update all notifications where the action array contains the username
+  const result = await Notification.updateMany(
+    query, // Filter: notifications containing the username in the action array
+    { $push: { action: { isRead: true, username: username } } }, // Update: set the isRead field to true for the matched element
+    {
+      arrayFilters: [{ 'elem.username': username }], // Specify which elements to update in the array
+      new: true,
+    },
+  );
+
+  return result; // Optionally return the result of the update operation
 };
 
 const deleteMany = async (
@@ -151,7 +158,7 @@ const notificationService = {
   countDocuments,
   create,
   update,
-  updateMany,
+  updateReadMany,
   deleteMany,
   find,
   findOne,
