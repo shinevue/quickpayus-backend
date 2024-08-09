@@ -126,12 +126,20 @@ export const paginate = async (query: object, options: PaginateOptions) => {
 export const remove = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
     const { id } = req.params;
-    const { username } = req.user;
+    const { username, role } = req.user;
+    if (role === 'admin') {
+      const announcement = Announcements.findByIdAndDelete(id);
+      return res.json({
+        success: true,
+        data: announcement,
+      });
+    }
 
-    await deleteOne(id, username);
+    const announcement = await deleteOne(id, username);
 
     return res.json({
       success: true,
+      data: announcement,
     });
   },
 );
@@ -175,8 +183,8 @@ const deleteOne = async (id: string, username: string): Promise<any> => {
       isDelete: true,
     });
   }
-  announcement?.save();
-  return announcement;
+  const response = await announcement?.save();
+  return response;
 };
 
 const updateOne = async (id: string, username: string): Promise<any> => {
