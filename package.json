@@ -10,7 +10,8 @@
     "dev": "tsc && pm2 start ecosystem.config.js --env development",
     "build": "tsc",
     "cronjob": "node dist/cronjobs/dailyprofits.js",
-    "seeder": "node dist/seeder/index.js && node dist/seeder/ranks.js",
+    "seeder": "tsc && node dist/seeder/index.js && node dist/seeder/ranks.js",
+    "mock-user": "node dist/test/test-referral.js",
     "mock-mail": "node dist/test/mock-mail.js"
   },
   "author": "Quickpayus Team",
