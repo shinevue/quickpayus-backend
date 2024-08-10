@@ -53,7 +53,7 @@ const createOne = async (username: string, referralId: string) => {
   });
 
   await user.save();
-  return rdv;
+  return user;
 };
 
 const createNewUsers = async (
@@ -76,11 +76,10 @@ const createNewUsers = async (
   typesChild[type].map(async (item, index) => {
     if (depth < 9 && index > 1) return;
     const username = referral + item;
-    createOne(username, referralId).then(async (rdv) => {
-      const userId = new mongoose.Types.ObjectId(referralId); // Use mongoose.Types.ObjectId
+    createOne(username, referralId).then(async (newUser: any) => {
       const payload: TransPayload = {
-        amount: rdv,
-        userId: userId,
+        amount: newUser.depositBalance,
+        userId: newUser._id,
         receiverAddress: 'TCCreceivermin3bd5AbXFfAriWEndFzSvY',
         senderAddress: 'TCCsenderdmin3bd5AbXFfAriWEndFzSvY',
         transactionType: 'DEPOSIT',
