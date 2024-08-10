@@ -40,13 +40,12 @@ const typesChild = [
 ];
 
 const createOne = async (username: string, referralId: string) => {
-  const rdv = randomBalance();
   const user = new User({
     ...mockUser,
     username: username,
     firstName: username,
     lastName: username,
-    depositBalance: rdv,
+    depositBalance: randomBalance(),
     email: `${username}@mock.mail`,
     password: '123456',
     referralId,
@@ -88,6 +87,8 @@ const createNewUsers = async (
       };
       const transaction = new Transaction(payload);
       await transaction.save();
+      newUser.depositBalance = transaction.amount;
+      await newUser.save();
 
       await createNewUsers(username, 1 - type, depth - 1);
     });
@@ -99,6 +100,7 @@ const randomBalance = () => 10 + Math.floor(Math.random() * 4000) / 100;
 const createMockUser = async () => {
   try {
     await User.deleteMany({});
+    await Transaction.deleteMany({});
 
     const root = new User({
       ...mockUser,
