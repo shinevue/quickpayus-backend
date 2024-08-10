@@ -6,6 +6,7 @@ interface AdminConfig {
 
 interface Config {
   adminAddress: AdminConfig;
+  profitConfig: any
 }
 
 const config: Config = {
@@ -14,6 +15,10 @@ const config: Config = {
     action: "Add",
     newAddress: "TCCh4m1Hadmin3bd5AbXFfAriWEndFzSvY",
   },
+  profitConfig: {
+    userId: "admin",
+    profit: [2, 3, 4, 5, 6]
+  }
 };
 
 export default config;

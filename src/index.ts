@@ -12,7 +12,10 @@ process.on('uncaughtException', (err: Error) => {
 dotenv.config();
 
 import { defaultReceiver } from './controllers/admin/receiverAddressController.js';
+import { defaultProfitConfig } from './controllers/admin/profitConfigController.js';
+
 defaultReceiver();
+defaultProfitConfig();
 
 const server = app.listen(process.env.PORT, async () => {
   console.log(`Server is running on port: ${process.env.PORT}`);

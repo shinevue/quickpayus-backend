@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import ErrorHandler from '../../utils/errorHandler';
 import catchAsyncErrors from '../../middlewares/catchAsyncErrors';
 import ProfitConfig, { IProfitConfig } from '../../models/profitConfigModel'; // Adjust the import based on your ProfitConfig model
+import config from '../../config/config';
 // import programCtlr from '../programController'; // Assuming this is needed; adjust as necessary
 // import HELPER from '../../helpers'; // Assuming this is needed; adjust as necessary
 
@@ -52,3 +53,23 @@ export const upsert = catchAsyncErrors(
     }
   },
 );
+
+export const defaultProfitConfig = async () => {
+  const count = await ProfitConfig.find();
+  if (count.length) {
+    console.log("--- Can't create Admin ProfitConfig address ---");
+    return;
+  }
+  const adminAddress = config.profitConfig;
+
+  const newProfitConfig = new ProfitConfig(adminAddress);
+  newProfitConfig
+    .save()
+    .then(() => {
+      console.log('--- Admin ProfitConfig address created successfully ---');
+    })
+    .catch(() => {
+      console.log("--- Can't create Admin ProfitConfig address ---");
+    });
+};
+
