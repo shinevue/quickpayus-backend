@@ -26,22 +26,68 @@ const mockUser: IUser = {
   },
 };
 
+interface CreateUserType {
+  referral: string;
+  type: number;
+}
+
+const typesChild = [
+  ['a', 'b', 'c'],
+  ['1', '2', '3'],
+];
+
+const createOne = (referral: string, item: string, referralId: string) => {
+  const username = referral + item;
+  const user = new User({
+    ...mockUser,
+    username: username,
+    firstName: username,
+    lastName: username,
+    depositBalance: 10 + Math.ceil(Math.random() * 1000) / 100,
+    email: `${username}@mock.mail`,
+    password: '123456',
+    referralId,
+  });
+
+  user.save();
+};
+
+const createNewUsers = async ({ referral, type }: CreateUserType) => {
+  let referralId: string = '';
+
+  if (referral) {
+    const parentUser = await User.findOne({ username: referral });
+    if (parentUser) referralId = parentUser._id.toString();
+  } else {
+    const parentUser = await User.findOne({ username: 'root' });
+    if (parentUser) referralId = parentUser._id.toString();
+  }
+
+  typesChild[type].map((item) => {
+    createOne(referral, item, referralId);
+  });
+};
+
+const randomBalance = () => 10 + Math.floor(Math.random() * 4000) / 100;
+
 const init = async () => {
   try {
     await User.deleteMany({});
-    const A = new User({
+    const root = new User({
       ...mockUser,
-      username: 'A',
+      username: 'root',
       firstName: 'A',
       lastName: 'A',
-      depositBalance: 10 + Math.ceil(Math.random() * 1000) / 100,
-      email: 'a@a.a',
+      depositBalance: randomBalance(),
+      email: 'root@mock.mail',
       password: '123456',
-      isAdmin: true,
+      role: 'admin',
     });
-    console.log(A);
 
-    A.save();
+    await root.save();
+
+    createNewUsers({ referral: '', type: 0 });
+
     console.log('User seed data saved');
   } catch (error) {
     console.error('Error seeding users:', error);
