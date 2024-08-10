@@ -162,15 +162,6 @@ const config = {
 
   ALLOWED_ROUTES: [
     {
-      TITLE: 'Create User',
-      ROUTE: [
-        {
-          PATH: '/api/v1/admin/profile',
-          METHOD: 'POST',
-        },
-      ],
-    },
-    {
       TITLE: 'Edit User',
       ROUTE: [
         {

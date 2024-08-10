@@ -46,10 +46,10 @@ export const getBalanceInformation = catchAsyncErrors(
         userBalanceFunction = transactionCtlr.userCreditBalanceByQuery;
         break;
       case config.ANALYTICS_TYPE.PROFIT:
-        userBalanceFunction = transactionCtlr.userCreditBalanceByQuery;
+        userBalanceFunction = transactionCtlr.userProfitBalanceByQuery;
         break;
       case config.ANALYTICS_TYPE.REWARD:
-        userBalanceFunction = transactionCtlr.userCreditBalanceByQuery;
+        userBalanceFunction = transactionCtlr.userRewardBalanceByQuery;
         break;
       default:
         return next(new Error('Invalid balance frame'));
