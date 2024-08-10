@@ -1,5 +1,4 @@
 import connectDB from '../config/db';
-import { ObjectId } from 'mongodb';
 import User, { IUser } from '../models/userModel';
 
 connectDB();
@@ -12,9 +11,6 @@ const mockUser: IUser = {
   phoneNumber: '+1234567890',
   password: 'ASdf!@34',
 
-  // referralId: new ObjectId("66b411a74a75546191f2c2b1"),
-  // depositBalance: 127,
-
   termsAndConditions: true,
   isModified: (str: string) => {
     return str;
@@ -26,18 +22,12 @@ const mockUser: IUser = {
   },
 };
 
-interface CreateUserType {
-  referral: string;
-  type: number;
-}
-
 const typesChild = [
   ['a', 'b', 'c'],
   ['1', '2', '3'],
 ];
 
-const createOne = (referral: string, item: string, referralId: string) => {
-  const username = referral + item;
+const createOne = async (username: string, referralId: string) => {
   const user = new User({
     ...mockUser,
     username: username,
@@ -49,10 +39,16 @@ const createOne = (referral: string, item: string, referralId: string) => {
     referralId,
   });
 
-  user.save();
+  await user.save();
 };
 
-const createNewUsers = async ({ referral, type }: CreateUserType) => {
+const createNewUsers = async (
+  referral: string,
+  type: number,
+  depth: number,
+) => {
+  if (!depth) return;
+
   let referralId: string = '';
 
   if (referral) {
@@ -63,16 +59,21 @@ const createNewUsers = async ({ referral, type }: CreateUserType) => {
     if (parentUser) referralId = parentUser._id.toString();
   }
 
-  typesChild[type].map((item) => {
-    createOne(referral, item, referralId);
+  typesChild[type].map(async (item, index) => {
+    if (depth < 9 && index > 1) return;
+    const username = referral + item;
+    createOne(username, referralId).then(() => {
+      createNewUsers(username, 1 - type, depth - 1);
+    });
   });
 };
 
 const randomBalance = () => 10 + Math.floor(Math.random() * 4000) / 100;
 
-const init = async () => {
+const createMockUser = async () => {
   try {
     await User.deleteMany({});
+
     const root = new User({
       ...mockUser,
       username: 'root',
@@ -86,7 +87,7 @@ const init = async () => {
 
     await root.save();
 
-    createNewUsers({ referral: '', type: 0 });
+    createNewUsers('', 0, 10);
 
     console.log('User seed data saved');
   } catch (error) {
@@ -95,4 +96,4 @@ const init = async () => {
   }
 };
 
-init();
+createMockUser();
