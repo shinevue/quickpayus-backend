@@ -57,12 +57,12 @@ const getIndirectReferrals = async (
     },
     {
       $graphLookup: {
-        from: 'users',
-        startWith: '$_id',
-        connectFromField: '_id',
-        connectToField: 'referralId',
-        as: 'children',
-        depthField: 'sublevel',
+        from: "users",
+        startWith: "$_id",
+        connectFromField: "_id",
+        connectToField: "referralId",
+        as: "children",
+        depthField: "sublevel",
         maxDepth: depth,
       },
     },
@@ -75,13 +75,13 @@ const getIndirectReferrals = async (
       $addFields: {
         children: {
           $map: {
-            input: '$children',
-            as: 'child',
+            input: "$children",
+            as: "child",
             in: {
               $mergeObjects: [
-                '$$child',
+                "$$child",
                 {
-                  sublevel: { $add: ['$child.sublevel', 2] }, // Adjust if needed
+                  sublevel: { $add: ["$$child.sublevel", 2] }, // Adjust if needed
                 },
               ],
             },
@@ -89,22 +89,22 @@ const getIndirectReferrals = async (
         },
       },
     },
-    { $unwind: '$children' },
+    { $unwind: "$children" },
     { $sort: { [sortByKey]: -1 } },
     {
       $group: {
-        _id: '$_id',
-        root: { $first: '$$ROOT' },
-        children: { $push: '$children' },
+        _id: "$_id",
+        root: { $first: "$$ROOT" },
+        children: { $push: "$children" },
       },
     },
     {
       $addFields: {
         children: {
           $filter: {
-            input: '$children',
-            as: 'child',
-            cond: { $eq: ['$child.sublevel', level] }, // Adjust the condition to match the desired sublevel
+            input: "$children",
+            as: "child",
+            cond: { $eq: ["$$child.sublevel", level] }, // Adjust the condition to match the desired sublevel
           },
         },
       },
@@ -112,7 +112,7 @@ const getIndirectReferrals = async (
     {
       $replaceRoot: {
         newRoot: {
-          $mergeObjects: ['$root', { children: '$children' }],
+          $mergeObjects: ["$root", { children: "$children" }],
         },
       },
     },
@@ -121,17 +121,17 @@ const getIndirectReferrals = async (
         ...config.DEFAULT_REFERRAL_FIELDS,
         children: {
           $map: {
-            input: '$children',
-            as: 'referral',
+            input: "$children",
+            as: "referral",
             in: {
-              _id: '$$referral._id',
-              investmentLevel: '$$referral.investmentLevel',
-              investmentSubLevel: '$$referral.investmentSublevel',
-              sublevel: '$$referral.sublevel',
-              firstName: '$$referral.firstName',
-              lastName: '$$referral.lastName',
-              username: '$$referral.username',
-              createdAt: '$$referral.createdAt',
+              _id: "$$referral._id",
+              investmentLevel: "$$referral.investmentLevel",
+              investmentSubLevel: "$$referral.investmentSublevel",
+              sublevel: "$$referral.sublevel",
+              firstName: "$$referral.firstName",
+              lastName: "$$referral.lastName",
+              username: "$$referral.username",
+              createdAt: "$$referral.createdAt",
             },
           },
         },
@@ -139,7 +139,7 @@ const getIndirectReferrals = async (
     },
     {
       $addFields: {
-        childrenCount: { $size: '$children' },
+        childrenCount: { $size: "$children" },
       },
     },
     {
@@ -240,7 +240,7 @@ const referrals = catchAsyncErrors(
           ),
         );
       }
-
+      console.log("indirect inferrals", query);
       referrals = await getIndirectReferrals(query, {
         page: Number(page),
         pageSize,
@@ -248,6 +248,7 @@ const referrals = catchAsyncErrors(
         level: Number(level) || 2,
         sortBy: 'createdAt',
       });
+      console.log("indirect inferrals....................", referrals);
 
       referrals = referrals?.flatMap((row) => {
         return row?.children?.length ? row?.children : [];
