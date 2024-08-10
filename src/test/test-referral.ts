@@ -1,7 +1,19 @@
 import connectDB from '../config/db';
+import Transaction from '../models/transactionModel';
 import User, { IUser } from '../models/userModel';
+import mongoose, { Schema } from 'mongoose';
 
 connectDB();
+
+interface TransPayload {
+  amount: number;
+  userId: mongoose.Types.ObjectId;
+  receiverAddress: string;
+  senderAddress: string;
+  transactionType: string;
+  status: string;
+  uuid: string;
+}
 
 const mockUser: IUser = {
   firstName: 'John',
@@ -33,7 +45,6 @@ const createOne = async (username: string, referralId: string) => {
     username: username,
     firstName: username,
     lastName: username,
-    depositBalance: 10 + Math.ceil(Math.random() * 1000) / 100,
     email: `${username}@mock.mail`,
     password: '123456',
     referralId,
@@ -62,8 +73,21 @@ const createNewUsers = async (
   typesChild[type].map(async (item, index) => {
     if (depth < 9 && index > 1) return;
     const username = referral + item;
-    createOne(username, referralId).then(() => {
-      createNewUsers(username, 1 - type, depth - 1);
+    createOne(username, referralId).then(async () => {
+      const userId = new mongoose.Types.ObjectId(referralId); // Use mongoose.Types.ObjectId
+      const payload: TransPayload = {
+        amount: randomBalance(),
+        userId: userId,
+        receiverAddress: 'TCCreceivermin3bd5AbXFfAriWEndFzSvY',
+        senderAddress: 'TCCsenderdmin3bd5AbXFfAriWEndFzSvY',
+        transactionType: 'DEPOSIT',
+        status: 'APPROVED',
+        uuid: 'null',
+      };
+      const transaction = new Transaction(payload);
+      await transaction.save();
+
+      await createNewUsers(username, 1 - type, depth - 1);
     });
   });
 };
