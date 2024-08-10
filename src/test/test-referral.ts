@@ -40,17 +40,20 @@ const typesChild = [
 ];
 
 const createOne = async (username: string, referralId: string) => {
+  const rdv = randomBalance();
   const user = new User({
     ...mockUser,
     username: username,
     firstName: username,
     lastName: username,
+    depositBalance: rdv,
     email: `${username}@mock.mail`,
     password: '123456',
     referralId,
   });
 
   await user.save();
+  return rdv;
 };
 
 const createNewUsers = async (
@@ -73,10 +76,10 @@ const createNewUsers = async (
   typesChild[type].map(async (item, index) => {
     if (depth < 9 && index > 1) return;
     const username = referral + item;
-    createOne(username, referralId).then(async () => {
+    createOne(username, referralId).then(async (rdv) => {
       const userId = new mongoose.Types.ObjectId(referralId); // Use mongoose.Types.ObjectId
       const payload: TransPayload = {
-        amount: randomBalance(),
+        amount: rdv,
         userId: userId,
         receiverAddress: 'TCCreceivermin3bd5AbXFfAriWEndFzSvY',
         senderAddress: 'TCCsenderdmin3bd5AbXFfAriWEndFzSvY',
