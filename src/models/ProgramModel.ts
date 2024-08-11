@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 // Define an interface for the Child schema
-interface IChild extends Document {
+export interface IChild extends Document {
   level: string; // Required field
   investment?: number; // Optional field
   profitPercentFrom?: number; // Optional field

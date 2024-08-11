@@ -43,7 +43,7 @@ const update = catchAsyncErrors(
 
 const findByInvestment = async (
   investment: number,
-): Promise<{ level: string; data: IProgramData | {} } | null> => {
+): Promise<any> => {
   const program = await Program.findOne(
     {
       'data.investment': { $lte: investment },

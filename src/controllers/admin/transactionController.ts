@@ -184,7 +184,7 @@ export const update = catchAsyncErrors(
         originalAmount + balanceResponse?.balance,
       );
       userUpdate.investmentLevel = program?.level || null;
-      // userUpdate.investmentSubLevel = program?.data?.level || null;
+      userUpdate.investmentSubLevel = program?.data?.level || null;
     } else if (transactionType.includes(config.TRANSACTION_TYPES.WITHDRAWAL)) {
       const balanceResponse = await userCtlr.balanceByType({
         userId,
@@ -198,7 +198,7 @@ export const update = catchAsyncErrors(
         case config.WITHDRAWAL_TYPES.DEPOSIT:
           const program = await programCtlr.findByInvestment(balance);
           userUpdate.investmentLevel = program?.level || null;
-          // userUpdate.investmentSubLevel = program?.data?.level || null;
+          userUpdate.investmentSubLevel = program?.data?.level || null;
           break;
       }
     }
