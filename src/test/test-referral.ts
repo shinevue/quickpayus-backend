@@ -1,13 +1,17 @@
-import connectDB from '../config/db';
-import Transaction from '../models/transactionModel';
-import User, { IUser } from '../models/userModel';
-import mongoose, { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
+
+import User, { IUser } from '../models/userModel';
+import Transaction from '../models/transactionModel';
+import Program from '../models/ProgramModel';
+
 import programCtlr from '../controllers/programController';
 import referralCtlr from '../controllers/referralsController';
 import userCtlr from '../controllers/userController';
+
 import HELPERS from '../helpers';
 import config from '../config/constants';
+import connectDB from '../config/db';
 
 connectDB();
 
@@ -25,7 +29,7 @@ const mockUser: IUser = {
   firstName: 'John',
   lastName: 'Doe',
   username: 'john',
-  email: ';;@doe.com',
+  email: 'john@doe.com',
   phoneNumber: '+1234567890',
   password: 'ASdf!@34',
 
@@ -33,7 +37,7 @@ const mockUser: IUser = {
   isModified: (str: string) => {
     return str;
   },
-  backupCodes: ['1'],
+  backupCodes: ['quickpaybackupcode1'],
   securityQuestion: {
     answer: 'shine',
     question: 1,
@@ -84,7 +88,7 @@ const createNewUsers = async (
     const username = referral + item;
     await createOne(username, referralId).then(async (newUser: any) => {
       const payload: TransPayload = {
-        amount: randomBalance(),
+        amount: await randomBalance(),
         userId: newUser._id,
         receiverAddress: 'TCCreceivermin3bd5AbXFfAriWEndFzSvY',
         senderAddress: 'TCCsenderdmin3bd5AbXFfAriWEndFzSvY',
@@ -97,14 +101,8 @@ const createNewUsers = async (
 
       newUser.depositBalance = transaction.amount;
       await newUser.save().then(async () => {
-        // console.log(newUser._id);
 
-        await func(
-          transaction.originalAmount,
-          transaction.amount,
-          transaction.userId,
-          'DEPOSIT',
-        );
+        await func(transaction.originalAmount, transaction.userId, 'DEPOSIT');
       });
 
       await createNewUsers(username, 1 - type, depth - 1);
@@ -114,14 +112,12 @@ const createNewUsers = async (
 
 const func = async (
   originalAmount: number,
-  amount: number,
   userId: any,
   transactionType: string,
 ) => {
   let keyToUpdate = null;
   let balance = 0;
   const userUpdate: any = {};
-  // ======================================================
   const balanceResponse = await userCtlr.balanceByType({
     userId,
     transactionType,
@@ -129,8 +125,6 @@ const func = async (
   const program = await programCtlr.findByInvestment(
     originalAmount + balanceResponse?.balance,
   );
-
-  // console.log('program', program, originalAmount, balanceResponse?.balance);
 
   userUpdate.investmentLevel = program?.level || null;
   keyToUpdate = balanceResponse?.key;
@@ -142,15 +136,13 @@ const func = async (
   userUpdate.investmentSubLevel = program?.data?.level || null;
 
   const user = await User.findByIdAndUpdate(userId, userUpdate);
-  // console.log('user', user?.username, user?._id);
 
   if (transactionType.includes(config.TRANSACTION_TYPES.DEPOSIT))
-    await updateCreditToParents(user, transactionType, balance);
+    await updateCreditToParents(user, balance);
 };
 
 export const updateCreditToParents = async (
   user: any,
-  type: string,
   amount: number,
 ) => {
   const parentReferralsQuery = {
@@ -186,7 +178,20 @@ export const updateCreditToParents = async (
   }
 };
 
-const randomBalance = () => 50 + Math.floor(Math.random() * 4000) / 100;
+const randomBalance = async (): Promise<number> => {
+  const programs = await Program.find({});
+  let optionList: number[] = [];
+  programs.map((program: any) => {
+    program.data.map((item: any) => {
+      if (item.investment) optionList.push(item.investment);
+    });
+  });
+
+  if (!optionList?.length) {
+    return 500;
+  }
+  return optionList.sort((a, b) => 0.5 - Math.random())[0];
+};
 
 const createMockUser = async () => {
   try {
@@ -198,7 +203,7 @@ const createMockUser = async () => {
       username: 'admin',
       firstName: 'admin',
       lastName: 'admin',
-      depositBalance: randomBalance(),
+      depositBalance: await randomBalance(),
       email: 'admin@mock.mail',
       password: '123456',
       role: 'admin',
@@ -211,7 +216,7 @@ const createMockUser = async () => {
       username: 'root',
       firstName: 'A',
       lastName: 'A',
-      depositBalance: randomBalance(),
+      depositBalance: await randomBalance(),
       email: 'root@mock.mail',
       password: '123456',
     });
