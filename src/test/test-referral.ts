@@ -84,7 +84,8 @@ const createNewUsers = async (
   }
 
   typesChild[type].map(async (item, index) => {
-    if (depth < 4 && index > 1) return;
+    if (depth < 19 && index > 1) return;
+    if (depth < 10 && index > 0) return;
     const username = referral + item;
     await createOne(username, referralId).then(async (newUser: any) => {
       const payload: TransPayload = {
@@ -203,7 +204,6 @@ const createMockUser = async () => {
       username: 'admin',
       firstName: 'admin',
       lastName: 'admin',
-      depositBalance: await randomBalance(),
       email: 'admin@mock.mail',
       password: '123456',
       role: 'admin',
@@ -216,14 +216,13 @@ const createMockUser = async () => {
       username: 'root',
       firstName: 'A',
       lastName: 'A',
-      depositBalance: await randomBalance(),
       email: 'root@mock.mail',
       password: '123456',
     });
 
     await root.save();
 
-    await createNewUsers('', 0, 5);
+    await createNewUsers('', 0, 20);
 
     console.log('User seed data saved');
   } catch (error) {
