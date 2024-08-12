@@ -205,7 +205,7 @@ export const update = catchAsyncErrors(
 
     const user = await User.findByIdAndUpdate(userId, userUpdate);
     if (transactionType.includes(config.TRANSACTION_TYPES.DEPOSIT)) {
-      await updateCreditToParents(user, transactionType, balance);
+      await updateCreditToParents(user, transactionType, amount);
     }
 
     notificationService.create({
