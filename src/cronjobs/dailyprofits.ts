@@ -17,21 +17,15 @@ const main = async (page: number, pageSize: number): Promise<void> => {
       .exec();
 
     if (!profitConfig.length) {
-      console.error(
-        `Profit config not found for today, stopped executing the job!`,
-      );
+      console.error(`Profit config not found for today,stopped executing job`);
       process.exit(0);
     }
 
     const profit = profitConfig[0]?.profit || {};
     const query = {
       isActive: true,
-      investmentLevel: {
-        $ne: null,
-      },
-      depositBalance: {
-        $gt: 0,
-      },
+      investmentLevel: { $ne: null },
+      depositBalance: { $gt: 0 },
     };
 
     const skip = (page - 1) * pageSize;
@@ -64,7 +58,7 @@ const main = async (page: number, pageSize: number): Promise<void> => {
         equityBalance,
         percentage,
       );
-      const updatedProfitBalance = (profitBalance ?? 0) + appliedPercentage ?? 0;
+      const updatedProfitBalance = (profitBalance ?? 0) + appliedPercentage;
 
       console.log(
         percentage,
@@ -99,7 +93,7 @@ const main = async (page: number, pageSize: number): Promise<void> => {
       await notificationService.create({
         userId: username,
         type: config.NOTIFICATION_TYPES.ACTIVITY,
-        title: "Profit balance updated",
+        title: 'Profit balance updated',
         message: `${config.TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
       });
     }
@@ -108,13 +102,7 @@ const main = async (page: number, pageSize: number): Promise<void> => {
   }
 };
 
-async function applyNormal(): Promise<void> {
-  console.time('TOTAL_TIME_TOOK');
-  await main(1, 5000);
-  console.timeEnd('TOTAL_TIME_TOOK');
-}
-
-function applyCronJob(): void {
+async function applyCronJob(): Promise<void> {
   const jobNames: string[] = [];
   const connection = new IORedis({ maxRetriesPerRequest: null });
   const queue = new Queue('myQueue', { connection });
@@ -174,14 +162,6 @@ function applyCronJob(): void {
     });
   }
 
-  queue.on('waiting', (job: any) => {
-    console.error(`${job.name} added`);
-  });
-
-  queue.on('error', (error: Error) => {
-    console.log(`Queue error: ${error}`);
-  });
-
   async function addJobs(): Promise<void> {
     for (let i = 1; i <= 10; i++) {
       jobNames.push('Job' + i);
@@ -197,11 +177,26 @@ function applyCronJob(): void {
       );
     }
   }
+  await addJobs();
 
-  removePrevJobs();
-  startWorkers();
-  addJobs();
+  queue.on('waiting', (job: any) => {
+    console.error(`${job.name} added`);
+  });
+
+  queue.on('error', (error: Error) => {
+    console.log(`Queue error: ${error}`);
+  });
+
+  await startWorkers();
+  await removePrevJobs();
 }
 
-applyNormal();
-// applyCronJob();
+applyCronJob();
+
+// async function applyNormal(): Promise<void> {
+//   console.time('TOTAL_TIME_TOOK');
+//   await main(1, 5000);
+//   console.timeEnd('TOTAL_TIME_TOOK');
+// }
+
+// applyNormal();
