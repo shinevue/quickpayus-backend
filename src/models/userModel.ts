@@ -205,7 +205,7 @@ const userSchema = new Schema<IUser>(
       default: 0,
     },
     isActive: { type: Boolean, default: true },
-    isEnableMFA: { type: Boolean, default: true },
+    isEnableMFA: { type: Boolean, default: false },
     alertNotifications: { type: Boolean, default: false },
     emailNotifications: { type: Boolean, default: false },
     role: { type: String, default: 'user' },
