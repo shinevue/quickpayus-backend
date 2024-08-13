@@ -1,10 +1,10 @@
-import connectDB from '../config/db.js';
-import User from '../models/userModel.js';
-import ProfitConfig from '../models/profitConfigModel.js';
-import HELPER from '../helpers/index.js';
-import transactionCtlr from '../controllers/transactionController.js';
-import notificationService from '../services/notificationService.js';
-import config from '../config/constants.js';
+import connectDB from '../config/db';
+import User from '../models/userModel';
+import ProfitConfig from '../models/profitConfigModel';
+import HELPER from '../helpers/index';
+import transactionCtlr from '../controllers/transactionController';
+import notificationService from '../services/notificationService';
+import config from '../config/constants';
 import { Worker, Queue } from 'bullmq';
 import IORedis from 'ioredis';
 import moment from 'moment-timezone';
@@ -32,85 +32,74 @@ const main = async (userId: string): Promise<void> => {
       .limit(1)
       .exec();
 
+    console.log('profitConfig TODAY: ', profitConfig);
+
     if (!profitConfig.length) {
-      console.error(`Profit config not found for today,stopped executing job`);
+      console.error(`Profit config not found for today, stopped executing job`);
       process.exit(0);
     }
 
-    const profit = profitConfig[0]?.profit || {};
+    const profit: number[] = profitConfig[0]?.profit || [];
     const query = {
+      _id: userId,
+      role: 'user',
       isActive: true,
       investmentLevel: { $ne: null },
       depositBalance: { $gt: 0 },
     };
 
-    const skip = (page - 1) * pageSize;
-    const total = await User.countDocuments(query);
-    if (!total) {
-      console.error(`No users found to run, stopped executing the job!`);
-      process.exit(0);
+    const user: UserType | null = await User.findOne(query);
+
+    if (!user) {
+      console.error(`User not found with ID: ${userId}`);
+      return;
     }
 
-    const users = await User.find(query).skip(skip).limit(pageSize);
-    console.log(`Running cronjob for total users ${users?.length}`);
+    console.log(`Running cronjob for user: ${user.email}`);
 
-      const {
-        id,
-        referralCreditBalance,
-        profitBalance,
-        depositBalance,
-        username,
-        investmentLevel,
+    const {
+      id,
+      referralCreditBalance,
+      profitBalance,
+      depositBalance,
+      username,
+      investmentLevel,
     } = user as any;
 
     console.log(`<------- Updating user (${username}) profit ------->`);
 
-      const percentage = Number(profit['ABCDE'.indexOf(investmentLevel)] ?? 0);
-      const equityBalance =
-        Number(referralCreditBalance ?? 0) + Number(depositBalance ?? 0);
-      const appliedPercentage = HELPER.applyPercentage(
-        equityBalance,
-        percentage,
-      );
-      const updatedProfitBalance = (profitBalance ?? 0) + appliedPercentage;
+    const percentage = Number(profit['ABCDE'.indexOf(investmentLevel)] ?? 0);
+    const equityBalance =
+      Number(referralCreditBalance ?? 0) + Number(depositBalance ?? 0);
+    const appliedPercentage = HELPER.applyPercentage(equityBalance, percentage);
+    const updatedProfitBalance = (profitBalance ?? 0) + appliedPercentage;
 
-      console.log(
-        percentage,
-        referralCreditBalance,
-        depositBalance,
-        appliedPercentage,
-        updatedProfitBalance,
-      );
+    console.log(
+      `------- Updating user with percentage (${percentage}) profit (${username}) - ${updatedProfitBalance} -------`,
+    );
 
-      console.log(
-        `------- Updating user with percentage (${percentage}) profit (${username}) - ${updatedProfitBalance}-------`,
-      );
+    const transactionUUID = HELPER.uuid();
+    const transaction = {
+      amount: appliedPercentage,
+      userId: id,
+      transactionType: config.TRANSACTION_TYPES.PROFIT,
+      uuid: transactionUUID,
+      status: config.STATUS.APPROVED,
+      feesAmount: 0,
+      originalAmount: equityBalance,
+      profitPercentage: percentage,
+    };
 
-      if (!updatedProfitBalance) continue;
+    await transactionCtlr.save(transaction);
 
-      const transactionUUID = HELPER.uuid();
-      const transaction = {
-        amount: appliedPercentage,
-        userId: id,
-        transactionType: config.TRANSACTION_TYPES.PROFIT,
-        uuid: transactionUUID,
-        status: config.STATUS.APPROVED,
-        feesAmount: 0,
-        originalAmount: equityBalance,
-        profitPercentage: percentage,
-      };
+    await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
 
-      await transactionCtlr.save(transaction);
-
-      await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
-
-      await notificationService.create({
-        userId: username,
-        type: config.NOTIFICATION_TYPES.ACTIVITY,
-        title: 'Profit balance updated',
-        message: `${config.TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
-      });
-    }
+    await notificationService.create({
+      userId: username,
+      type: config.NOTIFICATION_TYPES.ACTIVITY,
+      title: 'Profit balance updated',
+      message: `${config.TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
+    });
   } catch (err) {
     console.log(`Error running the cronjob - ${err}`);
   }
@@ -150,12 +139,18 @@ async function applyCronJob(): Promise<void> {
       jobNames.push('Job of ' + user.username);
       scheduleProfitDispatch(user);
     }
+    console.log('jobNames: ', jobNames);
   }
 
   async function startWorkers(): Promise<void> {
+    console.log('A start work');
     const worker = new Worker(
       'myQueue',
-      async (job: any) => {
+      async (job) => {
+        console.log('========== job.data ==========');
+        console.log(job.name, ' => ', job.data);
+        console.log('========== job end ==========');
+
         if (!jobNames.includes(job.name)) {
           console.log(`Skipping ${job.name}`);
           return;
@@ -166,7 +161,8 @@ async function applyCronJob(): Promise<void> {
           earliestStartTime = startTime;
         }
 
-        await main(job.data.page, 100);
+        await main(job.data.userId);
+
         const endTime = Date.now();
         if (endTime > latestEndTime) {
           latestEndTime = endTime;
@@ -196,22 +192,14 @@ async function applyCronJob(): Promise<void> {
     });
   }
 
-  async function addJobs(): Promise<void> {
-    for (let i = 1; i <= 10; i++) {
-      jobNames.push('Job' + i);
-      await queue.add(
-        'Job' + i,
-        { page: i },
-        {
-          repeat: {
-            pattern: '0 1-4 * * Mon-Fri',
-            endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
-          },
-        },
-      );
+  async function removePrevJobs(): Promise<void> {
+    const repeatableJobs = await queue.getRepeatableJobs();
+    for (const job of repeatableJobs) {
+      await queue.removeRepeatableByKey(job.key);
+      console.log(`previous job ${job.name} removed`);
     }
   }
-  addJobs();
+  await addJobs();
 
   queue.on('waiting', (job: any) => {
     console.error(`${job.name} added`);
