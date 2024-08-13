@@ -18,7 +18,7 @@ interface UserType {
   depositBalance: number;
   username: string;
   investmentLevel: string | null;
-  timeZone?: string; // Optional timezone property
+  timeZone?: string;
 }
 
 // Create a connection to Redis
@@ -42,7 +42,6 @@ const main = async (userId: string): Promise<void> => {
     const profit: number[] = profitConfig[0]?.profit || [];
     const query = {
       _id: userId,
-      role: 'user',
       isActive: true,
       investmentLevel: { $ne: null },
       depositBalance: { $gt: 0 },
@@ -130,8 +129,7 @@ async function applyCronJob(): Promise<void> {
     const delay = targetTime.diff(currentTime);
 
     // Enqueue job with delay
-    queue.add('Job of ' + user.username, { userId: user.id }, { delay });
-    console.log('========== end ============');
+    queue.add('Job of ' + user.username, { userId: user.id }, { delay: 1000 });
   }
 
   async function addJobs(): Promise<void> {
