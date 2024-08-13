@@ -7,11 +7,27 @@ import notificationService from '../services/notificationService.js';
 import config from '../config/constants.js';
 import { Worker, Queue } from 'bullmq';
 import IORedis from 'ioredis';
+import moment from 'moment-timezone';
 
-const main = async (page: number, pageSize: number): Promise<void> => {
+// Define the user type based on your User model
+interface UserType {
+  id: string;
+  email: string;
+  referralCreditBalance: number;
+  profitBalance: number;
+  depositBalance: number;
+  username: string;
+  investmentLevel: string | null;
+  timeZone?: string; // Optional timezone property
+}
+
+// Create a connection to Redis
+const connection = new IORedis({ maxRetriesPerRequest: null });
+const queue = new Queue('myQueue', { connection });
+
+const main = async (userId: string): Promise<void> => {
   try {
-    await connectDB();
-    const profitConfig: any[] = await ProfitConfig.find()
+    const profitConfig: any = await ProfitConfig.find()
       .sort({ createdAt: -1 })
       .limit(1)
       .exec();
@@ -38,7 +54,6 @@ const main = async (page: number, pageSize: number): Promise<void> => {
     const users = await User.find(query).skip(skip).limit(pageSize);
     console.log(`Running cronjob for total users ${users?.length}`);
 
-    for (const user of users) {
       const {
         id,
         referralCreditBalance,
@@ -46,11 +61,10 @@ const main = async (page: number, pageSize: number): Promise<void> => {
         depositBalance,
         username,
         investmentLevel,
-      } = user || {};
+    } = user as any;
 
-      if (!investmentLevel) continue;
+    console.log(`<------- Updating user (${username}) profit ------->`);
 
-      console.log(`<------- Updating user (${username}) profit------->`);
       const percentage = Number(profit['ABCDE'.indexOf(investmentLevel)] ?? 0);
       const equityBalance =
         Number(referralCreditBalance ?? 0) + Number(depositBalance ?? 0);
@@ -103,18 +117,38 @@ const main = async (page: number, pageSize: number): Promise<void> => {
 };
 
 async function applyCronJob(): Promise<void> {
+  console.time('TOTAL_TIME_TOOK');
+  await connectDB();
+
   const jobNames: string[] = [];
-  const connection = new IORedis({ maxRetriesPerRequest: null });
-  const queue = new Queue('myQueue', { connection });
+  const usersAll: UserType[] = await User.find({ role: 'user' });
+
   let earliestStartTime = Infinity;
   let latestEndTime = 0;
   let completionCounter = 0;
 
-  async function removePrevJobs(): Promise<void> {
-    const repeatableJobs = await queue.getRepeatableJobs();
-    for (const job of repeatableJobs) {
-      await queue.removeRepeatableByKey(job.key);
-      console.log(`previous job ${job.name} removed`);
+  function scheduleProfitDispatch(user: UserType): void {
+    const userTimeZone = user.timeZone || 'America/New_York';
+    const currentTime = moment().tz(userTimeZone);
+    const targetTime = moment.tz('03:00', 'HH:mm', userTimeZone);
+
+    // If target time is earlier than current time, schedule for the next day
+    if (currentTime.isAfter(targetTime)) {
+      targetTime.add(1, 'day');
+    }
+
+    // Calculate delay
+    const delay = targetTime.diff(currentTime);
+
+    // Enqueue job with delay
+    queue.add('Job of ' + user.username, { userId: user.id }, { delay });
+    console.log('========== end ============');
+  }
+
+  async function addJobs(): Promise<void> {
+    for (const user of usersAll) {
+      jobNames.push('Job of ' + user.username);
+      scheduleProfitDispatch(user);
     }
   }
 
@@ -170,14 +204,14 @@ async function applyCronJob(): Promise<void> {
         { page: i },
         {
           repeat: {
-            pattern: '0 3-6 * * Mon-Fri',
+            pattern: '0 1-4 * * Mon-Fri',
             endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
           },
         },
       );
     }
   }
-  await addJobs();
+  addJobs();
 
   queue.on('waiting', (job: any) => {
     console.error(`${job.name} added`);
@@ -188,15 +222,8 @@ async function applyCronJob(): Promise<void> {
   });
 
   await startWorkers();
-  await removePrevJobs();
+  removePrevJobs();
+  console.timeEnd('TOTAL_TIME_TOOK');
 }
 
 applyCronJob();
-
-// async function applyNormal(): Promise<void> {
-//   console.time('TOTAL_TIME_TOOK');
-//   await main(1, 5000);
-//   console.timeEnd('TOTAL_TIME_TOOK');
-// }
-
-// applyNormal();
