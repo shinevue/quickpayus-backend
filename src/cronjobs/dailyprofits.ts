@@ -25,7 +25,7 @@ interface UserType {
 const connection = new IORedis({ maxRetriesPerRequest: null });
 const queue = new Queue('myQueue', { connection });
 
-const main = async (userId: string): Promise<void> => {
+const main = async (data: any): Promise<void> => {
   try {
     const profitConfig: any = await ProfitConfig.find()
       .sort({ createdAt: -1 })
@@ -39,7 +39,7 @@ const main = async (userId: string): Promise<void> => {
 
     const profit: number[] = profitConfig[0]?.profit || [];
     const query = {
-      username: userId,
+      username: data.username,
       isActive: true,
       investmentLevel: { $ne: null },
       depositBalance: { $gt: 0 },
@@ -48,7 +48,7 @@ const main = async (userId: string): Promise<void> => {
     const user: UserType | null = await User.findOne(query);
 
     if (!user) {
-      console.error(`User not found with ID: ${userId}`);
+      console.error(`User not found with username: ${data.username}`);
       return;
     }
 
@@ -61,7 +61,30 @@ const main = async (userId: string): Promise<void> => {
       depositBalance,
       username,
       investmentLevel,
+      timeZone,
     } = user as any;
+
+    // Detect users who change their time zones before the scheduled job executes and reset profit
+    if (timeZone !== data.timeZone) {
+      const currentTime = moment().tz(timeZone);
+      const targetTime = moment.tz('03:00', 'HH:mm', timeZone);
+
+      // If target time is earlier than current time, schedule for the next day
+      if (currentTime.isAfter(targetTime)) {
+        targetTime.add(1, 'day');
+      }
+
+      // Calculate delay
+      let delay = targetTime.diff(currentTime);
+      if (delay < 0) delay += 24 * 60 * 60 * 1000;
+
+      queue.add(
+        'Job of ' + user.username,
+        { userId: user.username, timeZone: user.timeZone },
+        { delay: delay + 24 * 60 * 60 * 1000 },
+      );
+      return;
+    }
 
     console.log(`<------- Updating user (${username}) profit ------->`);
 
@@ -166,7 +189,7 @@ async function applyCronJob(): Promise<void> {
           earliestStartTime = startTime;
         }
 
-        await main(job.data.userId);
+        await main(job.data);
 
         const endTime = Date.now();
         if (endTime > latestEndTime) {
@@ -204,7 +227,7 @@ async function applyCronJob(): Promise<void> {
       console.log(`previous job ${job.name} removed`);
     }
   }
-  await addJobs();
+  addJobs();
 
   queue.on('waiting', (job: any) => {
     console.error(`${job.name} added`);
@@ -214,7 +237,7 @@ async function applyCronJob(): Promise<void> {
     console.log(`Queue error: ${error}`);
   });
 
-  await startWorkers();
+  startWorkers();
   removePrevJobs();
   console.timeEnd('TOTAL_TIME_TOOK');
 }
