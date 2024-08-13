@@ -32,8 +32,6 @@ const main = async (userId: string): Promise<void> => {
       .limit(1)
       .exec();
 
-    console.log('profitConfig TODAY: ', profitConfig);
-
     if (!profitConfig.length) {
       console.error(`Profit config not found for today, stopped executing job`);
       process.exit(0);
@@ -41,7 +39,7 @@ const main = async (userId: string): Promise<void> => {
 
     const profit: number[] = profitConfig[0]?.profit || [];
     const query = {
-      _id: userId,
+      username: userId,
       isActive: true,
       investmentLevel: { $ne: null },
       depositBalance: { $gt: 0 },
@@ -93,6 +91,12 @@ const main = async (userId: string): Promise<void> => {
 
     await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
 
+    queue.add(
+      'Job of ' + user.username,
+      { userId: user.username, timeZone: user.timeZone },
+      { delay: 24 * 60 * 60 * 1000 },
+    );
+
     await notificationService.create({
       userId: username,
       type: config.NOTIFICATION_TYPES.ACTIVITY,
@@ -126,18 +130,25 @@ async function applyCronJob(): Promise<void> {
     }
 
     // Calculate delay
-    const delay = targetTime.diff(currentTime);
+    let delay = targetTime.diff(currentTime);
+    if (delay < 0) delay += 24 * 60 * 60 * 1000;
 
     // Enqueue job with delay
-    queue.add('Job of ' + user.username, { userId: user.id }, { delay: 1000 });
+    queue.add(
+      'Job of ' + user.username,
+      { userId: user.username, timeZone: userTimeZone },
+      { delay },
+    );
+
+    // console.log(`{
+    //   'Job of ' + ${user.username},
+    //   { username: ${user.username}, timeZone: ${userTimeZone} },
+    //   { delay: ${delay} }}`,
+    // );
   }
 
   async function addJobs(): Promise<void> {
-    for (const user of usersAll) {
-      jobNames.push('Job of ' + user.username);
-      scheduleProfitDispatch(user);
-    }
-    console.log('jobNames: ', jobNames);
+    for (const user of usersAll) scheduleProfitDispatch(user);
   }
 
   async function startWorkers(): Promise<void> {
@@ -145,10 +156,6 @@ async function applyCronJob(): Promise<void> {
     const worker = new Worker(
       'myQueue',
       async (job) => {
-        console.log('========== job.data ==========');
-        console.log(job.name, ' => ', job.data);
-        console.log('========== job end ==========');
-
         if (!jobNames.includes(job.name)) {
           console.log(`Skipping ${job.name}`);
           return;
