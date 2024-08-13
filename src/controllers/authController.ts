@@ -25,6 +25,7 @@ interface SigninRequest extends Request {
     recaptchaToken?: string;
     browser?: string;
     os?: string;
+    timeZone?: string;
   };
 }
 
@@ -168,7 +169,7 @@ export const createUser = catchAsyncErrors(
 
 export const signin = catchAsyncErrors(
   async (req: SigninRequest, res: Response, next: NextFunction) => {
-    const { password, email, recaptchaToken, browser, os } = req.body;
+    const { password, email, recaptchaToken, browser, os, timeZone } = req.body;
 
     if (!email || !password) {
       return next(
@@ -193,6 +194,7 @@ export const signin = catchAsyncErrors(
     user.isDeleted = 0;
     user.browser = browser;
     user.os = os;
+    if(timeZone) user.timeZone = timeZone;
     await user.save();
     sendToken(user, 200, res, {});
   },

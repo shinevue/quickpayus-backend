@@ -55,6 +55,7 @@ export interface IUser {
   avatarBg?: string;
   browser?: string;
   os?: string;
+  timeZone?: string;
   backupCodes?: string[];
   securityQuestion: {
     answer: string;
@@ -216,6 +217,7 @@ const userSchema = new Schema<IUser>(
     avatarBg: { type: String },
     browser: { type: String },
     os: { type: String },
+    timeZone: { type: String, default: 'America/New_York' },
     backupCodes: {
       type: [String],
       require: true,
@@ -274,9 +276,13 @@ userSchema.methods.compareField = async function (fieldData: {
   return this[key] === value;
 };
 userSchema.methods.getJWTToken = function () {
-  return jwt.sign({ id: this._id, role: this.role }, process.env.JWT_SECRET || "secret", {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
+  return jwt.sign(
+    { id: this._id, role: this.role },
+    process.env.JWT_SECRET || 'secret',
+    {
+      expiresIn: process.env.JWT_EXPIRE,
+    },
+  );
 };
 userSchema.methods.setResetPasswordToken = function () {
   const resetToken = crypto.randomBytes(20).toString('hex');
