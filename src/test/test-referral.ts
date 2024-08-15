@@ -1,3 +1,4 @@
+import { aryIanaTimeZones } from './timeZones';
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 
@@ -65,6 +66,7 @@ const createMockUser = async () => {
       email: 'admin@mock.mail',
       password: '123456',
       role: 'admin',
+      timeZone: getRandomTimeZone(),
     });
 
     await admin.save();
@@ -76,6 +78,7 @@ const createMockUser = async () => {
       lastName: 'A',
       email: 'root@mock.mail',
       password: '123456',
+      timeZone: getRandomTimeZone(),
     });
 
     await root.save();
@@ -214,6 +217,7 @@ const createOne = async (username: string, referralId: string) => {
     lastName: username,
     email: `${username}@mock.mail`,
     password: '123456',
+    timeZone: getRandomTimeZone(),
     referralId,
   });
 
@@ -235,4 +239,8 @@ const randomBalance = async (): Promise<number> => {
     console.error('Not found programs database.');
   }
   return optionList.sort((a, b) => 0.5 - Math.random())[0];
+};
+
+const getRandomTimeZone = async () => {
+  return aryIanaTimeZones[Math.floor(aryIanaTimeZones.length * Math.random())];
 };
