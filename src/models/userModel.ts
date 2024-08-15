@@ -55,7 +55,7 @@ export interface IUser {
   avatarBg?: string;
   browser?: string;
   os?: string;
-  timeZone?: string;
+  timeZone: string;
   backupCodes?: string[];
   securityQuestion: {
     answer: string;

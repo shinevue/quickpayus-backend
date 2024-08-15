@@ -43,6 +43,7 @@ const mockUser: IUser = {
     answer: 'shine',
     question: 1,
   },
+  timeZone: "America/New_York"
 };
 
 // To create a new child user, add these letters to the end of the referral username.
@@ -241,6 +242,6 @@ const randomBalance = async (): Promise<number> => {
   return optionList.sort((a, b) => 0.5 - Math.random())[0];
 };
 
-const getRandomTimeZone = async () => {
+const getRandomTimeZone = () => {
   return aryIanaTimeZones[Math.floor(aryIanaTimeZones.length * Math.random())];
 };

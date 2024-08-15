@@ -18,7 +18,7 @@ interface UserType {
   depositBalance: number;
   username: string;
   investmentLevel: string | null;
-  timeZone?: string;
+  timeZone: string;
 }
 
 // Create a connection to Redis
@@ -130,7 +130,7 @@ async function applyCronJob(): Promise<void> {
   let latestEndTime = 0;
   let completionCounter = 0;
 
-  function scheduleProfitDispatch(userTimeZone: any): void {
+  function scheduleProfitDispatch(userTimeZone: string): void {
     const currentTime = moment().tz(userTimeZone);
     const targetTime = moment.tz('03:00', 'HH:mm', userTimeZone);
 
@@ -148,15 +148,15 @@ async function applyCronJob(): Promise<void> {
   }
 
   async function addJobs(): Promise<void> {
-    const timeZoneArray: any[] = usersAll.filter(
-      (user) => !timeZoneArray.includes(user.timeZone),
+    let timeZoneArray: string[] = []
+    usersAll.map(
+      (user) => {
+        if(!timeZoneArray.includes(user.timeZone.toString())) timeZoneArray.push(user.timeZone.toString())
+      }
     );
     timeZoneArray.map((timeZone) => {
       scheduleProfitDispatch(timeZone);
       jobNames.push(`Job of ${timeZone}`);
-    });
-    timeZoneArray.map((timeZone) => {
-      scheduleProfitDispatch(timeZone);
     });
   }
 
