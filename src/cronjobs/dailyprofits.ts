@@ -26,6 +26,7 @@ const connection = new IORedis({ maxRetriesPerRequest: null });
 const queue = new Queue('myQueue', { connection });
 
 const main = async (data: any): Promise<void> => {
+  console.time(`TOTAL_TIME_TOOK of ${data.timeZone}`);
   try {
     const profitConfig: any = await ProfitConfig.find()
       .sort({ createdAt: -1 })
@@ -39,100 +40,87 @@ const main = async (data: any): Promise<void> => {
 
     const profit: number[] = profitConfig[0]?.profit || [];
     const query = {
-      username: data.username,
+      timeZone: data.timeZone,
       isActive: true,
       investmentLevel: { $ne: null },
       depositBalance: { $gt: 0 },
     };
 
-    const user: UserType | null = await User.findOne(query);
+    const users: UserType[] | null = await User.find(query);
 
-    if (!user) {
+    if (!users) {
       console.error(`User not found with username: ${data.username}`);
       return;
     }
+    console.log(`TimeZone: ${data.timeZone} , Users: ${users.length}`);
 
-    console.log(`Running cronjob for user: ${user.email}`);
+    users.map(async (user) => {
+      console.log(`Running cronjob for user: ${user.email}`);
 
-    const {
-      id,
-      referralCreditBalance,
-      profitBalance,
-      depositBalance,
-      username,
-      investmentLevel,
-      timeZone,
-    } = user as any;
+      const {
+        id,
+        referralCreditBalance,
+        profitBalance,
+        depositBalance,
+        username,
+        investmentLevel,
+        timeZone,
+      } = user as any;
 
-    // Detect users who change their time zones before the scheduled job executes and reset profit
-    if (timeZone !== data.timeZone) {
-      const currentTime = moment().tz(timeZone);
-      const targetTime = moment.tz('03:00', 'HH:mm', timeZone);
+      // Detect users who change their time zones before the scheduled job executes and reset profit
+      if (timeZone !== data.timeZone) return;
 
-      // If target time is earlier than current time, schedule for the next day
-      if (currentTime.isAfter(targetTime)) {
-        targetTime.add(1, 'day');
-      }
+      console.log(`<------- Updating user (${username}) profit ------->`);
 
-      // Calculate delay
-      let delay = targetTime.diff(currentTime);
-      if (delay < 0) delay += 24 * 60 * 60 * 1000;
-
-      queue.add(
-        'Job of ' + user.username,
-        { userId: user.username, timeZone: user.timeZone },
-        { delay: delay + 24 * 60 * 60 * 1000 },
+      const percentage = Number(profit['ABCDE'.indexOf(investmentLevel)] ?? 0);
+      const equityBalance =
+        Number(referralCreditBalance ?? 0) + Number(depositBalance ?? 0);
+      const appliedPercentage = HELPER.applyPercentage(
+        equityBalance,
+        percentage,
       );
-      return;
-    }
+      const updatedProfitBalance = (profitBalance ?? 0) + appliedPercentage;
 
-    console.log(`<------- Updating user (${username}) profit ------->`);
+      console.log(
+        `------- Updating user with percentage (${percentage}) profit (${username}) - ${updatedProfitBalance} -------`,
+      );
 
-    const percentage = Number(profit['ABCDE'.indexOf(investmentLevel)] ?? 0);
-    const equityBalance =
-      Number(referralCreditBalance ?? 0) + Number(depositBalance ?? 0);
-    const appliedPercentage = HELPER.applyPercentage(equityBalance, percentage);
-    const updatedProfitBalance = (profitBalance ?? 0) + appliedPercentage;
+      const transactionUUID = HELPER.uuid();
+      const transaction = {
+        amount: appliedPercentage,
+        userId: id,
+        transactionType: config.TRANSACTION_TYPES.PROFIT,
+        uuid: transactionUUID,
+        status: config.STATUS.APPROVED,
+        feesAmount: 0,
+        originalAmount: equityBalance,
+        profitPercentage: percentage,
+      };
 
-    console.log(
-      `------- Updating user with percentage (${percentage}) profit (${username}) - ${updatedProfitBalance} -------`,
-    );
+      await transactionCtlr.save(transaction);
 
-    const transactionUUID = HELPER.uuid();
-    const transaction = {
-      amount: appliedPercentage,
-      userId: id,
-      transactionType: config.TRANSACTION_TYPES.PROFIT,
-      uuid: transactionUUID,
-      status: config.STATUS.APPROVED,
-      feesAmount: 0,
-      originalAmount: equityBalance,
-      profitPercentage: percentage,
-    };
+      await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
 
-    await transactionCtlr.save(transaction);
-
-    await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
+      await notificationService.create({
+        userId: username,
+        type: config.NOTIFICATION_TYPES.ACTIVITY,
+        title: 'Profit balance updated',
+        message: `${config.TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
+      });
+    });
 
     queue.add(
-      'Job of ' + user.username,
-      { userId: user.username, timeZone: user.timeZone },
+      'Job of ' + data.timeZone,
+      { timeZone: data.timeZone },
       { delay: 24 * 60 * 60 * 1000 },
     );
-
-    await notificationService.create({
-      userId: username,
-      type: config.NOTIFICATION_TYPES.ACTIVITY,
-      title: 'Profit balance updated',
-      message: `${config.TRANSACTION_TYPES.PROFIT?.toLowerCase()?.capitalizeFirst()} of amount $${appliedPercentage} has been deposited in your account. ${transactionUUID}`,
-    });
   } catch (err) {
     console.log(`Error running the cronjob - ${err}`);
   }
+  console.timeEnd(`TOTAL_TIME_TOOK of ${data.timeZone}`);
 };
 
 async function applyCronJob(): Promise<void> {
-  console.time('TOTAL_TIME_TOOK');
   await connectDB();
 
   const jobNames: string[] = [];
@@ -142,8 +130,7 @@ async function applyCronJob(): Promise<void> {
   let latestEndTime = 0;
   let completionCounter = 0;
 
-  function scheduleProfitDispatch(user: UserType): void {
-    const userTimeZone = user.timeZone || 'America/New_York';
+  function scheduleProfitDispatch(userTimeZone: any): void {
     const currentTime = moment().tz(userTimeZone);
     const targetTime = moment.tz('03:00', 'HH:mm', userTimeZone);
 
@@ -157,21 +144,20 @@ async function applyCronJob(): Promise<void> {
     if (delay < 0) delay += 24 * 60 * 60 * 1000;
 
     // Enqueue job with delay
-    queue.add(
-      'Job of ' + user.username,
-      { userId: user.username, timeZone: userTimeZone },
-      { delay },
-    );
-
-    // console.log(`{
-    //   'Job of ' + ${user.username},
-    //   { username: ${user.username}, timeZone: ${userTimeZone} },
-    //   { delay: ${delay} }}`,
-    // );
+    queue.add('Job of ' + userTimeZone, { timeZone: userTimeZone }, { delay });
   }
 
   async function addJobs(): Promise<void> {
-    for (const user of usersAll) scheduleProfitDispatch(user);
+    const timeZoneArray: any[] = usersAll.filter(
+      (user) => !timeZoneArray.includes(user.timeZone),
+    );
+    timeZoneArray.map((timeZone) => {
+      scheduleProfitDispatch(timeZone);
+      jobNames.push(`Job of ${timeZone}`);
+    });
+    timeZoneArray.map((timeZone) => {
+      scheduleProfitDispatch(timeZone);
+    });
   }
 
   async function startWorkers(): Promise<void> {
@@ -239,7 +225,6 @@ async function applyCronJob(): Promise<void> {
 
   startWorkers();
   removePrevJobs();
-  console.timeEnd('TOTAL_TIME_TOOK');
 }
 
 applyCronJob();
