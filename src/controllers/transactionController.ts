@@ -385,7 +385,7 @@ const userCreditBalanceByQuery = async (userId: string, moreQuery = {}) => {
   const referrals =
     (await referralCtlr.getAllReferrals(
       { referralId: userId, isActive: true },
-      8,
+      config.REFERRAL_DEPTH,
     )) || [];
 
   for (const referral of referrals) {
@@ -593,7 +593,7 @@ const userSalesByQuery = async (userId: any, moreQuery: any) => {
   const referrals =
     (await referralCtlr.getAllReferrals(
       { referralId: userId, isActive: true },
-      8,
+      config.REFERRAL_DEPTH,
     )) || [];
 
   for (const referral of referrals) {

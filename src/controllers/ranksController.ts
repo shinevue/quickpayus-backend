@@ -9,6 +9,7 @@ import transactionCtlr from './transactionController';
 import HELPERS from '../helpers';
 import rewardCtlr from '../controllers/rewardsController';
 import moment from 'moment';
+import config from '../config/constants';
 
 const rank = catchAsyncErrors(
   async (req: any, res: Response, next: NextFunction) => {
@@ -56,7 +57,7 @@ const getUserRankInfo = async (id: string | ObjectId) => {
           referralId: userId,
           isActive: true,
         },
-        8,
+        config.REFERRAL_DEPTH,
       )) || [];
 
     for (const referral of referrals) {

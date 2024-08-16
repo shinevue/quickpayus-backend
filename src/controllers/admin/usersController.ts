@@ -7,7 +7,6 @@ import ErrorHandler from '../../utils/errorHandler';
 import referralCtrl from '../referralsController';
 import config from '../../config/constants';
 import notificationService from '../../services/notificationService';
-import { ObjectId } from 'mongodb';
 // import sendEmail from '../../utils/sendEmail'; // Uncomment if needed
 
 export const get = catchAsyncErrors(
@@ -85,7 +84,7 @@ export const get = catchAsyncErrors(
       });
       const indirectCount = await referralCtrl.indirectReferralsCount(
         { referralId: d._id },
-        8,
+        config.REFERRAL_DEPTH,
       );
       const referredBy = await User.findById(d?.referralId);
 
