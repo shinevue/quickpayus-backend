@@ -54,7 +54,7 @@ const main = async (data: any): Promise<void> => {
     }
     console.log(`TimeZone: ${data.timeZone} , Users: ${users.length}`);
 
-    users.map(async (user) => {
+    users.map((user) => {
       console.log(`Running cronjob for user: ${user.email}`);
 
       const {
@@ -97,11 +97,11 @@ const main = async (data: any): Promise<void> => {
         profitPercentage: percentage,
       };
 
-      await transactionCtlr.save(transaction);
+      transactionCtlr.save(transaction);
 
-      await User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
+      User.findByIdAndUpdate(id, { profitBalance: updatedProfitBalance });
 
-      await notificationService.create({
+      notificationService.create({
         userId: username,
         type: config.NOTIFICATION_TYPES.ACTIVITY,
         title: 'Profit balance updated',
@@ -147,7 +147,7 @@ async function applyCronJob(): Promise<void> {
     queue.add('Job of ' + userTimeZone, { timeZone: userTimeZone }, { delay });
   }
 
-  async function addJobs(): Promise<void> {
+  function addJobs(): void {
     let timeZoneArray: string[] = []
     usersAll.map(
       (user) => {
@@ -160,7 +160,7 @@ async function applyCronJob(): Promise<void> {
     });
   }
 
-  async function startWorkers(): Promise<void> {
+  function startWorkers(): void {
     console.log('A start work');
     const worker = new Worker(
       'myQueue',
