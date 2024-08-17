@@ -118,8 +118,6 @@ export const update = catchAsyncErrors(
     } = transaction;
 
     if (status.includes(config.STATUS.REJECTED)) {
-      console.log('PASSED');
-
       if (!reason) {
         return next(
           new ErrorHandler(
@@ -204,9 +202,8 @@ export const update = catchAsyncErrors(
     }
 
     const user = await User.findByIdAndUpdate(userId, userUpdate);
-    if (transactionType.includes(config.TRANSACTION_TYPES.DEPOSIT)) {
-      await updateCreditToParents(user, transactionType, amount);
-    }
+    if(transactionType.includes(config.TRANSACTION_TYPES.DEPOSIT)) updateCreditToParents(user, transactionType, amount);
+    if(transactionType.includes(config.TRANSACTION_TYPES.WITHDRAWAL)) updateCreditToParents(user, transactionType, originalAmount);
 
     notificationService.create({
       userId,
@@ -249,20 +246,37 @@ export const updateCreditToParents = async (
       amount,
       program?.data?.creditPercentage,
     );
-    const userUpdate = {
-      $set: {
-        referralCreditBalance:
-          (parent?.referralCreditBalance || 0) + appliedCreditPercentage,
-      },
-    };
-    const parentId = new ObjectId(parent?._id);
-    await User.findByIdAndUpdate(parentId, userUpdate);
-    notificationService.create({
-      userId: parent?._id,
-      title: config.NOTIFICATION_TYPES.ACTIVITY,
-      type: config.NOTIFICATION_TYPES.ACTIVITY,
-      message: `Congratulations! You've successfully earned a credit of $${appliedCreditPercentage} through your referral from: ${user?.username}. This credit has been added to your account.`,
-    });
+    if(type.includes(config.TRANSACTION_TYPES.DEPOSIT)){
+      const userUpdate = {
+        $set: {
+          referralCreditBalance:
+            (parent?.referralCreditBalance || 0) + appliedCreditPercentage,
+        },
+      };
+      const parentId = new ObjectId(parent?._id);
+      await User.findByIdAndUpdate(parentId, userUpdate);
+      notificationService.create({
+        userId: parent?._id,
+        title: config.NOTIFICATION_TYPES.ACTIVITY,
+        type: config.NOTIFICATION_TYPES.ACTIVITY,
+        message: `Congratulations! You've successfully earned a credit of $${appliedCreditPercentage} through your referral from: ${user?.username}. This credit has been added to your account.`,
+      })
+    } else if(type.includes(config.TRANSACTION_TYPES.WITHDRAWAL)) {
+      const userUpdate = {
+        $set: {
+          referralCreditBalance:
+            parent?.referralCreditBalance - appliedCreditPercentage,
+        },
+      };
+      const parentId = new ObjectId(parent?._id);
+      await User.findByIdAndUpdate(parentId, userUpdate);
+      notificationService.create({
+        userId: parent?._id,
+        title: config.NOTIFICATION_TYPES.ACTIVITY,
+        type: config.NOTIFICATION_TYPES.ACTIVITY,
+        message: `You've reduced a credit of $${appliedCreditPercentage} through your referral from: ${user?.username}. This credit has been removed from your account.`,
+      })
+    }
   }
 };
 
